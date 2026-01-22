@@ -1,0 +1,165 @@
+<div class="app-menu navbar-menu">
+    <!-- LOGO -->
+    <div class="navbar-brand-box">
+        <!-- Dark Logo-->
+        <a href="{{ route('dashboard') }}" class="logo logo-dark">
+            <span class="logo-sm">
+                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="38" width="210">
+            </span>
+            <span class="logo-lg">
+                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="48" width="210">
+            </span>
+        </a>
+        <!-- Light Logo-->
+        <a href="{{ route('dashboard') }}" class="logo logo-light">
+            <span class="logo-sm">
+                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="38" width="210">
+            </span>
+            <span class="logo-lg">
+                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="48" width="210">
+            </span>
+        </a>
+        <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
+            <i class="ri-record-circle-line"></i>
+        </button>
+    </div>
+
+    <div id="scrollbar">
+        <div class="container-fluid">
+
+            <div id="two-column-menu">
+            </div>
+            <ul class="navbar-nav" id="navbar-nav">
+                <li class="menu-title"><span data-key="t-menu">Menu</span></li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ Request::is('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                        <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboards</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarWarehouse" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarWarehouse">
+                        <i class="ri-store-2-line"></i> <span data-key="t-apps">Warehouse</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarWarehouse">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('warehouses.index') }}" class="nav-link" data-key="t-calendar"> Warehouse </a>
+                            </li>
+                        </ul>
+                    </div>
+
+
+                    <a class="nav-link menu-link" href="#sidebarCategories" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategories">
+                        <i class="ri-smartphone-fill"></i> <span data-key="t-apps">Categories</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarCategories">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('categories.index') }}" class="nav-link" data-key="t-calendar"> Category </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarBrands" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBrands">
+                        <i class="ri-apple-fill"></i> <span data-key="t-apps">Brands</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarBrands">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('brands.index') }}" class="nav-link" data-key="t-calendar"> Brand </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarCurrency" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCurrency">
+                        <i class="ri-money-pound-box-fill"></i> <span data-key="t-apps">Currency</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarCurrency">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('currencies.index') }}" class="nav-link" data-key="t-calendar"> Currency </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+
+                    <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
+                        <i class="ri-barcode-line"></i> <span data-key="t-apps">Products</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarProducts">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('products.index') }}" class="nav-link" data-key="t-calendar"> Product </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarPartners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPartners">
+                        <i class="ri-group-2-fill"></i> <span data-key="t-apps">Partners</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarPartners">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('partners.index') }}" class="nav-link" data-key="t-calendar"> Partner </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarSellers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellers">
+                        <i class="ri-user-add-fill"></i> <span data-key="t-apps">Sellers</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSellers">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('sellers.index') }}" class="nav-link" data-key="t-calendar"> Seller </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
+                        <i class="ri-file-list-3-fill"></i><span data-key="t-apps">Purchases</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarPurchases">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-calendar"> Purchase </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </li>
+
+
+
+                <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarAuth" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAuth">
+                        <i class="ri-account-circle-line"></i> <span data-key="t-authentication">Authentication</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarAuth">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" data-key="t-signin"> Sign In </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link" data-key="t-signup"> Sign Up </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="sidebar-background"></div>
+</div>

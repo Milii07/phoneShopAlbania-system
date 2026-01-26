@@ -47,8 +47,6 @@ class ProductController extends Controller
             $rules['storage'] = 'required|string|max:50';
             $rules['ram'] = 'required|string|max:50';
             $rules['color'] = 'required|string|max:50';
-            $rules['imei'] = 'required|string|max:50|unique:products,imei';
-            $rules['magazina'] = 'required|string|max:50';
         }
 
         $validated = $request->validate($rules, [

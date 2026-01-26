@@ -28,11 +28,10 @@ class PurchaseController extends Controller
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
-        $products = Product::with(['category', 'brand'])->get();
 
         $purchaseNumber = Purchase::generatePurchaseNumber();
 
-        return view('purchases.create', compact('partners', 'warehouses', 'currencies', 'products', 'purchaseNumber'));
+        return view('purchases.create', compact('partners', 'warehouses', 'currencies', 'purchaseNumber'));
     }
 
     public function store(Request $request)
@@ -479,7 +478,8 @@ class PurchaseController extends Controller
     // API Methods
     public function searchProducts(Request $request)
     {
-        $search = $request->get('search', '');
+        $search = $request->get('q', '');
+
 
         $products = Product::with(['category', 'brand', 'currency'])
             ->where('name', 'like', "%{$search}%")
@@ -487,6 +487,7 @@ class PurchaseController extends Controller
             ->orWhere('color', 'like', "%{$search}%")
             ->limit(10)
             ->get();
+
 
         return response()->json($products);
     }

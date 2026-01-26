@@ -3,6 +3,7 @@
 @section('title', 'Krijo Blerje')
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .product-item {
         background: #f8f9fa;
@@ -205,12 +206,8 @@
                         </button>
                     </div>
 
-                    <div class="mb-3">
-                        <input type="text"
-                            class="form-control"
-                            id="searchProduct"
-                            placeholder="Kërko produkt...">
-                    </div>
+                    <select id="searchProduct" style="width: 100%"></select>
+
 
                     <div id="productsContainer">
                         <!-- Products will be added here dynamically -->
@@ -284,30 +281,34 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let productIndex = 0;
-    let products = @json($products);
 
     $(document).ready(function() {
-        // Search Product
-        let searchTimeout;
-        $('#searchProduct').on('input', function() {
-            clearTimeout(searchTimeout);
-            const search = $(this).val();
 
-            searchTimeout = setTimeout(() => {
-                if (search.length >= 2) {
-                    searchProducts(search);
-                }
-            }, 300);
+        $('#searchProduct').select2({
+            placeholder: 'Search product...',
+            minimumInputLength: 3,
+            ajax: {
+                url: '/purchases-api/search-products',
+                dataType: 'json',
+                delay: 300,
+                data: function(params) {
+                    return {
+                        q: params.term,
+                    };
+                },
+                processResults: function(data) {
+                    showProductResults(data);
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
+            }
         });
 
-        // Add Product Button
-        $('#addProductBtn').on('click', function() {
-            $('#searchProduct').focus();
-        });
-
-        // Calculate totals on any input change
         $(document).on('input', '.unit-cost-input, .discount-input, .tax-input', function() {
             updateItemTotal($(this).closest('.product-item'));
             calculateTotals();
@@ -335,26 +336,15 @@
             validateImeiForItem(item);
         });
 
-        // Remove product
         $(document).on('click', '.remove-item', function() {
             $(this).closest('.product-item').remove();
             calculateTotals();
         });
     });
 
-    function searchProducts(search) {
-        const results = products.filter(p =>
-            p.name.toLowerCase().includes(search.toLowerCase()) ||
-            (p.storage && p.storage.toLowerCase().includes(search.toLowerCase())) ||
-            (p.color && p.color.toLowerCase().includes(search.toLowerCase()))
-        );
-
-        if (results.length > 0) {
-            showProductResults(results);
-        }
-    }
-
     function showProductResults(results) {
+
+        $('#searchProduct').next('.list-group').remove();
         let html = '<div class="list-group mb-3">';
         results.forEach(product => {
             let details = product.name;
@@ -393,7 +383,6 @@
         if (product.ram) details += (details ? ' | ' : '') + product.ram;
         if (product.color) details += (details ? ' | ' : '') + product.color;
 
-        // Check if product needs IMEI (has storage, ram, or color - telefon)
         const needsImei = product.storage || product.ram || product.color;
 
         console.log(needsImei, product)

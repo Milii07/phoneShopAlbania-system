@@ -147,18 +147,15 @@
         console.log('Categories:', @json($categories));
         console.log('Brands:', @json($brands));
 
-        // Test nëse butonat ekzistojnë
         console.log('Show buttons:', $('.btn-show').length);
         console.log('Edit buttons:', $('.btn-edit').length);
         console.log('Delete buttons:', $('.btn-delete').length);
 
-        // Variabla globale
         let warehouses = @json($warehouses);
         let categories = @json($categories);
         let brands = @json($brands);
         let currencies = @json($currencies);
 
-        // ==================== CREATE MODAL ====================
         $('#btn_create').on('click', function() {
             console.log('Create button clicked!');
             var modal = new bootstrap.Modal(document.getElementById('createModal'));

@@ -10,6 +10,7 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SellerController;
+use App\Http\Controllers\SaleController;
 
 
 Route::get('/', function () {
@@ -49,4 +50,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('purchases', PurchaseController::class);
     Route::get('purchases-api/search-products', [PurchaseController::class, 'searchProducts'])->name('purchases.search.products');
+
+    Route::resource('sales', SaleController::class);
+
+    Route::prefix('sales-api')->group(function () {
+        Route::get('/search-products', [SaleController::class, 'searchProducts']);
+        Route::post('/update-payment-status/{id}', [SaleController::class, 'updatePaymentStatus']);
+    });
 });

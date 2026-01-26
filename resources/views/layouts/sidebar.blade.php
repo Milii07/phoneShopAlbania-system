@@ -4,19 +4,19 @@
         <!-- Dark Logo-->
         <a href="{{ route('dashboard') }}" class="logo logo-dark">
             <span class="logo-sm">
-                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="38" width="210">
+                <img src="{{ asset('assets/images/logooo.png') }}" alt="" height="34" width="170">
             </span>
             <span class="logo-lg">
-                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="48" width="210">
+                <img src="{{ asset('assets/images/logooo.png') }}" alt="" height="44" width="170">
             </span>
         </a>
         <!-- Light Logo-->
         <a href="{{ route('dashboard') }}" class="logo logo-light">
             <span class="logo-sm">
-                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="38" width="210">
+                <img src="{{ asset('assets/images/logooo.png') }}" alt="" height="34" width="170">
             </span>
             <span class="logo-lg">
-                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="48" width="210">
+                <img src="{{ asset('assets/images/logooo.png') }}" alt="" height="44" width="170">
             </span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
@@ -131,6 +131,18 @@
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-calendar"> Purchase </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
+                        <i class="ri-price-tag-3-line"></i><span data-key="t-apps">Sales</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSales">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('sales.index') }}" class="nav-link" data-key="t-calendar"> Sale </a>
                             </li>
 
                         </ul>

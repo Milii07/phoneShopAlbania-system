@@ -43,7 +43,7 @@ class ProductController extends Controller
         ];
 
         $category = Category::find($request->category_id);
-        if ($category && strtolower($category->name) === 'telefon') {
+        if ($category && strtolower($category->name) === 'telefona') {
             $rules['storage'] = 'required|string|max:50';
             $rules['ram'] = 'required|string|max:50';
             $rules['color'] = 'required|string|max:50';

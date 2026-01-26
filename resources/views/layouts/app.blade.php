@@ -34,19 +34,6 @@
 </body>
 
 </html>
-<!-- JAVASCRIPT -->
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-
-<script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-<script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-<script src="{{ asset('assets/libs/feather-icons/feather.min.js') }}"></script>
-<script src="{{ asset('assets/js/pages/plugins/lord-icon-2.1.0.js') }}"></script>
-<script src="{{ asset('assets/js/plugins.js') }}"></script>
-<script src="{{ asset('assets/js/app.js') }}"></script>
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 @if(session('success'))
 <script>

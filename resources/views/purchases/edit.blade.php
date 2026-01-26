@@ -373,18 +373,11 @@
 
 @push('scripts')
 <script>
-    let productIndex = {
-        {
-            $purchase - > items - > count()
-        }
-    };
-    let products = @json($products);
+    let productIndex = 0;
 
     $(document).ready(function() {
-        // Initial calculation
         calculateTotals();
 
-        // Search Product
         let searchTimeout;
         $('#searchProduct').on('input', function() {
             clearTimeout(searchTimeout);
@@ -397,18 +390,15 @@
             }, 300);
         });
 
-        // Add Product Button
         $('#addProductBtn').on('click', function() {
             $('#searchProduct').focus();
         });
 
-        // Calculate totals on any input change
         $(document).on('input', '.quantity-input, .unit-cost-input, .discount-input, .tax-input', function() {
             updateItemTotal($(this).closest('.product-item'));
             calculateTotals();
         });
 
-        // Remove product
         $(document).on('click', '.remove-item', function() {
             $(this).closest('.product-item').remove();
             calculateTotals();
@@ -428,7 +418,7 @@
     }
 
     function showProductResults(results) {
-        $('.list-group').remove(); // Remove old results
+        $('.list-group').remove();
 
         let html = '<div class="list-group mb-3">';
         results.forEach(product => {

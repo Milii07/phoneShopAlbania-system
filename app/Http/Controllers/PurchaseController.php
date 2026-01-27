@@ -494,10 +494,6 @@ class PurchaseController extends Controller
     public function searchProducts(Request $request)
     {
         $search = $request->get('q', '');
-<<<<<<< HEAD
-=======
-
->>>>>>> 090e06f1bf0fdb2df6fb16b3c7144904284a2056
 
         $products = Product::with(['category', 'brand', 'currency'])
             ->where('name', 'like', "%{$search}%")

@@ -52,8 +52,7 @@
                                 <th scope="col">Storage</th>
                                 <th scope="col">RAM</th>
                                 <th scope="col">Ngjyra</th>
-                                <th scope="col">Imei</th>
-                                <th scope="col">Magazina</th>
+
                                 <th scope="col" style="width: 150px;">Veprime</th>
                             </tr>
                         </thead>
@@ -82,8 +81,7 @@
                                 <td>{{ $product->storage ?? '-' }}</td>
                                 <td>{{ $product->ram ?? '-' }}</td>
                                 <td>{{ $product->color ?? '-' }}</td>
-                                <td>{{ $product->imei ?? '-' }}</td>
-                                <td>{{ $product->magazina ?? '-' }}</td>
+
 
                                 <td>
                                     <div class="hstack gap-1">
@@ -161,11 +159,10 @@
             var modal = new bootstrap.Modal(document.getElementById('createModal'));
             $('#createProductForm')[0].reset();
             $('#phone_fields').hide();
-            $('#storage, #ram, #color, #imei, #magazina').prop('required', false);
+            $('#storage, #ram, #color').prop('required', false);
             modal.show();
         });
 
-        // Event listener për ndryshimin e kategorisë në Create Modal
         $(document).on('change', '#category_id', function() {
             const selectedOption = $(this).find('option:selected');
             const categoryName = selectedOption.text().trim().toLowerCase();
@@ -173,14 +170,13 @@
 
             if (categoryName === 'telefona' || categoryName === 'telefon') {
                 $('#phone_fields').slideDown();
-                $('#storage, #ram, #color, #imei, #magazina').prop('required', true);
+                $('#storage, #ram, #color').prop('required', true);
             } else {
                 $('#phone_fields').slideUp();
-                $('#storage, #ram, #color, #imei, #magazina').prop('required', false).val('');
+                $('#storage, #ram, #color').prop('required', false).val('');
             }
         });
 
-        // ==================== SHOW MODAL ====================
         $(document).on('click', '.btn-show', function(e) {
             e.preventDefault();
             var id = $(this).data('id');
@@ -233,14 +229,8 @@
                             <th class="ps-0" scope="row">Ngjyra:</th>
                             <td class="text-muted"><strong>${data.color || 'N/A'}</strong></td>
                         </tr>
-                        <tr>
-                            <th class="ps-0" scope="row">IMEI:</th>
-                            <td class="text-muted"><code>${data.imei || 'N/A'}</code></td>
-                        </tr>
-                        <tr>
-                            <th class="ps-0" scope="row">Magazina:</th>
-                            <td class="text-muted"><strong>${data.magazina || 'N/A'}</strong></td>
-                        </tr>
+                     
+                    
                     `;
                     }
 
@@ -353,14 +343,7 @@
                                     <label for="edit_color" class="form-label">Ngjyra <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="edit_color" name="color" value="${data.color || ''}" placeholder="p.sh. Black" required>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_imei" class="form-label">IMEI <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="edit_imei" name="imei" value="${data.imei || ''}" placeholder="p.sh. 123456789012345" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="edit_magazina" class="form-label">Magazina <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="edit_magazina" name="magazina" value="${data.magazina || ''}" required>
-                                </div>
+                              
                             </div>
                         </div>
                     `;
@@ -439,24 +422,17 @@
                                                 <label for="edit_color" class="form-label">Ngjyra <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="edit_color" name="color" value="" placeholder="p.sh. Black" required>
                                             </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="edit_imei" class="form-label">IMEI <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="edit_imei" name="imei" value="" placeholder="p.sh. 123456789012345" required>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="edit_magazina" class="form-label">Magazina <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="edit_magazina" name="magazina" value="" required>
-                                            </div>
+                                          
                                         </div>
                                     </div>
                                 `;
                                     $('#editModalBody .row').after(phoneHTML);
                                 }
                                 $('#edit_phone_fields').slideDown();
-                                $('#edit_storage, #edit_ram, #edit_color, #edit_imei, #edit_magazina').prop('required', true);
+                                $('#edit_storage, #edit_ram, #edit_color').prop('required', true);
                             } else {
                                 $('#edit_phone_fields').slideUp();
-                                $('#edit_storage, #edit_ram, #edit_color, #edit_imei, #edit_magazina').prop('required', false);
+                                $('#edit_storage, #edit_ram, #edit_color').prop('required', false);
                             }
                         }
                     });

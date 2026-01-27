@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Seller;
 use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\Partner;
@@ -16,7 +17,7 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Sale::with(['partner', 'warehouse', 'currency']);
+        $query = Sale::with(['partner', 'warehouse', 'currency', 'seller']);
 
         // Filter by status
         if ($request->has('status') && $request->status != 'All') {
@@ -54,9 +55,10 @@ class SaleController extends Controller
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
+        $sellers = Seller::all();
         $invoiceNumber = Sale::generateInvoiceNumber();
 
-        return view('sales.create', compact('partners', 'warehouses', 'currencies', 'invoiceNumber'));
+        return view('sales.create', compact('partners', 'warehouses', 'currencies', 'sellers', 'invoiceNumber'));
     }
 
     public function store(Request $request)
@@ -66,6 +68,7 @@ class SaleController extends Controller
             'delivery_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'partner_id' => 'required|exists:partners,id',
+            'seller_id' => 'required|exists:sellers,id',
             'warehouse_id' => 'required|exists:warehouses,id',
             'currency_id' => 'required|exists:currencies,id',
             'sale_status' => 'required|in:Draft,PrePaid,Confirmed,Rejected',
@@ -176,6 +179,7 @@ class SaleController extends Controller
                 'delivery_date' => $validated['delivery_date'],
                 'due_date' => $validated['due_date'],
                 'partner_id' => $validated['partner_id'],
+                'seller_id' => $validated['seller_id'],
                 'warehouse_id' => $validated['warehouse_id'],
                 'currency_id' => $validated['currency_id'],
                 'sale_status' => $validated['sale_status'],
@@ -199,6 +203,7 @@ class SaleController extends Controller
                 $discount = $item['discount'] ?? 0;
                 $tax = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitPrice) - $discount + $tax;
+
 
                 $imeiArray = null;
                 if (!empty($item['imei_numbers'])) {
@@ -264,8 +269,9 @@ class SaleController extends Controller
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
+        $sellers = Seller::all();
 
-        return view('sales.edit', compact('sale', 'partners', 'warehouses', 'currencies'));
+        return view('sales.edit', compact('sale', 'partners', 'warehouses', 'currencies', 'sellers'));
     }
 
     public function update(Request $request, $id)
@@ -277,6 +283,7 @@ class SaleController extends Controller
             'delivery_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'partner_id' => 'required|exists:partners,id',
+            'seller_id' => 'required|exists:sellers,id',
             'warehouse_id' => 'required|exists:warehouses,id',
             'currency_id' => 'required|exists:currencies,id',
             'sale_status' => 'required|in:Draft,PrePaid,Confirmed,Rejected',
@@ -389,6 +396,7 @@ class SaleController extends Controller
                 'delivery_date' => $validated['delivery_date'],
                 'due_date' => $validated['due_date'],
                 'partner_id' => $validated['partner_id'],
+                'seller_id' => $validated['seller_id'],
                 'warehouse_id' => $validated['warehouse_id'],
                 'currency_id' => $validated['currency_id'],
                 'sale_status' => $validated['sale_status'],

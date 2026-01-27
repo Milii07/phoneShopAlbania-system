@@ -173,31 +173,6 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="imei" class="form-label">IMEI <span class="text-danger">*</span></label>
-                                <input type="text"
-                                    class="form-control @error('imei') is-invalid @enderror"
-                                    id="imei"
-                                    name="imei"
-                                    value="{{ old('imei') }}"
-                                    placeholder="p.sh. 123456789012345">
-                                @error('imei')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="magazina" class="form-label">Magazina <span class="text-danger">*</span></label>
-                                <input type="text"
-                                    class="form-control @error('magazina') is-invalid @enderror"
-                                    id="magazina"
-                                    name="magazina"
-                                    value="{{ old('color') }}"
-                                    placeholder="p.sh. Land Myslimani">
-                                @error('magazina')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
                         </div>
                     </div>
                 </div>

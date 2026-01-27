@@ -112,10 +112,19 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Client <span class="text-danger">*</span></label>
-                            <select class="form-select" name="partner_id" required>
+                            <select class="form-select select2-client" name="partner_id" required>
                                 <option value="">Choose...</option>
                                 @foreach($partners as $partner)
                                 <option value="{{ $partner->id }}">{{ $partner->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Seller <span class="text-danger">*</span></label>
+                            <select class="form-select select2-seller" name="seller_id" required>
+                                <option value="">Choose...</option>
+                                @foreach($sellers as $seller)
+                                <option value="{{ $seller->id }}">{{ $seller->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -144,6 +153,7 @@
                             <label class="form-label">Payment Term</label>
                             <select class="form-select" name="payment_term">
                                 <option value="">Select...</option>
+                                <option value="Due on Receipt">Due on Receipt</option>
                                 <option value="Net 15">Net 15</option>
                                 <option value="Net 30">Net 30</option>
                                 <option value="Net 45">Net 45</option>
@@ -211,6 +221,16 @@
     let productIndex = 0;
 
     $(document).ready(function() {
+        $('.select2-client').select2({
+            placeholder: 'Search client...',
+            allowClear: true
+        });
+
+        $('.select2-seller').select2({
+            placeholder: 'Search seller...',
+            allowClear: true
+        });
+
         $('#searchProduct').select2({
             placeholder: 'Search product...',
             minimumInputLength: 2,
@@ -226,9 +246,15 @@
                 processResults: function(data) {
                     return {
                         results: data.map(function(product) {
+                            let text = product.name;
+                            if (product.storage) text += ' - ' + product.storage;
+                            if (product.ram) text += ' | ' + product.ram;
+                            if (product.color) text += ' | ' + product.color;
+                            text += ' (Stock: ' + product.quantity + ')';
+
                             return {
                                 id: product.id,
-                                text: product.name + (product.storage ? ' - ' + product.storage : '') + ' (Stock: ' + product.quantity + ')',
+                                text: text,
                                 product: product
                             };
                         })
@@ -248,6 +274,22 @@
         $(document).on('click', '.remove-item', function() {
             $(this).closest('.product-item').remove();
             calculateTotals();
+        });
+
+        $(document).on('input', '.quantity-input', function() {
+            const item = $(this).closest('.product-item');
+            const quantity = parseInt($(this).val()) || 0;
+            const needsImei = item.data('needs-imei');
+
+            if (needsImei) {
+                item.find('.required-count').text(quantity);
+                validateImeiForItem(item);
+            }
+        });
+
+        $(document).on('input', '.imei-input', function() {
+            const item = $(this).closest('.product-item');
+            validateImeiForItem(item);
         });
     });
 
@@ -275,7 +317,12 @@
         <div class="row g-2">
             <div class="col-md-3">
                 <label class="form-label small">Qty *</label>
-                <input type="number" class="form-control form-control-sm quantity-input" name="items[${productIndex}][quantity]" value="1" min="1" max="${product.quantity}" required>
+                <input type="number" class="form-control form-control-sm quantity-input" 
+                    name="items[${productIndex}][quantity]" 
+                    value="1" 
+                    min="1" 
+                    max="${product.quantity}" 
+                    required>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Unit Type</label>
@@ -287,24 +334,57 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Unit Price *</label>
-                <input type="number" class="form-control form-control-sm unit-price-input" name="items[${productIndex}][unit_price]" value="${product.price}" step="0.01" min="0" required>
+                <input type="number" 
+                    class="form-control form-control-sm unit-price-input" 
+                    name="items[${productIndex}][unit_price]" 
+                    value="" 
+                    step="0.01" 
+                    min="0" 
+                    placeholder="0.00"
+                    required>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Discount</label>
-                <input type="number" class="form-control form-control-sm discount-input" name="items[${productIndex}][discount]" value="0" step="0.01" min="0">
+                <input type="number" 
+                    class="form-control form-control-sm discount-input" 
+                    name="items[${productIndex}][discount]" 
+                    value="0" 
+                    step="0.01" 
+                    min="0">
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Tax</label>
-                <input type="number" class="form-control form-control-sm tax-input" name="items[${productIndex}][tax]" value="0" step="0.01" min="0">
+                <input type="number" 
+                    class="form-control form-control-sm tax-input" 
+                    name="items[${productIndex}][tax]" 
+                    value="0" 
+                    step="0.01" 
+                    min="0">
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Line Total</label>
-                <input type="text" class="form-control form-control-sm line-total" value="0.00" readonly>
+                <input type="text" 
+                    class="form-control form-control-sm line-total" 
+                    value="0.00" 
+                    readonly>
             </div>
             ${needsImei ? `
             <div class="col-md-12 imei-container mt-2">
-                <label class="form-label small">IMEI <span class="text-danger">*</span></label>
-                <textarea class="form-control form-control-sm imei-input" name="items[${productIndex}][imei_numbers]" rows="2" placeholder="Enter IMEI separated by commas (15 digits each)..." required></textarea>
+                <label class="form-label small">
+                    IMEI <span class="text-danger">*</span>
+                    <small class="text-muted">(Vendos ${details || 'telefon'} - Ndaj me presje, 15 shifra secili)</small>
+                </label>
+                <textarea class="form-control form-control-sm imei-input" 
+                    name="items[${productIndex}][imei_numbers]" 
+                    rows="2"
+                    placeholder="Vendos IMEI të ndara me presje (15 shifra secili)..."
+                    required></textarea>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="imei-count text-info">
+                        IMEI të vendosur: <span class="current-count">0</span> / Kërkohen: <span class="required-count">1</span>
+                    </small>
+                    <small class="imei-validation text-muted"></small>
+                </div>
             </div>
             ` : ''}
         </div>
@@ -313,6 +393,57 @@
         $('#productsContainer').append(html);
         updateItemTotal($(`[data-index="${productIndex}"]`));
         calculateTotals();
+    }
+
+    function validateImeiForItem(item) {
+        const imeiInput = item.find('.imei-input');
+        const imeiText = imeiInput.val();
+        const quantity = parseInt(item.find('.quantity-input').val()) || 0;
+
+        const imeiArray = imeiText.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const imeiCount = imeiArray.length;
+
+        item.find('.current-count').text(imeiCount);
+
+        imeiInput.removeClass('is-invalid is-valid');
+        let validationMessage = '';
+        let isValid = true;
+
+        if (imeiCount === 0) {
+            validationMessage = '';
+            isValid = false;
+        } else if (imeiCount !== quantity) {
+            validationMessage = `Duhen ${quantity} IMEI, keni ${imeiCount}`;
+            imeiInput.addClass('is-invalid');
+            isValid = false;
+        } else {
+            const uniqueImei = [...new Set(imeiArray)];
+            if (uniqueImei.length !== imeiArray.length) {
+                validationMessage = 'Ka IMEI të dubluar!';
+                imeiInput.addClass('is-invalid');
+                isValid = false;
+            } else {
+                let formatErrors = [];
+                imeiArray.forEach((imei, index) => {
+                    if (!/^\d{15}$/.test(imei)) {
+                        formatErrors.push(`IMEI #${index + 1}: "${imei}"`);
+                    }
+                });
+
+                if (formatErrors.length > 0) {
+                    validationMessage = 'IMEI jo-valid (duhet 15 shifra): ' + formatErrors.join(', ');
+                    imeiInput.addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    validationMessage = '✓ Të gjitha IMEI janë valide';
+                    imeiInput.addClass('is-valid');
+                }
+            }
+        }
+
+        item.find('.imei-validation').html(validationMessage)
+            .toggleClass('text-danger', !isValid)
+            .toggleClass('text-success', isValid);
     }
 
     function updateItemTotal(item) {
@@ -346,6 +477,76 @@
 
     $('#saleForm').on('submit', function(e) {
         e.preventDefault();
+
+        let hasError = false;
+        let errorMessages = [];
+
+        if ($('.product-item').length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gabim!',
+                text: 'Duhet të shtoni të paktën një produkt!'
+            });
+            return false;
+        }
+
+        $('.product-item').each(function(index) {
+            const item = $(this);
+            const needsImei = item.data('needs-imei');
+            const productName = item.find('h6').text();
+
+            if (needsImei) {
+                const imeiInput = item.find('.imei-input');
+                const imeiText = imeiInput.val().trim();
+                const quantity = parseInt(item.find('.quantity-input').val()) || 0;
+
+                if (!imeiText) {
+                    hasError = true;
+                    errorMessages.push(`${productName}: IMEI është i detyrueshëm`);
+                    imeiInput.addClass('is-invalid');
+                    return;
+                }
+
+                const imeiArray = imeiText.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                const imeiCount = imeiArray.length;
+
+                if (imeiCount !== quantity) {
+                    hasError = true;
+                    errorMessages.push(`${productName}: Kërkohen ${quantity} IMEI, por keni vendosur ${imeiCount}`);
+                    imeiInput.addClass('is-invalid');
+                    return;
+                }
+
+                const uniqueImei = [...new Set(imeiArray)];
+                if (uniqueImei.length !== imeiArray.length) {
+                    hasError = true;
+                    errorMessages.push(`${productName}: Ka IMEI të dubluar`);
+                    imeiInput.addClass('is-invalid');
+                    return;
+                }
+
+                for (let i = 0; i < imeiArray.length; i++) {
+                    const imei = imeiArray[i];
+                    if (!/^\d{15}$/.test(imei)) {
+                        hasError = true;
+                        errorMessages.push(`${productName}: IMEI "${imei}" nuk është valid (duhet 15 shifra)`);
+                        imeiInput.addClass('is-invalid');
+                        return;
+                    }
+                }
+            }
+        });
+
+        if (hasError) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gabim në validim!',
+                html: errorMessages.join('<br>'),
+                width: '600px'
+            });
+            return false;
+        }
+
         Swal.fire({
             title: 'Processing...',
             text: 'Please wait',
@@ -354,6 +555,7 @@
                 Swal.showLoading();
             }
         });
+
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',

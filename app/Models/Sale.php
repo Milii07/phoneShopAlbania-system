@@ -15,6 +15,7 @@ class Sale extends Model
         'delivery_date',
         'due_date',
         'partner_id',
+        'seller_id',
         'warehouse_id',
         'currency_id',
         'sale_status',
@@ -42,6 +43,11 @@ class Sale extends Model
     public function partner()
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    public function seller()
+    {
+        return $this->belongsTo(Seller::class);
     }
 
     public function warehouse()

@@ -20,7 +20,7 @@ class Product extends Model
         'storage',
         'ram',
         'color',
-        'imei',
+
     ];
 
     protected $casts = [

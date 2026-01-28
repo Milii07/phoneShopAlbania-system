@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\GaranciController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SellerController;

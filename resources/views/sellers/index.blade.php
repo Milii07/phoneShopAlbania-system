@@ -92,7 +92,7 @@
 
                 @if($sellers->hasPages())
                 <div class="mt-3">
-                    {{ $sellers->links() }}
+                    {{ $sellers->links('pagination::bootstrap-5') }}
                 </div>
                 @endif
             </div>

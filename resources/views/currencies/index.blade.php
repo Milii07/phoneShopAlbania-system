@@ -93,7 +93,7 @@
 
                 @if($currencies->hasPages())
                 <div class="mt-3">
-                    {{ $currencies->links() }}
+                    {{ $currencies->links('pagination::bootstrap-5') }}
                 </div>
                 @endif
             </div>

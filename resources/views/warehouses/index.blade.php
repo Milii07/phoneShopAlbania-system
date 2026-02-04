@@ -96,7 +96,7 @@
 
                 @if($warehouses->hasPages())
                 <div class="mt-3">
-                    {{ $warehouses->links() }}
+                    {{ $warehouses->links('pagination::bootstrap-5') }}
                 </div>
                 @endif
             </div>

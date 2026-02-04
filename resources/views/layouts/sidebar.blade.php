@@ -32,13 +32,16 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
 
+                @if(function_exists('user_can_access_route') && user_can_access_route('dashboard'))
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ Request::is('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                         <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboards</span>
                     </a>
                 </li>
+                @endif
 
                 <li class="nav-item">
+                    @if(function_exists('user_can_access_route') && user_can_access_route('warehouses.index'))
                     <a class="nav-link menu-link" href="#sidebarWarehouse" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarWarehouse">
                         <i class="ri-store-2-line"></i> <span data-key="t-apps">Warehouse</span>
                     </a>
@@ -49,8 +52,9 @@
                             </li>
                         </ul>
                     </div>
+                    @endif
 
-
+                    @if(function_exists('user_can_access_route') && user_can_access_route('categories.index'))
                     <a class="nav-link menu-link" href="#sidebarCategories" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategories">
                         <i class="ri-smartphone-fill"></i> <span data-key="t-apps">Categories</span>
                     </a>
@@ -62,7 +66,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('brands.index'))
                     <a class="nav-link menu-link" href="#sidebarBrands" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBrands">
                         <i class="ri-apple-fill"></i> <span data-key="t-apps">Brands</span>
                     </a>
@@ -74,7 +80,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('currencies.index'))
                     <a class="nav-link menu-link" href="#sidebarCurrency" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCurrency">
                         <i class="ri-money-pound-box-fill"></i> <span data-key="t-apps">Currency</span>
                     </a>
@@ -86,8 +94,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
-
+                    @if(function_exists('user_can_access_route') && user_can_access_route('products.index'))
                     <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
                         <i class="ri-barcode-line"></i> <span data-key="t-apps">Products</span>
                     </a>
@@ -99,7 +108,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('partners.index'))
                     <a class="nav-link menu-link" href="#sidebarPartners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPartners">
                         <i class="ri-group-2-fill"></i> <span data-key="t-apps">Partners</span>
                     </a>
@@ -111,7 +122,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('sellers.index'))
                     <a class="nav-link menu-link" href="#sidebarSellers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellers">
                         <i class="ri-user-add-fill"></i> <span data-key="t-apps">Sellers</span>
                     </a>
@@ -123,7 +136,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('purchases.index'))
                     <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
                         <i class="ri-file-list-3-fill"></i><span data-key="t-apps">Purchases</span>
                     </a>
@@ -135,7 +150,9 @@
 
                         </ul>
                     </div>
+                    @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('sales.index'))
                     <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
                         <i class="ri-price-tag-3-line"></i><span data-key="t-apps">Sales</span>
                     </a>
@@ -147,6 +164,7 @@
 
                         </ul>
                     </div>
+                    @endif
                 </li>
 
 

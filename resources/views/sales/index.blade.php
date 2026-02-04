@@ -214,7 +214,7 @@
                         Showing {{ $sales->firstItem() ?? 0 }} to {{ $sales->lastItem() ?? 0 }} of {{ $sales->total() }} entries
                     </div>
                     <div>
-                        {{ $sales->links() }}
+                        {{ $sales->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

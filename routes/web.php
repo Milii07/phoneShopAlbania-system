@@ -12,6 +12,7 @@ use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\ExchangeRateController;
 
 
 Route::get('/', function () {
@@ -19,7 +20,7 @@ Route::get('/', function () {
 });
 
 require __DIR__ . '/auth.php';
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () {
 
     Route::get('/dashboard', function () {
         return view('dashboard.index');
@@ -58,4 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/search-products', [SaleController::class, 'searchProducts']);
         Route::post('/update-payment-status/{id}', [SaleController::class, 'updatePaymentStatus']);
     });
+
+    Route::get('exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
+    Route::get('exchange-rates/{currency}', [ExchangeRateController::class, 'show'])->name('exchange-rates.show');
 });

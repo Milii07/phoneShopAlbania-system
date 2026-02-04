@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'iliria' => [
+        'url' => env('ILIRIA_EXCHANGE_URL', 'https://iliria98.com/convert')
+    ],
+
 ];

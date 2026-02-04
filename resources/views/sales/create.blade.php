@@ -5,6 +5,27 @@
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+    .thank-you-text {
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 35px;
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+    }
+
+    .logo-sm {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .logo-sm img {
+        height: 100px;
+        width: auto;
+        margin-bottom: 40px;
+    }
+
     body {
         font-family: Arial, sans-serif;
     }
@@ -16,6 +37,13 @@
         background: #000;
         color: #fff;
         border: none;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+
+    .btn-print:hover {
+        background: #333;
     }
 
     .modal {
@@ -24,6 +52,7 @@
         inset: 0;
         background: rgba(0, 0, 0, 0.6);
         z-index: 1000;
+        overflow-y: auto;
     }
 
     .modal-content {
@@ -41,51 +70,124 @@
         right: 15px;
         font-size: 26px;
         cursor: pointer;
+        z-index: 10;
     }
 
     .a4-paper {
         width: 210mm;
         min-height: 297mm;
-        padding: 25mm;
+        padding: 18mm 20mm;
         margin: auto;
         background: white;
         color: #000;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        line-height: 1.5;
     }
 
-    .title {
+    .a4-paper .title {
         text-align: center;
-        letter-spacing: 2px;
+        font-family: 'Arial Black', Impact, sans-serif;
+        font-size: 24pt;
+        font-weight: 900;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
     }
 
-    .section p {
-        margin: 4px 0;
+    .a4-paper .client-block p {
+        margin: 2px 0;
+        font-size: 11pt;
     }
 
-    .note {
+    .a4-paper .section-heading {
+        font-size: 13pt;
+        font-weight: 900;
+        text-transform: uppercase;
         margin-top: 20px;
+        margin-bottom: 5px;
     }
 
-    .thanks {
-        text-align: center;
-        margin-top: 30px;
+    .a4-paper .product-block p {
+        margin: 2.5px 0;
+        font-size: 11pt;
+    }
+
+    .a4-paper .guarantee-intro {
+        font-size: 11pt;
         font-weight: bold;
+        margin-bottom: 8px;
     }
 
-    /* PRINT */
+    .a4-paper .guarantee-intro p {
+        margin: 3px 0;
+    }
+
+    .a4-paper .bullet-block p {
+        margin: 5px 0;
+        font-size: 10.5pt;
+        text-align: justify;
+    }
+
+    .a4-paper .excluded-block p {
+        font-size: 10.5pt;
+        text-align: justify;
+        margin: 5px 0;
+    }
+
+    .a4-paper .conclusion-block p {
+        font-size: 10.5pt;
+        margin: 5px 0;
+        text-align: justify;
+    }
+
+    .a4-paper .validity-block p {
+        font-size: 10.5pt;
+        margin-top: 12px;
+        text-align: justify;
+    }
+
+    .a4-paper .no-refund {
+        margin-top: 24px;
+        font-size: 14pt;
+        font-weight: 900;
+        font-family: 'Arial Black', Impact, sans-serif;
+        letter-spacing: 1px;
+    }
+
     @media print {
-        body * {
-            visibility: hidden;
+        body {
+            overflow: hidden !important;
         }
 
+        #warrantyPrintModal {
+            display: block !important;
+            visibility: visible !important;
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        #warrantyPrintModal,
         #printArea,
         #printArea * {
-            visibility: visible;
+            overflow: visible !important;
         }
 
         #printArea {
             position: absolute;
             left: 0;
             top: 0;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 18mm 20mm;
+            margin: 0;
+        }
+
+        .modal,
+        .btn-print,
+        .close {
+            display: none !important;
         }
     }
 </style>
@@ -124,7 +226,6 @@
         color: #198754;
     }
 
-    /* Warranty Modal Styles */
     .warranty-modal {
         display: none;
         position: fixed;
@@ -364,10 +465,14 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                            <select class="form-select" name="warehouse_id" required>
+                            <select class="form-select" name="warehouse_id" id="warehouse_id" required>
                                 <option value="">Depot</option>
                                 @foreach($warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                <option value="{{ $warehouse->id }}"
+                                    data-address="{{ $warehouse->address ?? '' }}"
+                                    data-instagram="{{ $warehouse->instagram ?? '' }}">
+                                    {{ $warehouse->name }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -421,10 +526,10 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Currency <span class="text-danger">*</span></label>
-                            <select class="form-select" name="currency_id" required>
-                                <option value="">ALL</option>
+                            <select class="form-select" name="currency_id" id="currency_id" required>
+                                <option value="">Select Currency</option>
                                 @foreach($currencies as $currency)
-                                <option value="{{ $currency->id }}">{{ $currency->code }} ({{ $currency->symbol }})</option>
+                                <option value="{{ $currency->id }}" data-symbol="{{ $currency->symbol }}">{{ $currency->code }} ({{ $currency->symbol }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -476,19 +581,19 @@
                     <div class="summary-box">
                         <div class="summary-row">
                             <span>Sub Total:</span>
-                            <span id="subtotalDisplay">L 0.00</span>
+                            <span id="subtotalDisplay"><span class="currency-symbol">L</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Estimated Tax:</span>
-                            <span id="taxDisplay">L 0.00</span>
+                            <span id="taxDisplay"><span class="currency-symbol">L</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Discount:</span>
-                            <span id="discountDisplay">L 0.00</span>
+                            <span id="discountDisplay"><span class="currency-symbol">L</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Total Amount:</span>
-                            <span id="totalDisplay">L 0.00</span>
+                            <span id="totalDisplay"><span class="currency-symbol">L</span> 0.00</span>
                         </div>
                     </div>
                     <div class="mt-4 d-grid gap-2">
@@ -505,7 +610,7 @@
     </div>
 </form>
 
-<!-- Warranty Modal -->
+<!-- WARRANTY FORM MODAL -->
 <div id="warrantyModal" class="warranty-modal">
     <div class="warranty-modal-content">
         <div class="warranty-modal-header">
@@ -515,7 +620,6 @@
         <div class="warranty-modal-body">
             <input type="hidden" id="current_product_index">
 
-            <!-- Product Info Display -->
             <div class="warranty-section">
                 <h5>Informacioni i Produktit</h5>
                 <div class="alert alert-info mb-0">
@@ -526,7 +630,6 @@
                 </div>
             </div>
 
-            <!-- Warranty Status -->
             <div class="warranty-section">
                 <h5>Statusi i Garancisë</h5>
                 <div class="warranty-checkbox-group" id="warranty_checkbox_group">
@@ -543,8 +646,9 @@
                             <select class="form-select" id="warranty_period" onchange="calculateWarrantyExpiry()">
                                 <option value="12" selected>12 Muaj (Standard)</option>
                                 <option value="6">6 Muaj</option>
-                                <option value="3">3 Muaj</option>
+                                <option value="3">12 Muaj</option>
                                 <option value="24">24 Muaj</option>
+                                <option value="36">36 Muaj</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -561,6 +665,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Gjendja</label>
                             <select class="form-select" id="product_condition_warranty">
+                                <option value="I RI NË KUTI">I RI NË KUTI</option>
                                 <option value="10/10">10/10 - Perfekt</option>
                                 <option value="9/10">9/10 - Shumë i Mirë</option>
                                 <option value="8/10">8/10 - I Mirë</option>
@@ -576,75 +681,80 @@
             </div>
 
             <div class="warranty-section">
-                <button type="button" class="warranty-btn" onclick="openWarrantyModalPDF()">
-                    <i class="ri-save-line me-2"></i> Ruaj Garancisë
+                <button type="button" class="warranty-btn" onclick="printWarrantyNow()">
+                    <i class="ri-printer-line me-2"></i> Print Garancia
                 </button>
             </div>
         </div>
     </div>
 </div>
-<div id="warrantyModal" class="modal">
+
+<!-- WARRANTY PRINT MODAL -->
+<div id="warrantyPrintModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeWarrantyModal()">&times;</span>
+        <span class="close" onclick="closeWarrantyPrintModal()">&times;</span>
 
-        <!-- A4 PAPER -->
         <div id="printArea" class="a4-paper">
+            <span class="logo-sm">
+                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="34" width="170">
+            </span>
 
-            <h1 class="title">PHONE SHOP ALBANIA</h1>
-
-            <div class="section">
-                <p><strong>KLIENTI:</strong> MANJOLA MEMA</p>
-                <p><strong>ADRESA:</strong> ZOGU ZI, TIRANË, SHQIPËRI</p>
+            <div class="client-block">
+                <p><strong>KLIENTI:</strong> <span id="print_client_name"></span></p>
+                <p><strong>ADRESA:</strong> <span id="print_warehouse_address">ZOGU ZI, TIRANË, SHQIPËRI</span></p>
                 <p><strong>NR I DYQANIT:</strong> 0696403876</p>
-                <p><strong>INSTAGRAM:</strong> phone_shop.albania</p>
+                <p><strong>INSTAGRAM:</strong> <span id="print_warehouse_instagram">phone_shop.albania</span></p>
             </div>
 
-            <h3>TË DHËNAT PËR PRODUKTIT</h3>
-            <div class="section">
-                <p><strong>GARANCIA:</strong> 36 MUAJ</p>
-                <p><strong>DATA E BLERJES:</strong> 27/01/2026</p>
-                <p><strong>ÇMIMI:</strong> 128,000 LEKË</p>
-                <p><strong>MODELI:</strong> iPhone 17 Pro Max White 256GB</p>
-                <p><strong>IMEI:</strong> 354856650669218</p>
-                <p><strong>GJENDJA:</strong> I RI NË KUTI</p>
+            <h3 class="section-heading">TE DHËNAT PËR PRODUKTIT.</h3>
+            <div class="product-block">
+                <p><strong>GARANCIA.</strong> <span id="print_warranty_period"></span> MUAJ. <strong>DATA E BLERJES.</strong> <span id="print_purchase_date"></span></p>
+                <p><strong>ÇMIMI.</strong> <span id="print_price"></span> <span id="print_currency">LEKE</span></p>
+                <p><strong>MODELI I SMARTPHONE-IT:</strong> <span id="print_model"></span></p>
+                <p><strong>IMEI:</strong> <span id="print_imei"></span></p>
+                <p><strong>GJENDJA E PRODUKTIT:</strong> <span id="print_condition"></span></p>
             </div>
 
-            <h3>KUSHTET E GARANCISË</h3>
-            <p>
-                Phone Shop Albania garanton që produkti është pa defekte fabrikimi
-                në momentin e blerjes. Garancia mbulon vetëm defektet e brendshme
-                që nuk janë shkak i përdorimit nga klienti.
-            </p>
+            <h3 class="section-heading">KUSHTET E GARANCISË.</h3>
+            <div class="guarantee-intro">
+                <p>Phone Shop Albania garanton që produkti eshte pa defekte te fabrikimit ne momentin e blerjes</p>
+                <p>Garancia mbulon vetem difektet e brendshme qe nuk jane shkak i perdorimit nga klienti</p>
+            </div>
 
-            <ul>
-                <li>Nëse pajisja hapet ose riparohet nga servis jo i autorizuar, garancia anulohet.</li>
-                <li>Defektet e fabrikimit duhet të raportohen brenda 7 ditëve.</li>
-                <li>Garancia nuk mbulon dëmtime nga uji, goditjet, pluhuri ose temperaturat ekstreme.</li>
-            </ul>
+            <div class="bullet-block">
+                <p>- Nëse pajisja hapet ose riparohet nga një servis jo i autorizuar, garancia anulohet automatikisht dhe nuk do të ofrohet asnjë mbulim.</p>
+                <p>- Nëse pajisja hapet ose riparohet nga një servis jo i autorizuar, garancia anulohet automatikisht dhe nuk do të ofrohet asnjë mbulim.</p>
+                <p>- Nëse një problem teknik i natyrës së fabrikimit raportohet brenda 7 ditëve nga data e blerjes, pajisja do të shqyrtuar nga teknikët tanë për të vlerësuar situatën dhe do të riparohet sipas rregullave të garancisë.</p>
+                <p>- Garancia nuk mbulon dëmtime të shkaktuara nga uji, përplasjet, pluhuri, ekspozimi ndaj temperatrave të larta, apo përdorimi i aksesorëve të papërshtatshëm.</p>
+            </div>
 
-            <h3>PJESËT DHE DEFEKTET QË NUK MBULOHEN NGA GARANCIA</h3>
-            <p>
-                Ekrani, bateria, porta e karikimit, kamera, dëmtime fizike, riparime të paautorizuara,
-                softuer i modifikuar, përdorim i gabuar ose mbingarkesë e baterisë.
-            </p>
+            <h3 class="section-heading">PJESET DHE DEFETET QE NUK MBULOHEN NGA GARANCIA</h3>
+            <div class="excluded-block">
+                <p>:Ekrani, bateria, porta e karikimit dhe kamera --Dëmtime fizike si çarje, gërvishtje, apo përkulje të pajisjes.--Dëmtime nga përplasjet, kontakti me ujë ose përdorimi i gabuar.--Probleme nga pluhuri, lagështia ose temperaturat ekstreme.--Riparime nga persona ose servise të paautorizuara.-- Defekte nga përdorimi i aksesorëve jo originale.--Probleme të shkaktuara nga softueri i modifikuar nga përdoruesi.-Defekte nga përdorimi i gabuar i pajisjes ose mbingarkesa e baterisë.</p>
+            </div>
 
-            <h3>PËRFUNDIMI</h3>
-            <p>
-                Phone Shop Albania angazhohet të ofrojë shërbim cilësor.
-                Për asistencë teknike na kontaktoni në telefon ose Instagram.
-            </p>
+            <h3 class="section-heading">PERFUNDIMI DHE KUSHTET PERFUNDIMTARE</h3>
+            <div class="conclusion-block">
+                <p>Phone Shop Albania angazhohet të ofrojë një shërbim cilesor dhe të drejtë për klientët e saj.<br>
+                    Për çdo pyetje ose asistencë teknike, ju mund të na kontaktoni në numrin tone të telefonit ose në Instagram për more shumë informacion mbi kushtet e garancisë.</p>
+            </div>
 
-            <p class="note"><strong>Nuk bëhet kthim pagese mbrapsht.</strong></p>
+            <div class="validity-block">
+                <p>Garancia mbetet në fuqi vetem nëse kushtet e saj respektohen nga përdoruesi dhe pajisja nuk eshte dëmtuar për shkak të neglizhencë</p>
+            </div>
 
-            <p class="thanks">
-                Ju falenderojmë që keni zgjedhur Phone Shop Albania!
+            <p class="no-refund"><strong>Nuk behet kthim pagese mbrapsht</strong></p>
+            <p class="thank-you-text">
+                Ju falenderojmë që keni zgjedhur Phone Shop Albania dhe besoni në cilësinë tonë!
             </p>
 
         </div>
 
-        <button onclick="printDocument()" class="btn-print">
-            Download / Print A4
-        </button>
+        <div style="text-align:center; margin-top: 15px; padding-bottom: 15px;">
+            <button onclick="generatePDF()" class="btn-print">
+                Download PDF Garancia
+            </button>
+        </div>
     </div>
 </div>
 
@@ -652,243 +762,47 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="{{ asset('assets/js/pages/select2.init.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
     let productIndex = 0;
     let warrantyData = {};
+    let currentCurrencySymbol = 'L';
 
-    function openWarrantyModalPDF() {
-        document.getElementById('warrantyModal').style.display = 'block';
-    }
+    // CURRENCY SYMBOL UPDATE - AUTOMATIC
+    $('#currency_id').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const symbol = selectedOption.data('symbol') || 'L';
+        currentCurrencySymbol = symbol;
 
-    function closeWarrantyModal() {
-        document.getElementById('warrantyModal').style.display = 'none';
-    }
-
-    function printDocument() {
-        window.print();
-    }
-
-    $(document).ready(function() {
-        $('.select2-client').select2();
-        $('.select2-seller').select2();
-
-        $('#searchProduct').select2({
-            placeholder: 'Search product...',
-            minimumInputLength: 2,
-            ajax: {
-                url: '/sales-api/search-products',
-                dataType: 'json',
-                delay: 300,
-                data: function(params) {
-                    return {
-                        q: params.term
-                    };
-                },
-                processResults: function(data) {
-                    return {
-                        results: data.map(function(product) {
-                            let text = product.name;
-                            if (product.storage) text += ' - ' + product.storage;
-                            if (product.ram) text += ' | ' + product.ram;
-                            if (product.color) text += ' | ' + product.color;
-                            text += ' (Stock: ' + product.quantity + ')';
-
-                            return {
-                                id: product.id,
-                                text: text,
-                                product: product
-                            };
-                        })
-                    };
-                }
-            }
-        }).on('select2:select', function(e) {
-            addProductItem(e.params.data.product);
-            $(this).val(null).trigger('change');
-        });
-
-        $(document).on('input', '.unit-price-input, .discount-input, .tax-input, .quantity-input', function() {
-            updateItemTotal($(this).closest('.product-item'));
-            calculateTotals();
-        });
-
-        $(document).on('click', '.remove-item', function() {
-            const index = $(this).closest('.product-item').data('index');
-            delete warrantyData[index];
-            $(this).closest('.product-item').remove();
-            calculateTotals();
-        });
-
-        $(document).on('input', '.quantity-input', function() {
-            const item = $(this).closest('.product-item');
-            const quantity = parseInt($(this).val()) || 0;
-            const needsImei = item.data('needs-imei');
-
-            if (needsImei) {
-                item.find('.required-count').text(quantity);
-                validateImeiForItem(item);
-            }
-        });
-
-        $(document).on('input', '.imei-input', function() {
-            const item = $(this).closest('.product-item');
-            validateImeiForItem(item);
-        });
+        // Update all currency symbols in summary immediately
+        $('.currency-symbol').text(symbol);
     });
-
-    function addProductItem(product) {
-        productIndex++;
-        let details = '';
-        if (product.storage) details += product.storage;
-        if (product.ram) details += (details ? ' | ' : '') + product.ram;
-        if (product.color) details += (details ? ' | ' : '') + product.color;
-        const needsImei = product.storage || product.ram || product.color;
-
-        const html = `
-    <div class="product-item" data-index="${productIndex}" data-needs-imei="${needsImei}" data-product-name="${product.name}" data-product-details="${details}">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <h6 class="mb-0">
-                    ${product.name}
-                    <span class="warranty-badge-container" id="warranty_badge_${productIndex}"></span>
-                </h6>
-                ${details ? `<small class="text-muted">${details}</small><br>` : ''}
-                <small class="text-info">Stock: ${product.quantity}</small>
-            </div>
-            <div>
-                <button type="button" class="add-warranty-btn" onclick="openWarrantyModal(${productIndex})">
-                    <i class="ri-shield-check-line"></i> Garanci
-                </button>
-                <button type="button" class="btn btn-sm btn-danger remove-item ms-2">
-                    <i class="ri-delete-bin-line"></i>
-                </button>
-            </div>
-        </div>
-        <input type="hidden" name="items[${productIndex}][product_id]" value="${product.id}">
-        
-        <!-- Hidden warranty fields -->
-        <input type="hidden" name="items[${productIndex}][has_warranty]" id="warranty_has_${productIndex}" value="0">
-        <input type="hidden" name="items[${productIndex}][warranty_period]" id="warranty_period_${productIndex}">
-        <input type="hidden" name="items[${productIndex}][warranty_expiry]" id="warranty_expiry_${productIndex}">
-        <input type="hidden" name="items[${productIndex}][warranty_notes]" id="warranty_notes_${productIndex}">
-        <input type="hidden" name="items[${productIndex}][product_status]" id="product_status_${productIndex}">
-        <input type="hidden" name="items[${productIndex}][product_condition]" id="product_condition_${productIndex}">
-        
-        <div class="row g-2">
-            <div class="col-md-3">
-                <label class="form-label small">Qty *</label>
-                <input type="number" class="form-control form-control-sm quantity-input" 
-                    name="items[${productIndex}][quantity]" 
-                    value="1" 
-                    min="1" 
-                    max="${product.quantity}" 
-                    required>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Unit Type</label>
-                <select class="form-select form-select-sm" name="items[${productIndex}][unit_type]">
-                    <option value="Pcs">Pcs</option>
-                    <option value="Box">Box</option>
-                    <option value="Kg">Kg</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Unit Price *</label>
-                <input type="number" 
-                    class="form-control form-control-sm unit-price-input" 
-                    name="items[${productIndex}][unit_price]" 
-                    value="" 
-                    step="0.01" 
-                    min="0" 
-                    placeholder="0.00"
-                    required>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Discount</label>
-                <input type="number" 
-                    class="form-control form-control-sm discount-input" 
-                    name="items[${productIndex}][discount]" 
-                    value="0" 
-                    step="0.01" 
-                    min="0">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Tax</label>
-                <input type="number" 
-                    class="form-control form-control-sm tax-input" 
-                    name="items[${productIndex}][tax]" 
-                    value="0" 
-                    step="0.01" 
-                    min="0">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label small">Line Total</label>
-                <input type="text" 
-                    class="form-control form-control-sm line-total" 
-                    value="0.00" 
-                    readonly>
-            </div>
-            ${needsImei ? `
-            <div class="col-md-12 imei-container mt-2">
-                <label class="form-label small">
-                    IMEI <span class="text-danger">*</span>
-                    <small class="text-muted">(Vendos ${details || 'telefon'} - Ndaj me presje, 15 shifra secili)</small>
-                </label>
-                <textarea class="form-control form-control-sm imei-input" 
-                    name="items[${productIndex}][imei_numbers]" 
-                    id="imei_${productIndex}"
-                    rows="2"
-                    placeholder="Vendos IMEI të ndara me presje (15 shifra secili)..."
-                    required></textarea>
-                <div class="d-flex justify-content-between mt-1">
-                    <small class="imei-count text-info">
-                        IMEI të vendosur: <span class="current-count">0</span> / Kërkohen: <span class="required-count">1</span>
-                    </small>
-                    <small class="imei-validation text-muted"></small>
-                </div>
-            </div>
-            ` : ''}
-        </div>
-        <div class="warranty-info-container" id="warranty_info_${productIndex}"></div>
-    </div>`;
-
-        $('#productsContainer').append(html);
-        updateItemTotal($(`[data-index="${productIndex}"]`));
-        calculateTotals();
-    }
 
     function openWarrantyModal(index) {
         $('#current_product_index').val(index);
 
-        // Get product info
         const productItem = $(`.product-item[data-index="${index}"]`);
         const productName = productItem.data('product-name');
         const productDetails = productItem.data('product-details');
 
-        // Get client info
         const selectedClient = $('#partner_id option:selected');
         const clientName = selectedClient.data('name') || selectedClient.text();
 
-        // Get purchase date
         const purchaseDate = $('#invoice_date').val();
-
-        // Get IMEI
         const imeiValue = $(`#imei_${index}`).val() || 'N/A';
 
-        // Populate modal
         $('#warranty_product_name').text(productName + (productDetails ? ' - ' + productDetails : ''));
         $('#warranty_client_name').text(clientName);
         $('#warranty_purchase_date').text(formatDateDisplay(purchaseDate));
         $('#warranty_imei').text(imeiValue);
 
-        // Load existing warranty data if any
         if (warrantyData[index]) {
             $('#has_warranty').prop('checked', warrantyData[index].has_warranty);
             $('#warranty_period').val(warrantyData[index].warranty_period || '12');
             $('#warranty_notes').val(warrantyData[index].warranty_notes || '');
             $('#product_new_status').val(warrantyData[index].product_status || 'i_ri');
-            $('#product_condition_warranty').val(warrantyData[index].product_condition || '10/10');
+            $('#product_condition_warranty').val(warrantyData[index].product_condition || 'I RI NË KUTI');
 
             if (warrantyData[index].has_warranty) {
                 $('#warranty_checkbox_group').addClass('active');
@@ -899,7 +813,7 @@
             $('#warranty_period').val('12');
             $('#warranty_notes').val('');
             $('#product_new_status').val('i_ri');
-            $('#product_condition_warranty').val('10/10');
+            $('#product_condition_warranty').val('I RI NË KUTI');
             $('#warranty_checkbox_group').removeClass('active');
             $('#warranty_details').removeClass('show');
         }
@@ -937,9 +851,14 @@
         }
     }
 
-    function saveWarranty() {
+    function printWarrantyNow() {
         const index = $('#current_product_index').val();
         const hasWarranty = $('#has_warranty').is(':checked');
+
+        if (!hasWarranty) {
+            alert('Ju lutem zgjidhni "Produkti ka garanci" para se të printoni.');
+            return;
+        }
 
         warrantyData[index] = {
             has_warranty: hasWarranty,
@@ -950,46 +869,29 @@
             product_condition: $('#product_condition_warranty').val()
         };
 
-        // Update hidden fields
         $(`#warranty_has_${index}`).val(hasWarranty ? '1' : '0');
-        $(`#warranty_period_${index}`).val(hasWarranty ? warrantyData[index].warranty_period : '');
-        $(`#warranty_expiry_${index}`).val(hasWarranty ? warrantyData[index].warranty_expiry : '');
-        $(`#warranty_notes_${index}`).val(hasWarranty ? warrantyData[index].warranty_notes : '');
+        $(`#warranty_period_${index}`).val(warrantyData[index].warranty_period);
+        $(`#warranty_expiry_${index}`).val(warrantyData[index].warranty_expiry);
+        $(`#warranty_notes_${index}`).val(warrantyData[index].warranty_notes);
         $(`#product_status_${index}`).val(warrantyData[index].product_status);
         $(`#product_condition_${index}`).val(warrantyData[index].product_condition);
 
-        // Update badge
         updateWarrantyBadge(index, hasWarranty);
 
-        // Update product item styling
         const productItem = $(`.product-item[data-index="${index}"]`);
-        if (hasWarranty) {
-            productItem.addClass('has-warranty');
-
-            // Show warranty info box
-            const warrantyInfo = `
-                <div class="warranty-info-box">
-                    <strong>🛡️ Garanci:</strong> ${warrantyData[index].warranty_period} muaj 
-                    (deri më ${formatDateDisplay(warrantyData[index].warranty_expiry)}) | 
-                    <strong>Statusi:</strong> ${warrantyData[index].product_status === 'i_ri' ? 'I Ri' : 'I Përdorur'} | 
-                    <strong>Gjendja:</strong> ${warrantyData[index].product_condition}
-                </div>
-            `;
-            $(`#warranty_info_${index}`).html(warrantyInfo);
-        } else {
-            productItem.removeClass('has-warranty');
-            $(`#warranty_info_${index}`).html('');
-        }
+        productItem.addClass('has-warranty');
+        const warrantyInfo = `
+            <div class="warranty-info-box">
+                <strong>🛡️ Garanci:</strong> ${warrantyData[index].warranty_period} muaj 
+                (deri më ${formatDateDisplay(warrantyData[index].warranty_expiry)}) | 
+                <strong>Statusi:</strong> ${warrantyData[index].product_status === 'i_ri' ? 'I Ri' : 'I Përdorur'} | 
+                <strong>Gjendja:</strong> ${warrantyData[index].product_condition}
+            </div>
+        `;
+        $(`#warranty_info_${index}`).html(warrantyInfo);
 
         closeWarrantyModal();
-
-        Swal.fire({
-            icon: 'success',
-            title: 'Sukses!',
-            text: 'Garancia u ruajt me sukses',
-            timer: 1500,
-            showConfirmButton: false
-        });
+        openWarrantyPrintModal(index);
     }
 
     function updateWarrantyBadge(index, hasWarranty) {
@@ -999,27 +901,269 @@
         $(`#warranty_badge_${index}`).html(badgeHtml);
     }
 
+    // WAREHOUSE DATA UPDATE IN PRINT MODAL
+    function openWarrantyPrintModal(index) {
+        const productItem = $(`.product-item[data-index="${index}"]`);
+        const productName = productItem.data('product-name');
+        const productDetails = productItem.data('product-details');
+        const fullModel = productName + (productDetails ? ' ' + productDetails : '');
+
+        const selectedClient = $('#partner_id option:selected');
+        const clientName = selectedClient.data('name') || selectedClient.text() || '';
+
+        // GET WAREHOUSE DATA - DYNAMIC BASED ON SELECTION
+        const selectedWarehouse = $('#warehouse_id option:selected');
+        const warehouseAddress = selectedWarehouse.data('address') || 'ZOGU ZI, TIRANË, SHQIPËRI';
+        const warehouseInstagram = selectedWarehouse.data('instagram') || 'phone_shop.albania';
+
+
+        const selectedCurrency = $('#currency_id option:selected');
+        const currentCurrencySymbol = selectedCurrency.data('symbol') || 'LEKE';
+
+        const purchaseDate = $('#invoice_date').val();
+        const unitPrice = productItem.find('.unit-price-input').val() || '0';
+
+        const imeiRaw = $(`#imei_${index}`).val() || '';
+        const imeiArray = imeiRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const imeiFirst = imeiArray.length > 0 ? imeiArray[0] : '';
+
+        const wd = warrantyData[index] || {};
+        const warrantyPeriod = wd.warranty_period || '12';
+        const condition = wd.product_condition || 'I RI NË KUTI';
+
+        $('#print_client_name').text(clientName.toUpperCase());
+        $('#print_warehouse_address').text(warehouseAddress.toUpperCase());
+        $('#print_warehouse_instagram').text(warehouseInstagram);
+        $('#print_warranty_period').text(warrantyPeriod);
+        $('#print_purchase_date').text(formatDateDisplay(purchaseDate));
+        $('#print_price').text(Number(unitPrice).toLocaleString('en-US'));
+        $('#print_currency').text(currentCurrencySymbol);
+        $('#print_model').text(fullModel);
+        $('#print_imei').text(imeiFirst);
+        $('#print_condition').text(condition.toUpperCase());
+
+        $('#warrantyPrintModal').show();
+        $('body').css('overflow', 'hidden');
+    }
+
+    function closeWarrantyPrintModal() {
+        $('#warrantyPrintModal').hide();
+        $('body').css('overflow', 'auto');
+    }
+
+    // PDF GENERATION USING JSPDF
+    async function generatePDF() {
+        const printArea = document.getElementById('printArea');
+
+        try {
+            const canvas = await html2canvas(printArea, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const {
+                jsPDF
+            } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+            const clientName = $('#print_client_name').text() || 'Client';
+            const date = new Date().toISOString().split('T')[0];
+            const filename = `Garancia_${clientName}_${date}.pdf`;
+
+            pdf.save(filename);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Ka ndodhur një gabim gjatë gjenerimit të PDF. Ju lutem provoni përsëri.');
+        }
+    }
+
     function formatDateDisplay(dateString) {
         if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('sq-AL', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+            return parts[2] + '/' + parts[1] + '/' + parts[0];
+        }
+        return dateString;
+    }
+
+    $(document).ready(function() {
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2-client').select2({
+                placeholder: 'Choose client...',
+                allowClear: true
+            });
+
+            $('.select2-seller').select2({
+                placeholder: 'Choose seller...',
+                allowClear: true
+            });
+
+            $('#searchProduct').select2({
+                placeholder: 'Search product...',
+                minimumInputLength: 2,
+                allowClear: true,
+                ajax: {
+                    url: '/sales-api/search-products',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function(params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(function(product) {
+                                let text = product.name;
+                                if (product.storage) text += ' - ' + product.storage;
+                                if (product.ram) text += ' | ' + product.ram;
+                                if (product.color) text += ' | ' + product.color;
+                                text += ' (Stock: ' + product.quantity + ')';
+                                return {
+                                    id: product.id,
+                                    text: text,
+                                    product: product
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            }).on('select2:select', function(e) {
+                addProductItem(e.params.data.product);
+                $(this).val(null).trigger('change');
+            });
+        }
+
+        $(document).on('input', '.unit-price-input, .discount-input, .tax-input, .quantity-input', function() {
+            updateItemTotal($(this).closest('.product-item'));
+            calculateTotals();
         });
+
+        $(document).on('click', '.remove-item', function() {
+            const index = $(this).closest('.product-item').data('index');
+            delete warrantyData[index];
+            $(this).closest('.product-item').remove();
+            calculateTotals();
+        });
+
+        $(document).on('input', '.quantity-input', function() {
+            const item = $(this).closest('.product-item');
+            const quantity = parseInt($(this).val()) || 0;
+            const needsImei = item.data('needs-imei');
+            if (needsImei) {
+                item.find('.required-count').text(quantity);
+                validateImeiForItem(item);
+            }
+        });
+
+        $(document).on('input', '.imei-input', function() {
+            validateImeiForItem($(this).closest('.product-item'));
+        });
+    });
+
+    function addProductItem(product) {
+        productIndex++;
+        let details = '';
+        if (product.storage) details += product.storage;
+        if (product.ram) details += (details ? ' | ' : '') + product.ram;
+        if (product.color) details += (details ? ' | ' : '') + product.color;
+        const needsImei = product.storage || product.ram || product.color;
+
+        const html = `
+    <div class="product-item" data-index="${productIndex}" data-needs-imei="${needsImei}" data-product-name="${product.name}" data-product-details="${details}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h6 class="mb-0">
+                    ${product.name}
+                    <span class="warranty-badge-container" id="warranty_badge_${productIndex}"></span>
+                </h6>
+                ${details ? `<small class="text-muted">${details}</small><br>` : ''}
+                <small class="text-info">Stock: ${product.quantity}</small>
+            </div>
+            <div>
+                <button type="button" class="add-warranty-btn" onclick="openWarrantyModal(${productIndex})">
+                    <i class="ri-shield-check-line"></i> Garanci
+                </button>
+                <button type="button" class="btn btn-sm btn-danger remove-item ms-2">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            </div>
+        </div>
+        <input type="hidden" name="items[${productIndex}][product_id]" value="${product.id}">
+        <input type="hidden" name="items[${productIndex}][has_warranty]" id="warranty_has_${productIndex}" value="0">
+        <input type="hidden" name="items[${productIndex}][warranty_period]" id="warranty_period_${productIndex}">
+        <input type="hidden" name="items[${productIndex}][warranty_expiry]" id="warranty_expiry_${productIndex}">
+        <input type="hidden" name="items[${productIndex}][warranty_notes]" id="warranty_notes_${productIndex}">
+        <input type="hidden" name="items[${productIndex}][product_status]" id="product_status_${productIndex}">
+        <input type="hidden" name="items[${productIndex}][product_condition]" id="product_condition_${productIndex}">
+        
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label small">Qty *</label>
+                <input type="number" class="form-control form-control-sm quantity-input" name="items[${productIndex}][quantity]" value="1" min="1" max="${product.quantity}" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Unit Type</label>
+                <select class="form-select form-select-sm" name="items[${productIndex}][unit_type]">
+                    <option value="Pcs">Pcs</option>
+                    <option value="Box">Box</option>
+                    <option value="Kg">Kg</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Unit Price *</label>
+                <input type="number" class="form-control form-control-sm unit-price-input" name="items[${productIndex}][unit_price]" value="" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Discount</label>
+                <input type="number" class="form-control form-control-sm discount-input" name="items[${productIndex}][discount]" value="0" step="0.01" min="0">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tax</label>
+                <input type="number" class="form-control form-control-sm tax-input" name="items[${productIndex}][tax]" value="0" step="0.01" min="0">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Line Total</label>
+                <input type="text" class="form-control form-control-sm line-total" value="0.00" readonly>
+            </div>
+            ${needsImei ? `
+            <div class="col-md-12 imei-container mt-2">
+                <label class="form-label small">IMEI <span class="text-danger">*</span> <small class="text-muted">(15 shifra, ndaj me presje)</small></label>
+                <textarea class="form-control form-control-sm imei-input" name="items[${productIndex}][imei_numbers]" id="imei_${productIndex}" rows="2" placeholder="Vendos IMEI..." required></textarea>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="imei-count text-info">IMEI: <span class="current-count">0</span> / <span class="required-count">1</span></small>
+                    <small class="imei-validation text-muted"></small>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+        <div class="warranty-info-container" id="warranty_info_${productIndex}"></div>
+    </div>`;
+
+        $('#productsContainer').append(html);
+        updateItemTotal($(`[data-index="${productIndex}"]`));
+        calculateTotals();
     }
 
     function validateImeiForItem(item) {
         const imeiInput = item.find('.imei-input');
         const imeiText = imeiInput.val();
         const quantity = parseInt(item.find('.quantity-input').val()) || 0;
-
         const imeiArray = imeiText.split(',').map(s => s.trim()).filter(s => s.length > 0);
         const imeiCount = imeiArray.length;
 
         item.find('.current-count').text(imeiCount);
-
         imeiInput.removeClass('is-invalid is-valid');
+
         let validationMessage = '';
         let isValid = true;
 
@@ -1027,37 +1171,34 @@
             validationMessage = '';
             isValid = false;
         } else if (imeiCount !== quantity) {
-            validationMessage = `Duhen ${quantity} IMEI, keni ${imeiCount}`;
+            validationMessage = `Duhen ${quantity} IMEI`;
             imeiInput.addClass('is-invalid');
             isValid = false;
         } else {
             const uniqueImei = [...new Set(imeiArray)];
             if (uniqueImei.length !== imeiArray.length) {
-                validationMessage = 'Ka IMEI të dubluar!';
+                validationMessage = 'IMEI të dubluar!';
                 imeiInput.addClass('is-invalid');
                 isValid = false;
             } else {
                 let formatErrors = [];
-                imeiArray.forEach((imei, index) => {
+                imeiArray.forEach((imei, i) => {
                     if (!/^\d{15}$/.test(imei)) {
-                        formatErrors.push(`IMEI #${index + 1}: "${imei}"`);
+                        formatErrors.push(`#${i + 1}`);
                     }
                 });
-
                 if (formatErrors.length > 0) {
-                    validationMessage = 'IMEI jo-valid (duhet 15 shifra): ' + formatErrors.join(', ');
+                    validationMessage = 'IMEI jo-valid: ' + formatErrors.join(', ');
                     imeiInput.addClass('is-invalid');
                     isValid = false;
                 } else {
-                    validationMessage = '✓ Të gjitha IMEI janë valide';
+                    validationMessage = '✓ Valide';
                     imeiInput.addClass('is-valid');
                 }
             }
         }
 
-        item.find('.imei-validation').html(validationMessage)
-            .toggleClass('text-danger', !isValid)
-            .toggleClass('text-success', isValid);
+        item.find('.imei-validation').html(validationMessage).toggleClass('text-danger', !isValid).toggleClass('text-success', isValid);
     }
 
     function updateItemTotal(item) {
@@ -1069,6 +1210,7 @@
         item.find('.line-total').val(total.toFixed(2));
     }
 
+    // CALCULATE TOTALS WITH DYNAMIC CURRENCY SYMBOL
     function calculateTotals() {
         let subtotal = 0,
             totalTax = 0,
@@ -1083,35 +1225,31 @@
             totalDiscount += discount;
         });
         const totalAmount = subtotal - totalDiscount + totalTax;
-        $('#subtotalDisplay').text('L ' + subtotal.toFixed(2));
-        $('#taxDisplay').text('L ' + totalTax.toFixed(2));
-        $('#discountDisplay').text('L ' + totalDiscount.toFixed(2));
-        $('#totalDisplay').text('L ' + totalAmount.toFixed(2));
+
+        // USE CURRENT CURRENCY SYMBOL
+        $('#subtotalDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${subtotal.toFixed(2)}`);
+        $('#taxDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalTax.toFixed(2)}`);
+        $('#discountDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalDiscount.toFixed(2)}`);
+        $('#totalDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalAmount.toFixed(2)}`);
     }
 
-    // Close modal when clicking outside
     $(window).on('click', function(event) {
-        if (event.target.id === 'warrantyModal') {
-            closeWarrantyModal();
-        }
+        if (event.target.id === 'warrantyModal') closeWarrantyModal();
+        if (event.target.id === 'warrantyPrintModal') closeWarrantyPrintModal();
     });
 
     $('#saleForm').on('submit', function(e) {
         e.preventDefault();
 
-        let hasError = false;
-        let errorMessages = [];
-
         if ($('.product-item').length === 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gabim!',
-                text: 'Duhet të shtoni të paktën një produkt!'
-            });
+            alert('Duhet të shtoni të paktën një produkt!');
             return false;
         }
 
-        $('.product-item').each(function(index) {
+        let hasError = false;
+        let errorMessages = [];
+
+        $('.product-item').each(function() {
             const item = $(this);
             const needsImei = item.data('needs-imei');
             const productName = item.find('h6').text();
@@ -1123,35 +1261,28 @@
 
                 if (!imeiText) {
                     hasError = true;
-                    errorMessages.push(`${productName}: IMEI është i detyrueshëm`);
-                    imeiInput.addClass('is-invalid');
+                    errorMessages.push(`${productName}: IMEI mungon`);
                     return;
                 }
 
                 const imeiArray = imeiText.split(',').map(s => s.trim()).filter(s => s.length > 0);
-                const imeiCount = imeiArray.length;
-
-                if (imeiCount !== quantity) {
+                if (imeiArray.length !== quantity) {
                     hasError = true;
-                    errorMessages.push(`${productName}: Kërkohen ${quantity} IMEI, por keni vendosur ${imeiCount}`);
-                    imeiInput.addClass('is-invalid');
+                    errorMessages.push(`${productName}: Kërkohen ${quantity} IMEI`);
                     return;
                 }
 
                 const uniqueImei = [...new Set(imeiArray)];
                 if (uniqueImei.length !== imeiArray.length) {
                     hasError = true;
-                    errorMessages.push(`${productName}: Ka IMEI të dubluar`);
-                    imeiInput.addClass('is-invalid');
+                    errorMessages.push(`${productName}: IMEI të dubluar`);
                     return;
                 }
 
                 for (let i = 0; i < imeiArray.length; i++) {
-                    const imei = imeiArray[i];
-                    if (!/^\d{15}$/.test(imei)) {
+                    if (!/^\d{15}$/.test(imeiArray[i])) {
                         hasError = true;
-                        errorMessages.push(`${productName}: IMEI "${imei}" nuk është valid (duhet 15 shifra)`);
-                        imeiInput.addClass('is-invalid');
+                        errorMessages.push(`${productName}: IMEI jo-valid`);
                         return;
                     }
                 }
@@ -1159,52 +1290,24 @@
         });
 
         if (hasError) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Gabim në validim!',
-                html: errorMessages.join('<br>'),
-                width: '600px'
-            });
+            alert(errorMessages.join('\n'));
             return false;
         }
-
-        Swal.fire({
-            title: 'Duke procesuar...',
-            text: 'Ju lutem prisni',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
 
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
             data: $(this).serialize(),
             success: function(response) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sukses!',
-                    text: response.message || 'Fatura u krijua me sukses'
-                }).then(() => {
-                    if (response.url) window.location.href = response.url;
-                });
+                alert(response.message || 'Fatura u krijua me sukses');
+                if (response.url) window.location.href = response.url;
             },
             error: function(xhr) {
-                let errorsHtml = '';
-                if (xhr.responseJSON && Array.isArray(xhr.responseJSON.message)) {
-                    errorsHtml = xhr.responseJSON.message.join('<br>');
-                } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorsHtml = xhr.responseJSON.message;
-                } else {
-                    errorsHtml = 'Ndodhi një gabim i papritur.';
+                let msg = 'Gabim në validim';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = Array.isArray(xhr.responseJSON.message) ? xhr.responseJSON.message.join('\n') : xhr.responseJSON.message;
                 }
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gabim në Validim!',
-                    html: errorsHtml,
-                    width: '600px'
-                });
+                alert(msg);
             }
         });
     });

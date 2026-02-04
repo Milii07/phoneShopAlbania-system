@@ -121,7 +121,7 @@
 
                 @if($purchases->hasPages())
                 <div class="mt-3">
-                    {{ $purchases->links() }}
+                    {{ $purchases->links('pagination::bootstrap-5') }}
                 </div>
                 @endif
             </div>

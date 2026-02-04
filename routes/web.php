@@ -16,7 +16,7 @@ use App\Http\Controllers\ExchangeRateController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('dashboard');
 });
 
 require __DIR__ . '/auth.php';

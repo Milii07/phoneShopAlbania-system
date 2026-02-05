@@ -56,7 +56,7 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::resource('sales', SaleController::class);
 
     Route::prefix('sales-api')->group(function () {
-        Route::get('/search-products', [SaleController::class, 'searchProducts']);
+        Route::get('/search-products', [SaleController::class, 'searchProducts'])->name('sales.search.products');
         Route::post('/update-payment-status/{id}', [SaleController::class, 'updatePaymentStatus']);
     });
 

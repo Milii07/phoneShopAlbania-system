@@ -28,6 +28,8 @@ if (! function_exists('allowed_user_routes')) {
             'profile.edit',
             'profile.update',
             'profile.destroy',
+            'purchases.search.products',
+            'sales.search.products'
         ];
     }
 }

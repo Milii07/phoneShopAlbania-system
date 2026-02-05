@@ -14,13 +14,21 @@ use Illuminate\Support\Facades\Storage;
 
 class PurchaseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $purchases = Purchase::with(['partner', 'warehouse', 'currency'])
-            ->latest()
-            ->paginate(15);
+        $query = Purchase::with(['partner', 'warehouse', 'currency'])
+            ->latest();
 
-        return view('purchases.index', compact('purchases'));
+        // Filter by warehouse if provided
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+
+        $purchases = $query->paginate(15);
+
+        $warehouses = Warehouse::orderBy('name')->get();
+
+        return view('purchases.index', compact('purchases', 'warehouses'));
     }
 
     public function create()

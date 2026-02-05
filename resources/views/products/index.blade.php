@@ -28,6 +28,15 @@
                         <i class="ri-add-line align-middle me-1"></i> Shto Produkt
                     </button>
                 </div>
+                <form method="GET" action="{{ route('products.index') }}" class="d-flex align-items-center me-3">
+                    <select name="warehouse_id" id="filter_warehouse" class="form-select form-select-sm select2-warehouse" style="min-width:220px">
+                        <option value="">All Warehouses</option>
+                        @foreach($warehouses as $w)
+                        <option value="{{ $w->id }}" {{ request('warehouse_id') == $w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
             </div>
             <div class="card-body">
                 @if(session('success'))
@@ -38,7 +47,7 @@
                 @endif
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-nowrap align-middle mb-0">
+                    <table id="products_table" class="table table-bordered table-hover table-nowrap align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 50px;">ID</th>
@@ -53,7 +62,7 @@
                                 <th scope="col">RAM</th>
                                 <th scope="col">Ngjyra</th>
 
-                                <th scope="col" style="width: 150px;">Veprime</th>
+                                <th scope="col" class="no-sort" style="width: 150px;">Veprime</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,12 +115,6 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
-                                    <i class="ri-shopping-bag-line fs-1 d-block mb-2"></i>
-                                    Nuk ka produkte të regjistruara.
-                                </td>
-                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -142,6 +145,23 @@
     $(document).ready(function() {
         console.log('jQuery ready!');
         console.log('Warehouses:', @json($warehouses));
+
+        // Initialize Select2 for warehouse filter (requires Select2 to be loaded globally)
+        try {
+            if ($.fn.select2) {
+                $('#filter_warehouse').select2({
+                    placeholder: 'Filter by warehouse',
+                    allowClear: true,
+                    width: 'resolve'
+                });
+
+                $('#filter_warehouse').on('change', function() {
+                    $(this).closest('form').submit();
+                });
+            }
+        } catch (e) {
+            console.warn('Select2 init failed:', e);
+        }
         console.log('Categories:', @json($categories));
         console.log('Brands:', @json($brands));
 
@@ -382,7 +402,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="edit_price" class="form-label">Çmimi (Lekë) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="edit_price" name="price" value="${data.price}" step="0.01" min="0" required>
+                            <input type="number" class="form-control" id="edit_price" name="unit_price" value="${data.price}" step="0.01" min="0" required>
                         </div>
   <div class="col-md-6 mb-3">
     <label for="edit_currency_id" class="form-label">Currency <span class="text-danger">*</span></label>
@@ -505,4 +525,27 @@
 
 @endif
 
+<script>
+    $(document).ready(function() {
+        try {
+            if ($.fn.DataTable) {
+                $('#products_table').DataTable({
+                    paging: false,
+                    info: false,
+                    lengthChange: false,
+                    searching: true,
+                    order: [
+                        [0, 'desc']
+                    ],
+                    columnDefs: [{
+                        orderable: false,
+                        targets: 'no-sort'
+                    }]
+                });
+            }
+        } catch (e) {
+            console.warn('DataTables init failed for products:', e);
+        }
+    });
+</script>
 @endpush

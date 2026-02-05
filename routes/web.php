@@ -58,6 +58,7 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::prefix('sales-api')->group(function () {
         Route::get('/search-products', [SaleController::class, 'searchProducts'])->name('sales.search.products');
         Route::post('/update-payment-status/{id}', [SaleController::class, 'updatePaymentStatus']);
+        Route::get('/sales/daily-report', [SaleController::class, 'dailyReport'])->name('sales.daily-report');
     });
 
     Route::get('exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');

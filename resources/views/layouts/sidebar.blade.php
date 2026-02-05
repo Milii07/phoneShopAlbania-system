@@ -165,6 +165,20 @@
                         </ul>
                     </div>
                     @endif
+
+                    @if(function_exists('user_can_access_route') && user_can_access_route('sales.daily-report'))
+                    <a class="nav-link menu-link" href="#sidebarRaportet" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRaportet">
+                        <i class=" ri-bar-chart-fill"></i> <span data-key="t-apps">Daily Reports</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarRaportet">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('sales.daily-report') }}" class="nav-link" data-key="t-calendar"> Reports </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    @endif
                 </li>
 
 

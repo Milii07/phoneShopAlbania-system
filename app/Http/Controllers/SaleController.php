@@ -39,6 +39,11 @@ class SaleController extends Controller
             $query->where('partner_id', $request->partner_id);
         }
 
+        // Filter by warehouse
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+
         // Search by invoice number
         if ($request->has('search')) {
             $query->where('invoice_number', 'like', '%' . $request->search . '%');
@@ -46,8 +51,9 @@ class SaleController extends Controller
 
         $sales = $query->latest()->paginate(15);
         $partners = Partner::all();
+        $warehouses = Warehouse::orderBy('name')->get();
 
-        return view('sales.index', compact('sales', 'partners'));
+        return view('sales.index', compact('sales', 'partners', 'warehouses'));
     }
 
     public function create()
@@ -223,6 +229,8 @@ class SaleController extends Controller
                     'quantity' => $quantity,
                     'unit_type' => $item['unit_type'] ?? 'Pcs',
                     'unit_price' => $unitPrice,
+                    'purchase_price' => $product->price,     // E RE - Çmimi i blerjes
+                    'sale_price' => $unitPrice,              // E RE - Çmimi i shitjes
                     'discount' => $discount,
                     'tax' => $tax,
                     'line_total' => $lineTotal,
@@ -442,12 +450,13 @@ class SaleController extends Controller
                     'quantity' => $quantity,
                     'unit_type' => $item['unit_type'] ?? 'Pcs',
                     'unit_price' => $unitPrice,
+                    'purchase_price' => $product->price,     // E RE - Çmimi i blerjes
+                    'sale_price' => $unitPrice,              // E RE - Çmimi i shitjes
                     'discount' => $discount,
                     'tax' => $tax,
                     'line_total' => $lineTotal,
                     'imei_numbers' => $imeiArray,
                 ]);
-
                 // Decrease quantity if confirmed
                 if ($validated['sale_status'] === 'Confirmed') {
                     $product->decrement('quantity', $quantity);
@@ -528,5 +537,90 @@ class SaleController extends Controller
         $sale->update(['payment_status' => $request->payment_status]);
 
         return response()->json(['success' => true, 'message' => 'Payment status updated']);
+    }
+
+    // RAPORTI DITOR I SHITJEVE
+    public function dailyReport(Request $request)
+    {
+        $date = $request->input('date', now()->format('Y-m-d'));
+
+        // Load confirmed sales for the requested date including items and relations
+        $sales = Sale::with(['warehouse', 'currency', 'items'])
+            ->whereDate('invoice_date', $date)
+            ->where('sale_status', 'Confirmed')
+            ->get();
+
+        $sales->each(function ($sale) {
+            $calculatedProfit = 0;
+
+            foreach ($sale->items as $item) {
+                $saleUnit = data_get($item, 'sale_price', data_get($item, 'unit_price', 0));
+                $purchaseUnit = data_get($item, 'purchase_price', 0);
+                $quantity = data_get($item, 'quantity', 0);
+
+                $itemProfit = ($saleUnit - $purchaseUnit) * $quantity;
+
+                $item->calculated_profit = $itemProfit;
+
+                $calculatedProfit += $itemProfit;
+            }
+
+            $sale->calculated_profit_total = $calculatedProfit;
+
+            $warehousePct = optional($sale->warehouse)->profit_percentage ?? 0;
+            $sale->calculated_owner_profit = $calculatedProfit * ($warehousePct / 100);
+        });
+
+        $report = $sales->groupBy('warehouse_id')->map(function ($warehouseSales) {
+            $warehouse = $warehouseSales->first()->warehouse;
+
+            // aggregate using the computed fields instead of relying on stored columns
+            $xhiro_totale = $warehouseSales->sum('total_amount');
+            $fitimi_total = $warehouseSales->sum('calculated_profit_total');
+            $fitimi_juaj = $warehouseSales->sum('calculated_owner_profit');
+
+            return [
+                'dyqani' => $warehouse->name,
+                'lokacioni' => $warehouse->location,
+                'perqindja_fitimit' => ($warehouse->profit_percentage ?? 0) . '%',
+                'xhiro_totale' => number_format($xhiro_totale, 2),
+                'fitimi_total' => number_format($fitimi_total, 2),
+                'fitimi_juaj' => number_format($fitimi_juaj, 2),
+                'shitje_count' => $warehouseSales->count(),
+
+                // Ndarje sipas monedhës
+                'xhiro_euro' => number_format(
+                    $warehouseSales->filter(function ($s) {
+                        return optional($s->currency)->code === 'EUR';
+                    })->sum('total_amount'),
+                    2
+                ),
+                'xhiro_leke' => number_format(
+                    $warehouseSales->filter(function ($s) {
+                        return optional($s->currency)->code === 'ALL';
+                    })->sum('total_amount'),
+                    2
+                ),
+
+                // Ndarje sipas mënyrës së pagesës
+                'pagesa_cash' => number_format(
+                    $warehouseSales->where('payment_method', 'Cash')->sum('total_amount'),
+                    2
+                ),
+                'pagesa_banke' => number_format(
+                    $warehouseSales->where('payment_method', 'Bank')->sum('total_amount'),
+                    2
+                ),
+            ];
+        });
+
+        $totals = [
+            'xhiro_totale' => number_format($sales->sum('total_amount'), 2),
+            'fitimi_total' => number_format($sales->sum('calculated_profit_total'), 2),
+            'fitimi_juaj' => number_format($sales->sum('calculated_owner_profit'), 2),
+            'shitje_totale' => $sales->count(),
+        ];
+
+        return view('sales.daily-report', compact('date', 'report', 'totals'));
     }
 }

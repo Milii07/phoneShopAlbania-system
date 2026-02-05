@@ -67,6 +67,15 @@
                     </div>
 
                     <div class="col-md-2">
+                        <select class="form-select select2-warehouse" name="warehouse_id" id="sales_filter_warehouse">
+                            <option value="">All Warehouses</option>
+                            @foreach($warehouses as $w)
+                            <option value="{{ $w->id }}" {{ request('warehouse_id') == $w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
                         <select class="form-select" name="payment_status">
                             <option value="">Payment Status</option>
                             <option value="Paid" {{ request('payment_status') == 'Paid' ? 'selected' : '' }}>Paid</option>
@@ -115,7 +124,7 @@
 
                 <!-- Table -->
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
+                    <table id="sales_table" class="table table-bordered table-hover">
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
@@ -126,7 +135,7 @@
                                 <th>Grand Total</th>
                                 <th>Status</th>
                                 <th>Payment Status</th>
-                                <th>Action</th>
+                                <th class="no-sort">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -197,12 +206,6 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr>
-                                <td colspan="9" class="text-center py-4">
-                                    <i class="ri-file-list-line" style="font-size: 3rem; color: #ccc;"></i>
-                                    <p class="text-muted mt-2">No invoices found</p>
-                                </td>
-                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -222,3 +225,46 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            if (window.jQuery && jQuery.fn.select2) {
+                jQuery('#sales_filter_warehouse').select2({
+                    placeholder: 'Filter by warehouse',
+                    allowClear: true,
+                    width: 'resolve'
+                }).on('change', function() {
+                    jQuery(this).closest('form').submit();
+                });
+            }
+        } catch (e) {
+            console.warn('Select2 init failed for sales:', e);
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            if (window.jQuery && jQuery.fn.DataTable) {
+                jQuery('#sales_table').DataTable({
+                    paging: false,
+                    info: false,
+                    lengthChange: false,
+                    searching: true,
+                    order: [
+                        [0, 'desc']
+                    ],
+                    columnDefs: [{
+                        orderable: false,
+                        targets: 'no-sort'
+                    }]
+                });
+            }
+        } catch (e) {
+            console.warn('DataTables init failed for sales:', e);
+        }
+    });
+</script>
+@endpush

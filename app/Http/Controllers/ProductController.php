@@ -11,11 +11,17 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['warehouse', 'category', 'brand', 'currency'])
-            ->latest()
-            ->paginate(10);
+        $query = Product::with(['warehouse', 'category', 'brand', 'currency'])
+            ->latest();
+
+        // Filter by warehouse if provided
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+
+        $products = $query->paginate(10);
 
         $warehouses = Warehouse::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
@@ -86,13 +92,14 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+
         $rules = [
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
             'quantity' => 'required|integer|min:0',
-            'price' => 'required|numeric|min:0',
+            'unit_price' => 'required|numeric|min:0',
             'currency_id' => 'required|exists:currencies,id',
         ];
 
@@ -109,7 +116,7 @@ class ProductController extends Controller
             'brand_id.required' => 'Brand është i detyrueshëm.',
             'name.required' => 'Emri është i detyrueshëm.',
             'quantity.required' => 'Sasia është e detyrueshme.',
-            'price.required' => 'Çmimi është i detyrueshëm.',
+            'unit_price.required' => 'Çmimi është i detyrueshëm.',
             'currency_id.required' => 'Currency është i detyrueshëm.',
             'storage.required' => 'Storage është i detyrueshëm për telefonat.',
             'ram.required' => 'RAM është i detyrueshëm për telefonat.',

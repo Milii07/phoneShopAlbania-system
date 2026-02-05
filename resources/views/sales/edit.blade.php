@@ -3,7 +3,6 @@
 @section('title', 'Edit Invoice')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .product-item {
         background: #f8f9fa;
@@ -271,7 +270,6 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let productIndex = 0;
 

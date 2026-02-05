@@ -26,6 +26,8 @@ class Sale extends Model
         'tax',
         'discount',
         'total_amount',
+        'profit_total',      // E RE
+        'owner_profit',      // E RE
         'description',
         'notes',
     ];
@@ -38,6 +40,8 @@ class Sale extends Model
         'tax' => 'decimal:2',
         'discount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'profit_total' => 'decimal:2',
+        'owner_profit' => 'decimal:2',
     ];
 
     public function partner()
@@ -70,5 +74,19 @@ class Sale extends Model
         $lastSale = self::latest('id')->first();
         $number = $lastSale ? intval(substr($lastSale->invoice_number, 3)) + 1 : 1;
         return 'INV' . str_pad($number, 5, '0', STR_PAD_LEFT);
+    }
+
+    // LLOGARIT FITIMIN TOTAL NGA TË GJITHA ITEMS
+    public function calculateProfit()
+    {
+        $profitTotal = $this->items->sum('profit_total');
+        $ownerProfit = $this->items->sum('owner_profit');
+
+        $this->update([
+            'profit_total' => $profitTotal,
+            'owner_profit' => $ownerProfit,
+        ]);
+
+        return $this;
     }
 }

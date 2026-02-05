@@ -44,8 +44,21 @@
                 </div>
                 @endif
 
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <form method="GET" action="{{ route('purchases.index') }}">
+                            <select name="warehouse_id" id="purchases_filter_warehouse" class="form-select select2-warehouse">
+                                <option value="">All Warehouses</option>
+                                @foreach($warehouses as $w)
+                                <option value="{{ $w->id }}" {{ request('warehouse_id') == $w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-nowrap align-middle mb-0">
+                    <table id="purchases_table" class="table table-bordered table-hover table-nowrap align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col" style="width: 100px;">Nr. Blerjes</th>
@@ -55,7 +68,7 @@
                                 <th scope="col">Statusi</th>
                                 <th scope="col">Pagesa</th>
                                 <th scope="col">Totali</th>
-                                <th scope="col" style="width: 150px;">Veprime</th>
+                                <th scope="col" class="no-sort" style="width: 150px;">Veprime</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,12 +121,6 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
-                                    <i class="ri-shopping-cart-line fs-1 d-block mb-2"></i>
-                                    Nuk ka blerje të regjistruara.
-                                </td>
-                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -134,6 +141,23 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        // Initialize Select2 for warehouse filter (if Select2 is loaded globally)
+        try {
+            if ($.fn.select2) {
+                $('#purchases_filter_warehouse').select2({
+                    placeholder: 'Filter by warehouse',
+                    allowClear: true,
+                    width: 'resolve'
+                });
+
+                $('#purchases_filter_warehouse').on('change', function() {
+                    $(this).closest('form').submit();
+                });
+            }
+        } catch (e) {
+            console.warn('Select2 init failed:', e);
+        }
+
         $(document).on('click', '.btn-delete', function(e) {
             e.preventDefault();
             var id = $(this).data('id');
@@ -186,4 +210,27 @@
     });
 </script>
 @endif
+<script>
+    $(document).ready(function() {
+        try {
+            if ($.fn.DataTable) {
+                $('#purchases_table').DataTable({
+                    paging: false,
+                    info: false,
+                    lengthChange: false,
+                    searching: true,
+                    order: [
+                        [0, 'desc']
+                    ],
+                    columnDefs: [{
+                        orderable: false,
+                        targets: 'no-sort'
+                    }]
+                });
+            }
+        } catch (e) {
+            console.warn('DataTables init failed for purchases:', e);
+        }
+    });
+</script>
 @endpush

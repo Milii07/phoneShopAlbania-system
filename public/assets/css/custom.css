@@ -1,7 +1,23 @@
-/*
-Template Name: FutureBlock - Admin & Dashboard Template
-Author: Themesbrand
-Website: https://futureblock.al/
-Contact: support@futureblock.al
-File: Custom Css File
-*/
+/* Select2 Pillbox Customization */
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: rgba(var(--vz-primary-rgb), var(--vz-bg-opacity)) !important;
+    border-color: rgba(var(--vz-primary-rgb), var(--vz-bg-opacity)) !important;
+    color: rgba(var(--vz-primary-rgb), var(--vz-bg-opacity)) !important;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    color: #fff;
+    margin-right: 0.25rem;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ffdddd;
+}
+
+/* Dropdown në modal */
+.select2-container--bootstrap-5 .select2-dropdown {
+    z-index: 1056; /* Më lart se bootstrap modal */
+}

@@ -12,20 +12,24 @@
                 @csrf
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="warehouse_id" class="form-label">Warehouse <span class="text-danger">*</span></label>
-                            <select class="form-select @error('warehouse_id') is-invalid @enderror"
-                                id="warehouse_id"
-                                name="warehouse_id"
+                        <!-- Warehouses Multiselect -->
+                        <div class="col-md-12 mb-3">
+                            <label for="create_warehouse_ids" class="form-label">
+                                Warehouses <span class="text-danger">*</span>
+                                <small class="text-muted">(Mund të zgjedhësh shumë)</small>
+                            </label>
+                            <select class="form-select @error('warehouse_ids') is-invalid @enderror"
+                                id="create_warehouse_ids"
+                                name="warehouse_ids[]"
+                                multiple="multiple"
                                 required>
-                                <option value="">Zgjidh Warehouse</option>
                                 @foreach($warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}" {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
-                                    {{ $warehouse->name }}
+                                <option value="{{ $warehouse->id }}">
+                                    {{ $warehouse->name }} - {{ $warehouse->location }}
                                 </option>
                                 @endforeach
                             </select>
-                            @error('warehouse_id')
+                            @error('warehouse_ids')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -48,8 +52,6 @@
                             @enderror
                         </div>
 
-
-
                         <div class="col-md-6 mb-3">
                             <label for="brand_id" class="form-label">Brand <span class="text-danger">*</span></label>
                             <select class="form-select @error('brand_id') is-invalid @enderror"
@@ -68,7 +70,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label for="name" class="form-label">Emri <span class="text-danger">*</span></label>
                             <input type="text"
                                 class="form-control @error('name') is-invalid @enderror"
@@ -83,21 +85,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="quantity" class="form-label">Sasia <span class="text-danger">*</span></label>
-                            <input type="number"
-                                class="form-control @error('quantity') is-invalid @enderror"
-                                id="quantity"
-                                name="quantity"
-                                value="{{ old('quantity', 0) }}"
-                                min="0"
-                                required>
-                            @error('quantity')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="price" class="form-label">Çmimi (Lekë/Euro) <span class="text-danger">*</span></label>
+                            <label for="price" class="form-label">Çmimi <span class="text-danger">*</span></label>
                             <input type="number"
                                 class="form-control @error('price') is-invalid @enderror"
                                 id="price"
@@ -111,6 +99,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="currency_id" class="form-label">Currency <span class="text-danger">*</span></label>
                             <select class="form-select @error('currency_id') is-invalid @enderror"
@@ -128,9 +117,9 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
 
+                    <!-- Phone Fields (conditional) -->
                     <div id="phone_fields" style="display: none;">
                         <hr>
                         <h6 class="mb-3"><i class="ri-smartphone-line me-1"></i> Detaje për Telefon</h6>

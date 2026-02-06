@@ -67,6 +67,8 @@ class PurchaseController extends Controller
         try {
             DB::beginTransaction();
 
+            $warehouseId = $validated['warehouse_id'];
+
             // Handle file upload
             $attachmentPath = null;
             if ($request->hasFile('attachment')) {
@@ -83,6 +85,13 @@ class PurchaseController extends Controller
 
             // First pass: validate all items and calculate totals
             foreach ($request->items as $itemIndex => $item) {
+                $product = Product::find($item['product_id']);
+
+                // Check if product exists in this warehouse
+                if (!$product->isInWarehouse($warehouseId)) {
+                    // Product not in warehouse, will be added with this purchase
+                }
+
                 $quantity = $item['quantity'];
                 $unitCost = $item['unit_cost'];
                 $discount = $item['discount'] ?? 0;
@@ -204,7 +213,8 @@ class PurchaseController extends Controller
 
                 // Update product quantity if order is received
                 if ($validated['order_status'] === 'Received') {
-                    $product->increment('quantity', $quantity);
+                    // Use helper method to add stock to warehouse
+                    $product->addStock($warehouseId, $quantity);
                 }
             }
 
@@ -283,12 +293,16 @@ class PurchaseController extends Controller
         try {
             DB::beginTransaction();
 
+            $oldWarehouseId = $purchase->warehouse_id;
+            $newWarehouseId = $validated['warehouse_id'];
+
             // Reverse old quantities if order was received
             if ($purchase->order_status === 'Received') {
                 foreach ($purchase->items as $item) {
                     $product = Product::find($item->product_id);
                     if ($product) {
-                        $product->decrement('quantity', $item->quantity);
+                        // Use helper method to reduce stock
+                        $product->reduceStock($oldWarehouseId, $item->quantity);
                     }
                 }
             }
@@ -434,7 +448,8 @@ class PurchaseController extends Controller
 
                 // Update product quantity if order is received
                 if ($validated['order_status'] === 'Received') {
-                    $product->increment('quantity', $quantity);
+                    // Use helper method to add stock
+                    $product->addStock($newWarehouseId, $quantity);
                 }
             }
 
@@ -468,13 +483,15 @@ class PurchaseController extends Controller
             DB::beginTransaction();
 
             $purchase = Purchase::findOrFail($id);
+            $warehouseId = $purchase->warehouse_id;
 
             // Reverse quantities if order was received
             if ($purchase->order_status === 'Received') {
                 foreach ($purchase->items as $item) {
                     $product = Product::find($item->product_id);
                     if ($product) {
-                        $product->decrement('quantity', $item->quantity);
+                        // Use helper method to reduce stock
+                        $product->reduceStock($warehouseId, $item->quantity);
                     }
                 }
             }
@@ -502,14 +519,32 @@ class PurchaseController extends Controller
     public function searchProducts(Request $request)
     {
         $search = $request->get('q', '');
+        $warehouseId = $request->get('warehouse_id'); // Important: frontend duhet ta dërgojë
 
-        $products = Product::with(['category', 'brand', 'currency'])
-            ->where('name', 'like', "%{$search}%")
-            ->orWhere('storage', 'like', "%{$search}%")
-            ->orWhere('color', 'like', "%{$search}%")
-            ->limit(10)
-            ->get();
+        $query = Product::with(['category', 'brand', 'currency', 'warehouses'])
+            ->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('storage', 'like', "%{$search}%")
+                    ->orWhere('color', 'like', "%{$search}%");
+            });
 
+        // Nëse ka warehouse_id, filter products që janë në atë warehouse
+        if ($warehouseId) {
+            $query->whereHas('warehouses', function ($q) use ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            });
+        }
+
+        $products = $query->limit(10)->get();
+
+        // Add warehouse-specific info
+        $products = $products->map(function ($product) use ($warehouseId) {
+            if ($warehouseId) {
+                $product->current_warehouse_quantity = $product->getQuantityInWarehouse($warehouseId);
+            }
+            $product->total_quantity = $product->total_quantity;
+            return $product;
+        });
 
         return response()->json($products);
     }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Daily Sales Report')
+@section('title', 'Raporti Ditor i Shitjeve')
 
 @push('styles')
 <style>
@@ -74,6 +74,17 @@
         .report-card,
         .warehouse-card {
             break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        body {
+            font-size: 12px;
+        }
+
+        .stat-box {
+            border: 1px solid #ddd;
+            color: #000 !important;
+            background: #fff !important;
         }
     }
 </style>
@@ -150,6 +161,7 @@
                 <div>
                     <p class="mb-1 opacity-75">Fitimi Total</p>
                     <h3 class="mb-0">{{ $totals['fitimi_total'] }} L</h3>
+                    <small class="opacity-75">Para ndarjes</small>
                 </div>
                 <div>
                     <i class="ri-line-chart-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -164,6 +176,7 @@
                 <div>
                     <p class="mb-1 opacity-75">Fitimi Juaj</p>
                     <h3 class="mb-0">{{ $totals['fitimi_juaj'] }} L</h3>
+                    <small class="opacity-75">Pas ndarjes</small>
                 </div>
                 <div>
                     <i class="ri-wallet-3-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -178,6 +191,7 @@
                 <div>
                     <p class="mb-1 opacity-75">Shitje Totale</p>
                     <h3 class="mb-0">{{ $totals['shitje_totale'] }}</h3>
+                    <small class="opacity-75">Invoice</small>
                 </div>
                 <div>
                     <i class="ri-shopping-cart-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -235,6 +249,7 @@
                     <div class="p-3 bg-white rounded border">
                         <small class="text-muted d-block mb-1">📈 Fitimi Total:</small>
                         <h5 class="mb-0 text-success">{{ $warehouse['fitimi_total'] }} L</h5>
+                        <small class="text-muted">Para ndarjes</small>
                     </div>
                 </div>
 
@@ -242,6 +257,7 @@
                     <div class="p-3 bg-white rounded border">
                         <small class="text-muted d-block mb-1">💵 Fitimi Juaj:</small>
                         <h5 class="mb-0 text-primary">{{ $warehouse['fitimi_juaj'] }} L</h5>
+                        <small class="text-muted">{{ $warehouse['perqindja_fitimit'] }} nga totali</small>
                     </div>
                 </div>
 
@@ -287,7 +303,7 @@
                             <tr>
                                 <th>Dyqani</th>
                                 <th>Lokacioni</th>
-                                <th>Përqindja Fitimit</th>
+                                <th>% Fitimi</th>
                                 <th>Xhiro Totale</th>
                                 <th>Fitimi Total</th>
                                 <th>Fitimi Juaj</th>

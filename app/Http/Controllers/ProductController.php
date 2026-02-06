@@ -13,12 +13,14 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['warehouse', 'category', 'brand', 'currency'])
+        $query = Product::with(['warehouses', 'category', 'brand', 'currency'])
             ->latest();
 
         // Filter by warehouse if provided
         if ($request->has('warehouse_id') && $request->warehouse_id) {
-            $query->where('warehouse_id', $request->warehouse_id);
+            $query->whereHas('warehouses', function ($q) use ($request) {
+                $q->where('warehouse_id', $request->warehouse_id);
+            });
         }
 
         $products = $query->paginate(10);
@@ -33,17 +35,31 @@ class ProductController extends Controller
 
     public function create()
     {
-        return view('products.create');
+        $warehouses = Warehouse::all();
+        $categories = Category::all();
+        $brands = Brand::all();
+        $currencies = Currency::all();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'warehouses' => $warehouses,
+                'categories' => $categories,
+                'brands' => $brands,
+                'currencies' => $currencies,
+            ]);
+        }
+
+        return view('products.create', compact('warehouses', 'categories', 'brands', 'currencies'));
     }
 
     public function store(Request $request)
     {
         $rules = [
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'warehouse_ids' => 'required|array|min:1',
+            'warehouse_ids.*' => 'exists:warehouses,id',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'currency_id' => 'required|exists:currencies,id',
         ];
@@ -56,20 +72,36 @@ class ProductController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'warehouse_id.required' => 'Warehouse është i detyrueshëm.',
+            'warehouse_ids.required' => 'Duhet të zgjedhësh të paktën një warehouse.',
+            'warehouse_ids.min' => 'Duhet të zgjedhësh të paktën një warehouse.',
             'category_id.required' => 'Kategoria është e detyrueshme.',
             'brand_id.required' => 'Brand është i detyrueshëm.',
             'name.required' => 'Emri është i detyrueshëm.',
-            'quantity.required' => 'Sasia është e detyrueshme.',
             'price.required' => 'Çmimi është i detyrueshëm.',
             'currency_id.required' => 'Currency është i detyrueshëm.',
             'storage.required' => 'Storage është i detyrueshëm për telefonat.',
             'ram.required' => 'RAM është i detyrueshëm për telefonat.',
             'color.required' => 'Ngjyra është e detyrueshme për telefonat.',
-
         ]);
 
-        Product::create($validated);
+        // Create product
+        $product = Product::create([
+            'category_id' => $validated['category_id'],
+            'brand_id' => $validated['brand_id'],
+            'name' => $validated['name'],
+            'price' => $validated['price'],
+            'currency_id' => $validated['currency_id'],
+            'storage' => $validated['storage'] ?? null,
+            'ram' => $validated['ram'] ?? null,
+            'color' => $validated['color'] ?? null,
+        ]);
+
+        // Attach warehouses (quantity = 0 per default)
+        $warehouseData = [];
+        foreach ($validated['warehouse_ids'] as $warehouseId) {
+            $warehouseData[$warehouseId] = ['quantity' => 0];
+        }
+        $product->warehouses()->attach($warehouseData);
 
         return redirect()->route('products.index')
             ->with('success', 'Produkti u shtua me sukses!');
@@ -77,8 +109,9 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $product->load(['warehouses', 'category', 'brand', 'currency']);
+
         if (request()->wantsJson() || request()->ajax()) {
-            $product->load(['warehouse', 'category', 'brand']);
             return response()->json($product);
         }
 
@@ -92,15 +125,14 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-
         $rules = [
-            'warehouse_id' => 'required|exists:warehouses,id',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0',
             'unit_price' => 'required|numeric|min:0',
             'currency_id' => 'required|exists:currencies,id',
+            'warehouse_ids' => 'required|array|min:1',
+            'warehouse_ids.*' => 'exists:warehouses,id',
         ];
 
         $category = Category::findOrFail($request->category_id);
@@ -111,19 +143,35 @@ class ProductController extends Controller
         }
 
         $validated = $request->validate($rules, [
-            'warehouse_id.required' => 'Warehouse është i detyrueshëm.',
             'category_id.required' => 'Kategoria është e detyrueshme.',
             'brand_id.required' => 'Brand është i detyrueshëm.',
             'name.required' => 'Emri është i detyrueshëm.',
-            'quantity.required' => 'Sasia është e detyrueshme.',
             'unit_price.required' => 'Çmimi është i detyrueshëm.',
             'currency_id.required' => 'Currency është i detyrueshëm.',
+            'warehouse_ids.required' => 'Duhet të zgjedhësh të paktën një warehouse.',
             'storage.required' => 'Storage është i detyrueshëm për telefonat.',
             'ram.required' => 'RAM është i detyrueshëm për telefonat.',
             'color.required' => 'Ngjyra është e detyrueshme për telefonat.',
         ]);
 
-        $product->update($validated);
+        // Update basic product info
+        $product->update([
+            'category_id' => $validated['category_id'],
+            'brand_id' => $validated['brand_id'],
+            'name' => $validated['name'],
+            'price' => $validated['unit_price'],
+            'currency_id' => $validated['currency_id'],
+            'storage' => $validated['storage'] ?? null,
+            'ram' => $validated['ram'] ?? null,
+            'color' => $validated['color'] ?? null,
+        ]);
+
+        // Sync warehouses (quantity = 0, kjo ruhet në purchase/sale)
+        $warehouseData = [];
+        foreach ($validated['warehouse_ids'] as $warehouseId) {
+            $warehouseData[$warehouseId] = ['quantity' => 0];
+        }
+        $product->warehouses()->sync($warehouseData);
 
         return redirect()->route('products.index')
             ->with('success', 'Produkti u përditësua me sukses!');

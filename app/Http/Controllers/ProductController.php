@@ -167,11 +167,11 @@ class ProductController extends Controller
         ]);
 
         // Sync warehouses (quantity = 0, kjo ruhet në purchase/sale)
-        $warehouseData = [];
-        foreach ($validated['warehouse_ids'] as $warehouseId) {
-            $warehouseData[$warehouseId] = ['quantity' => 0];
-        }
-        $product->warehouses()->sync($warehouseData);
+        // $warehouseData = [];
+        // foreach ($validated['warehouse_ids'] as $warehouseId) {
+        //     $warehouseData[$warehouseId] = ['quantity' => 0];
+        // }
+        $product->warehouses()->sync($validated['warehouse_ids']);
 
         return redirect()->route('products.index')
             ->with('success', 'Produkti u përditësua me sukses!');

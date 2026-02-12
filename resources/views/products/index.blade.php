@@ -151,7 +151,7 @@
                                     <span class="badge bg-{{ $badgeClass }}">{{ $totalQty }}</span>
                                 </td>
                                 <td>
-                                    <strong>{{ number_format($product->price, 2) }} {{ $product->currency ? $product->currency->symbol : '' }}</strong>
+                                    <strong>{{ number_format($product->unit_price, 2) }} {{ $product->currency ? $product->currency->symbol : '' }}</strong>
                                 </td>
                                 <td>{{ $product->storage ?? '-' }}</td>
                                 <td>{{ $product->ram ?? '-' }}</td>

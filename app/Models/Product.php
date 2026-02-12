@@ -162,7 +162,7 @@ class Product extends Model
     public function getProfitMarginAttribute()
     {
         if ($this->purchase_price > 0) {
-            return (($this->price - $this->purchase_price) / $this->purchase_price) * 100;
+            return (($this->unit_price - $this->purchase_price) / $this->purchase_price) * 100;
         }
         return 0;
     }

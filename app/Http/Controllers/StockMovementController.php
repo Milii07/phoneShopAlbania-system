@@ -37,6 +37,24 @@ class StockMovementController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        // Search by product name, storage, color or IMEI (term 'q')
+        if ($request->filled('q')) {
+            $term = trim($request->q);
+            $query->where(function ($qq) use ($term) {
+                $qq->where('name', 'like', "%{$term}%")
+                    ->orWhere('storage', 'like', "%{$term}%")
+                    ->orWhere('color', 'like', "%{$term}%");
+            });
+
+            // also include products that have the searched IMEI in purchase/sale items
+            $piIds = PurchaseItem::where('imei_numbers', 'like', "%{$term}%")->pluck('product_id')->filter()->unique()->values()->all();
+            $siIds = SaleItem::where('imei_numbers', 'like', "%{$term}%")->pluck('product_id')->filter()->unique()->values()->all();
+            $mergeIds = array_values(array_unique(array_merge($piIds, $siIds)));
+            if (!empty($mergeIds)) {
+                $query->orWhereIn('id', $mergeIds);
+            }
+        }
+
         // Pagination for products stock list
         $products = $query->paginate(50)->appends($request->query());
 
@@ -49,6 +67,23 @@ class StockMovementController extends Controller
         }
         if ($request->filled('category_id')) {
             $statsQuery->where('category_id', $request->category_id);
+        }
+
+        // apply the same quick search to statsQuery so totals reflect the search
+        if ($request->filled('q')) {
+            $term = trim($request->q);
+            $statsQuery->where(function ($qq) use ($term) {
+                $qq->where('name', 'like', "%{$term}%")
+                    ->orWhere('storage', 'like', "%{$term}%")
+                    ->orWhere('color', 'like', "%{$term}%");
+            });
+
+            $piIds = PurchaseItem::where('imei_numbers', 'like', "%{$term}%")->pluck('product_id')->filter()->unique()->values()->all();
+            $siIds = SaleItem::where('imei_numbers', 'like', "%{$term}%")->pluck('product_id')->filter()->unique()->values()->all();
+            $mergeIds = array_values(array_unique(array_merge($piIds, $siIds)));
+            if (!empty($mergeIds)) {
+                $statsQuery->orWhereIn('id', $mergeIds);
+            }
         }
 
         $totalProducts = $statsQuery->count();
@@ -145,7 +180,11 @@ class StockMovementController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $products = $query->get();
+        // Respect pagination parameters so exports can export the current page only
+        $perPage = (int) $request->input('per_page', 50);
+        $page = (int) $request->input('page', 1);
+        $productsPaginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $products = collect($productsPaginator->items());
 
         $productIds = $products->pluck('id')->filter()->values()->all();
         $purchased = PurchaseItem::whereIn('product_id', $productIds)->get();
@@ -180,7 +219,11 @@ class StockMovementController extends Controller
 
         $data = ['products' => $products];
 
-        $filename = 'stock_' . Str::slug(now()->toDateString()) . '.pdf';
+        $filename = 'stock_' . Str::slug(now()->toDateString());
+        if ($page > 1) {
+            $filename .= '_page_' . $page;
+        }
+        $filename .= '.pdf';
 
         // Prefer the Laravel Dompdf wrapper when available
         if (class_exists(DompdfFacade::class)) {
@@ -233,7 +276,11 @@ class StockMovementController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $products = $query->get();
+        // Respect pagination parameters so exports can export the current page only
+        $perPage = (int) $request->input('per_page', 50);
+        $page = (int) $request->input('page', 1);
+        $productsPaginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $products = collect($productsPaginator->items());
 
         $productIds = $products->pluck('id')->filter()->values()->all();
         $purchased = PurchaseItem::whereIn('product_id', $productIds)->get();
@@ -290,14 +337,22 @@ class StockMovementController extends Controller
             }
 
             $writer = new XlsxWriter($spreadsheet);
-            $filename = 'stock_' . Str::slug(now()->toDateString()) . '.xlsx';
+            $filename = 'stock_' . Str::slug(now()->toDateString());
+            if ($page > 1) {
+                $filename .= '_page_' . $page;
+            }
+            $filename .= '.xlsx';
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             $writer->save('php://output');
             exit;
         }
 
-        $filename = 'stock_' . Str::slug(now()->toDateString()) . '.csv';
+        $filename = 'stock_' . Str::slug(now()->toDateString());
+        if ($page > 1) {
+            $filename .= '_page_' . $page;
+        }
+        $filename .= '.csv';
         $handle = fopen('php://output', 'w');
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');

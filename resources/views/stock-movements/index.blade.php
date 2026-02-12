@@ -98,9 +98,9 @@
                 </div>
                 @endif
 
-                <!-- Filters: warehouse + category -->
+                <!-- Filters: warehouse + category + search -->
                 <form method="GET" action="{{ route('stock-movements.index') }}" class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Warehouse</label>
                         <select name="warehouse_id" class="form-select">
                             <option value="">Të gjitha</option>
@@ -111,7 +111,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4">
+
+                    <div class="col-md-3">
                         <label class="form-label">Kategoria</label>
                         <select name="category_id" class="form-select">
                             <option value="">Të gjitha</option>
@@ -122,7 +123,13 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Kërko</label>
+                        <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Emri i produktit, IMEI ose fjala kyçe">
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
                         <div class="d-flex gap-2 w-100">
                             <button type="submit" class="btn btn-primary">
                                 <i class="ri-search-line"></i> Filtroni

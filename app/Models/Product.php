@@ -13,8 +13,8 @@ class Product extends Model
         'category_id',
         'brand_id',
         'name',
-        'price',               // Çmimi i shitjes (Sale Price)
-        'purchase_price',      // Çmimi i blerjes (Purchase Price) - E RE
+        'unit_price',
+        'purchase_price',
         'currency_id',
         'storage',
         'ram',
@@ -22,7 +22,7 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'unit_price' => 'decimal:2',
         'purchase_price' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

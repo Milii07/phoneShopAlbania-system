@@ -214,6 +214,14 @@ class SaleController extends Controller
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
 
+                // Check stock in warehouse
+                $availableQty = $product->getQuantityInWarehouse($warehouseId);
+
+                if ($availableQty < $item['quantity']) {
+                    $errorMsg[] = "Produkti '{$product->name}' nuk ka stok të mjaftueshëm në këtë warehouse. Në stok: {$availableQty}, Kërkuar: {$item['quantity']}";
+                    continue;
+                }
+
                 $quantity = $item['quantity'];
                 $unitPrice = $item['unit_price'];
                 $discount = $item['discount'] ?? 0;

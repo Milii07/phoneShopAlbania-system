@@ -479,8 +479,8 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Payment Status <span class="text-danger">*</span></label>
                             <select class="form-select" name="payment_status" required>
-                                <option value="Unpaid">Unpaid</option>
-                                <option value="Paid">Paid</option>
+                                <option value="Unpaid">UnPaid</option>
+                                <option value="Paid" selected>Paid</option>
                                 <option value="Partial">Partial</option>
                             </select>
                         </div>
@@ -764,6 +764,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let productIndex = 0;
     let warrantyData = {};
@@ -856,7 +857,11 @@
         const hasWarranty = $('#has_warranty').is(':checked');
 
         if (!hasWarranty) {
-            alert('Ju lutem zgjidhni "Produkti ka garanci" para se të printoni.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kërkohet garanci',
+                text: 'Ju lutem zgjidhni "Produkti ka garanci" para se të printoni.'
+            });
             return;
         }
 
@@ -981,7 +986,11 @@
             pdf.save(filename);
         } catch (error) {
             console.error('Error generating PDF:', error);
-            alert('Ka ndodhur një gabim gjatë gjenerimit të PDF. Ju lutem provoni përsëri.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Gabim',
+                text: 'Ka ndodhur një gabim gjatë gjenerimit të PDF. Ju lutem provoni përsëri.'
+            });
         }
     }
 
@@ -1299,15 +1308,25 @@
             type: 'POST',
             data: $(this).serialize(),
             success: function(response) {
-                alert(response.message || 'Fatura u krijua me sukses');
-                if (response.url) window.location.href = response.url;
+                Swal.fire({
+                    icon: 'success',
+                    title: response.message || 'Fatura u krijua me sukses',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(function() {
+                    if (response.url) window.location.href = response.url;
+                });
             },
             error: function(xhr) {
                 let msg = 'Gabim në validim';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     msg = Array.isArray(xhr.responseJSON.message) ? xhr.responseJSON.message.join('\n') : xhr.responseJSON.message;
                 }
-                alert(msg);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gabim',
+                    text: msg
+                });
             }
         });
     });

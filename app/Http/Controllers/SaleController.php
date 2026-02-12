@@ -10,6 +10,7 @@ use App\Models\Partner;
 use App\Models\Warehouse;
 use App\Models\Currency;
 use App\Models\PurchaseItem;
+use App\Services\ExchangeRateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -86,12 +87,6 @@ class SaleController extends Controller
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.tax' => 'nullable|numeric|min:0',
             'items.*.imei_numbers' => 'nullable|string',
-            'items.*.has_warranty' => 'nullable|boolean',
-            'items.*.warranty_period' => 'nullable|integer',
-            'items.*.warranty_expiry' => 'nullable|date',
-            'items.*.warranty_notes' => 'nullable|string',
-            'items.*.product_status' => 'nullable|string',
-            'items.*.product_condition' => 'nullable|string',
         ]);
 
         try {
@@ -99,6 +94,9 @@ class SaleController extends Controller
 
             $warehouseId = $validated['warehouse_id'];
             $warehouse = Warehouse::findOrFail($warehouseId);
+
+            $saleCurrency = Currency::find($validated['currency_id']);
+            $saleCurrencyCode = $saleCurrency ? $saleCurrency->code : null;
 
             $subtotal = 0;
             $totalTax = 0;
@@ -108,7 +106,7 @@ class SaleController extends Controller
             $allImeiNumbers = [];
             $errorMsg = [];
 
-            // Validate items and calculate totals
+            // Validate items
             foreach ($request->items as $itemIndex => $item) {
                 $product = Product::findOrFail($item['product_id']);
 
@@ -116,7 +114,7 @@ class SaleController extends Controller
                 $availableQty = $product->getQuantityInWarehouse($warehouseId);
 
                 if ($availableQty < $item['quantity']) {
-                    $errorMsg[] = "Produkti '{$product->name}' nuk ka stok të mjaftueshëm në këtë warehouse. Në stok: {$availableQty}, Kërkuar: {$item['quantity']}";
+                    $errorMsg[] = "Produkti '{$product->name}' nuk ka stok të mjaftueshëm. Në stok: {$availableQty}, Kërkuar: {$item['quantity']}";
                     continue;
                 }
 
@@ -125,20 +123,16 @@ class SaleController extends Controller
                 $discount = $item['discount'] ?? 0;
                 $tax = $item['tax'] ?? 0;
 
-                // Llogarit subtotal, tax, discount
                 $subtotal += ($quantity * $unitPrice);
                 $totalTax += $tax;
                 $totalDiscount += $discount;
 
-                // Llogarit fitimin (sale_price - purchase_price) * quantity
-                $purchasePrice = $product->purchase_price ?? 0;
+                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
                 $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
                 $totalProfit += $itemProfit;
-
-                // Llogarit fitimin tuaj bazuar në përqindjen e warehouse
                 $ownerProfit += $itemProfit * ($warehouse->profit_percentage / 100);
 
-                // IMEI validation
+                // IMEI validation (existing code...)
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
                     $imeiCount = count($imeiArray);
@@ -160,14 +154,12 @@ class SaleController extends Controller
                             break;
                         }
 
-                        // Check if IMEI already sold
                         $existingImei = SaleItem::whereJsonContains('imei_numbers', $imei)->first();
                         if ($existingImei) {
                             $errorMsg[] = "IMEI {$imei} është shitur tashmë (Invoice #{$existingImei->sale->invoice_number}).";
                             break;
                         }
 
-                        // Check if IMEI exists in purchases
                         $purchasedImei = PurchaseItem::whereJsonContains('imei_numbers', $imei)->first();
                         if (!$purchasedImei) {
                             $errorMsg[] = "IMEI {$imei} nuk ekziston në sistem.";
@@ -228,10 +220,7 @@ class SaleController extends Controller
                 $tax = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitPrice) - $discount + $tax;
 
-                // Merr çmimin e blerjes nga produkti
-                $purchasePrice = $product->purchase_price ?? 0;
-
-                // Llogarit fitimin për këtë item
+                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
                 $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
                 $itemOwnerProfit = $itemProfit * ($warehouse->profit_percentage / 100);
 
@@ -359,6 +348,10 @@ class SaleController extends Controller
                 }
             }
 
+            // Determine sale currency code for conversions
+            $saleCurrency = Currency::find($validated['currency_id']);
+            $saleCurrencyCode = $saleCurrency ? $saleCurrency->code : null;
+
             $subtotal = 0;
             $totalTax = 0;
             $totalDiscount = 0;
@@ -385,7 +378,7 @@ class SaleController extends Controller
                 $totalTax += $tax;
                 $totalDiscount += $discount;
 
-                $purchasePrice = $product->purchase_price ?? 0;
+                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
                 $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
                 $totalProfit += $itemProfit;
                 $ownerProfit += $itemProfit * ($warehouse->profit_percentage / 100);
@@ -459,7 +452,7 @@ class SaleController extends Controller
                 $tax = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitPrice) - $discount + $tax;
 
-                $purchasePrice = $product->purchase_price ?? 0;
+                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
                 $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
                 $itemOwnerProfit = $itemProfit * ($warehouse->profit_percentage / 100);
 
@@ -595,6 +588,83 @@ class SaleController extends Controller
         return response()->json(['success' => true, 'message' => 'Payment status updated']);
     }
 
+    /**
+     * Get the latest purchase price for a product and convert it to the target currency code.
+     * If purchase record has a different currency, use ExchangeRateService to convert.
+     * Returns a float price in target currency (or original if conversion not possible).
+     *
+     * @param \App\Models\Product $product
+     * @param int|null $warehouseId
+     * @param string|null $targetCurrencyCode
+     * @return float
+     */
+    private function getLatestPurchasePriceInCurrency($product, $warehouseId = null, $targetCurrencyCode = null)
+    {
+        // Fetch the latest PurchaseItem (warehouse-scoped first)
+        $query = PurchaseItem::where('product_id', $product->id)->with(['purchase.currency']);
+
+        if ($warehouseId) {
+            $query->whereHas('purchase', function ($q) use ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            });
+        }
+
+        $purchaseItem = $query->orderByDesc('created_at')->first();
+
+        if (!$purchaseItem && $warehouseId) {
+            $purchaseItem = PurchaseItem::where('product_id', $product->id)->orderByDesc('created_at')->first();
+        }
+
+        $rawPrice = null;
+        if ($purchaseItem) {
+            if (isset($purchaseItem->line_total)) {
+                $rawPrice = (float) $purchaseItem->line_total;
+            } elseif (isset($purchaseItem->unit_cost)) {
+                $rawPrice = (float) $purchaseItem->unit_cost;
+            }
+
+            $purchaseCurrencyCode = null;
+            if (!empty($purchaseItem->purchase) && !empty($purchaseItem->purchase->currency)) {
+                $purchaseCurrencyCode = $purchaseItem->purchase->currency->code ?? null;
+            }
+
+            if ($rawPrice !== null && $targetCurrencyCode && $purchaseCurrencyCode && $purchaseCurrencyCode !== $targetCurrencyCode) {
+                try {
+                    $exchange = new ExchangeRateService();
+                    $rates = $exchange->getExchangeRates();
+                    if (isset($rates['data']) && is_array($rates['data'])) {
+                        $rates = $rates['data'];
+                    }
+
+                    if (isset($rates[$purchaseCurrencyCode]) && $targetCurrencyCode == 'LEK') {
+                        $rateFrom = $rates[$purchaseCurrencyCode]['buy'] ?? $rates[$purchaseCurrencyCode]['sell'] ?? null;
+
+                        if ($rateFrom) {
+                            $amountInLeke = $rawPrice * $rateFrom;
+                            return (float) $amountInLeke;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    if ($rawPrice !== null) {
+                        return (float) $rawPrice;
+                    }
+                }
+            }
+
+            if ($rawPrice !== null) {
+                return (float) $rawPrice;
+            }
+        }
+
+
+        // Fallbacks
+        if (isset($product->purchase_price)) {
+            return (float) $product->purchase_price;
+        }
+
+        return 0.0;
+    }
+
     public function dailyReport(Request $request)
     {
         $date = $request->input('date', now()->format('Y-m-d'));
@@ -607,41 +677,100 @@ class SaleController extends Controller
         $report = $sales->groupBy('warehouse_id')->map(function ($warehouseSales) {
             $warehouse = $warehouseSales->first()->warehouse;
 
-            $xhiroTotale = $warehouseSales->sum('total_amount');
-            $fitimiTotal = $warehouseSales->sum('profit_total');
-            $fitimiJuaj = $warehouseSales->sum('owner_profit');
+            // Aggregate per-currency values for this warehouse
+            $byCurrency = [];
+            foreach ($warehouseSales as $s) {
+                $code = $s->currency->code ?? 'LEK';
+                $symbol = $s->currency->symbol ?? '';
+
+                if (!isset($byCurrency[$code])) {
+                    $byCurrency[$code] = [
+                        'symbol' => $symbol,
+                        'xhiro' => 0.0,
+                        'fitimi_total' => 0.0,
+                        'fitimi_juaj' => 0.0,
+                        'cash' => 0.0,
+                        'bank' => 0.0,
+                    ];
+                }
+
+                $byCurrency[$code]['xhiro'] += (float) $s->total_amount;
+                $byCurrency[$code]['fitimi_total'] += (float) $s->profit_total;
+                $byCurrency[$code]['fitimi_juaj'] += (float) $s->owner_profit;
+
+                if ($s->payment_method === 'Cash') {
+                    $byCurrency[$code]['cash'] += (float) $s->total_amount;
+                } elseif ($s->payment_method === 'Bank') {
+                    $byCurrency[$code]['bank'] += (float) $s->total_amount;
+                }
+            }
+
+            // Format per-currency for view
+            $byCurrencyFormatted = collect($byCurrency)->map(function ($v) {
+                return [
+                    'symbol' => $v['symbol'],
+                    'xhiro' => number_format($v['xhiro'], 2),
+                    'fitimi_total' => number_format($v['fitimi_total'], 2),
+                    'fitimi_juaj' => number_format($v['fitimi_juaj'], 2),
+                    'cash' => number_format($v['cash'], 2),
+                    'bank' => number_format($v['bank'], 2),
+                ];
+            })->toArray();
+
+            $totalXhiro = array_sum(array_column($byCurrency, 'xhiro'));
+            $totalFitimi = array_sum(array_column($byCurrency, 'fitimi_total'));
+            $totalOwner = array_sum(array_column($byCurrency, 'fitimi_juaj'));
 
             return [
                 'dyqani' => $warehouse->name,
                 'lokacioni' => $warehouse->location,
                 'perqindja_fitimit' => $warehouse->profit_percentage . '%',
-                'xhiro_totale' => number_format($xhiroTotale, 2),
-                'fitimi_total' => number_format($fitimiTotal, 2),
-                'fitimi_juaj' => number_format($fitimiJuaj, 2),
+                'xhiro_totale' => number_format($totalXhiro, 2),
+                'fitimi_total' => number_format($totalFitimi, 2),
+                'fitimi_juaj' => number_format($totalOwner, 2),
                 'shitje_count' => $warehouseSales->count(),
-                'xhiro_euro' => number_format(
-                    $warehouseSales->filter(fn($s) => $s->currency->code === 'EUR')->sum('total_amount'),
-                    2
-                ),
-                'xhiro_leke' => number_format(
-                    $warehouseSales->filter(fn($s) => $s->currency->code === 'LEK')->sum('total_amount'),
-                    2
-                ),
-                'pagesa_cash' => number_format(
-                    $warehouseSales->where('payment_method', 'Cash')->sum('total_amount'),
-                    2
-                ),
-                'pagesa_banke' => number_format(
-                    $warehouseSales->where('payment_method', 'Bank')->sum('total_amount'),
-                    2
-                ),
+                'by_currency' => $byCurrencyFormatted,
             ];
         });
 
+        // Overall totals grouped by currency
+        $totalsByCurrency = [];
+        foreach ($sales as $s) {
+            $code = $s->currency->code ?? 'UNK';
+            $symbol = $s->currency->symbol ?? '';
+            if (!isset($totalsByCurrency[$code])) {
+                $totalsByCurrency[$code] = [
+                    'symbol' => $symbol,
+                    'xhiro' => 0.0,
+                    'fitimi_total' => 0.0,
+                    'fitimi_juaj' => 0.0,
+                    'cash' => 0.0,
+                    'bank' => 0.0,
+                ];
+            }
+            $totalsByCurrency[$code]['xhiro'] += (float) $s->total_amount;
+            $totalsByCurrency[$code]['fitimi_total'] += (float) $s->profit_total;
+            $totalsByCurrency[$code]['fitimi_juaj'] += (float) $s->owner_profit;
+            if ($s->payment_method === 'Cash') {
+                $totalsByCurrency[$code]['cash'] += (float) $s->total_amount;
+            } elseif ($s->payment_method === 'Bank') {
+                $totalsByCurrency[$code]['bank'] += (float) $s->total_amount;
+            }
+        }
+
+        $totalsFormatted = collect($totalsByCurrency)->map(function ($v) {
+            return [
+                'symbol' => $v['symbol'],
+                'xhiro' => number_format($v['xhiro'], 2),
+                'fitimi_total' => number_format($v['fitimi_total'], 2),
+                'fitimi_juaj' => number_format($v['fitimi_juaj'], 2),
+                'cash' => number_format($v['cash'], 2),
+                'bank' => number_format($v['bank'], 2),
+            ];
+        })->toArray();
+
         $totals = [
-            'xhiro_totale' => number_format($sales->sum('total_amount'), 2),
-            'fitimi_total' => number_format($sales->sum('profit_total'), 2),
-            'fitimi_juaj' => number_format($sales->sum('owner_profit'), 2),
+            'by_currency' => $totalsFormatted,
             'shitje_totale' => $sales->count(),
         ];
 

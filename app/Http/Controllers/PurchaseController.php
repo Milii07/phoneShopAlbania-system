@@ -19,7 +19,6 @@ class PurchaseController extends Controller
         $query = Purchase::with(['partner', 'warehouse', 'currency'])
             ->latest();
 
-        // Filter by warehouse if provided
         if ($request->has('warehouse_id') && $request->warehouse_id) {
             $query->where('warehouse_id', $request->warehouse_id);
         }
@@ -69,13 +68,11 @@ class PurchaseController extends Controller
 
             $warehouseId = $validated['warehouse_id'];
 
-            // Handle file upload
             $attachmentPath = null;
             if ($request->hasFile('attachment')) {
                 $attachmentPath = $request->file('attachment')->store('purchases', 'public');
             }
 
-            // Calculate totals
             $subtotal = 0;
             $totalTax = 0;
             $totalDiscount = 0;
@@ -83,14 +80,9 @@ class PurchaseController extends Controller
             $allImeiNumbers = [];
             $errorMsg = [];
 
-            // First pass: validate all items and calculate totals
+            // Validate IMEI and calculate totals
             foreach ($request->items as $itemIndex => $item) {
                 $product = Product::find($item['product_id']);
-
-                // Check if product exists in this warehouse
-                if (!$product->isInWarehouse($warehouseId)) {
-                    // Product not in warehouse, will be added with this purchase
-                }
 
                 $quantity = $item['quantity'];
                 $unitCost = $item['unit_cost'];
@@ -102,25 +94,21 @@ class PurchaseController extends Controller
                 $totalTax += $tax;
                 $totalDiscount += $discount;
 
-                // IMEI validation only if provided
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
                     $imeiCount = count($imeiArray);
 
-                    // Validate count matches quantity
                     if ($imeiCount != $quantity) {
                         $errorMsg[] = "Produkti #" . ($itemIndex + 1) . ": Numri i IMEI duhet të jetë i barabartë me sasinë ({$quantity}). Ju keni vendosur {$imeiCount} IMEI.";
                         continue;
                     }
 
-                    // Check for duplicate IMEI within this item
                     $uniqueImei = array_unique($imeiArray);
                     if (count($uniqueImei) != count($imeiArray)) {
                         $errorMsg[] = "Produkti #" . ($itemIndex + 1) . ": Ka IMEI të dubluar. Çdo IMEI duhet të jetë unik.";
                         continue;
                     }
 
-                    // Validate IMEI format (15 digits)
                     foreach ($imeiArray as $imei) {
                         if (!preg_match('/^\d{15}$/', $imei)) {
                             $errorMsg[] = "Produkti #" . ($itemIndex + 1) . ": IMEI '{$imei}' nuk është valid. IMEI duhet të jetë 15 shifra.";
@@ -128,7 +116,6 @@ class PurchaseController extends Controller
                         }
                     }
 
-                    // Check if IMEI already exists in database
                     foreach ($imeiArray as $imei) {
                         $existingImei = PurchaseItem::whereJsonContains('imei_numbers', $imei)->first();
                         if ($existingImei) {
@@ -146,7 +133,6 @@ class PurchaseController extends Controller
                 }
             }
 
-            // If there are validation errors, return them
             if (!empty($errorMsg)) {
                 DB::rollBack();
                 if ($request->ajax()) {
@@ -179,7 +165,7 @@ class PurchaseController extends Controller
                 'attachment' => $attachmentPath,
             ]);
 
-            // Create Purchase Items and Update Product Quantities
+            // Create Purchase Items and Update Stock
             foreach ($request->items as $item) {
                 $product = Product::find($item['product_id']);
 
@@ -189,7 +175,6 @@ class PurchaseController extends Controller
                 $tax = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitCost) - $discount + $tax;
 
-                // Process IMEI if provided
                 $imeiArray = null;
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
@@ -233,7 +218,6 @@ class PurchaseController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Delete uploaded file if exists
             if (isset($attachmentPath) && $attachmentPath) {
                 Storage::disk('public')->delete($attachmentPath);
             }
@@ -295,6 +279,8 @@ class PurchaseController extends Controller
 
             $oldWarehouseId = $purchase->warehouse_id;
             $newWarehouseId = $validated['warehouse_id'];
+            $oldStatus = $purchase->order_status;
+            $newStatus = $validated['order_status'];
 
             // Reverse old quantities if order was received
             if ($purchase->order_status === 'Received') {
@@ -307,10 +293,10 @@ class PurchaseController extends Controller
                 }
             }
 
+            // IMEI Validation
             $allImeiNumbers = [];
             $errorMsg = [];
 
-            // Validate IMEI for items that have them
             foreach ($request->items as $itemIndex => $item) {
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
@@ -335,7 +321,6 @@ class PurchaseController extends Controller
                         }
                     }
 
-                    // Check existing IMEI (excluding current purchase)
                     $existingImeis = PurchaseItem::where('purchase_id', '!=', $purchase->id)
                         ->get()
                         ->pluck('imei_numbers')
@@ -365,7 +350,7 @@ class PurchaseController extends Controller
                 }
             }
 
-            // Handle file upload
+            // Handle attachment
             if ($request->hasFile('attachment')) {
                 if ($purchase->attachment) {
                     Storage::disk('public')->delete($purchase->attachment);
@@ -414,7 +399,7 @@ class PurchaseController extends Controller
             // Delete old items
             $purchase->items()->delete();
 
-            // Create new items and update quantities
+            // Create new items and add stock if Received
             foreach ($request->items as $item) {
                 $product = Product::find($item['product_id']);
 
@@ -424,7 +409,6 @@ class PurchaseController extends Controller
                 $tax = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitCost) - $discount + $tax;
 
-                // Process IMEI if provided
                 $imeiArray = null;
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
@@ -496,7 +480,7 @@ class PurchaseController extends Controller
                 }
             }
 
-            // Delete attachment file
+            // Delete attachment
             if ($purchase->attachment) {
                 Storage::disk('public')->delete($purchase->attachment);
             }
@@ -515,29 +499,20 @@ class PurchaseController extends Controller
         }
     }
 
-    // API Methods
     public function searchProducts(Request $request)
     {
         $search = $request->get('q', '');
-        $warehouseId = $request->get('warehouse_id'); // Important: frontend duhet ta dërgojë
+        $warehouseId = $request->get('warehouse_id');
 
-        $query = Product::with(['category', 'brand', 'currency', 'warehouses'])
+        $query = Product::with(['category', 'brand', 'currency'])
             ->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('storage', 'like', "%{$search}%")
                     ->orWhere('color', 'like', "%{$search}%");
             });
 
-        // Nëse ka warehouse_id, filter products që janë në atë warehouse
-        if ($warehouseId) {
-            $query->whereHas('warehouses', function ($q) use ($warehouseId) {
-                $q->where('warehouse_id', $warehouseId);
-            });
-        }
-
         $products = $query->limit(10)->get();
 
-        // Add warehouse-specific info
         $products = $products->map(function ($product) use ($warehouseId) {
             if ($warehouseId) {
                 $product->current_warehouse_quantity = $product->getQuantityInWarehouse($warehouseId);

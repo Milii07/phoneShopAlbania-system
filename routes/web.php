@@ -13,6 +13,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ExchangeRateController;
+use App\Http\Controllers\StockMovementController;
 
 
 Route::get('/', function () {
@@ -63,4 +64,12 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
 
     Route::get('exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
     Route::get('exchange-rates/{currency}', [ExchangeRateController::class, 'show'])->name('exchange-rates.show');
+
+    // Stock Movements Routes
+    Route::resource('stock-movements', StockMovementController::class)->only([
+        'index',
+    ]);
+    Route::get('stock-movements/export/pdf', [StockMovementController::class, 'exportPdf'])->name('stock-movements.export.pdf');
+    Route::get('stock-movements/export/xlsx', [StockMovementController::class, 'exportXlsx'])->name('stock-movements.export.xlsx');
+    Route::get('stock-movements/report', [StockMovementController::class, 'report'])->name('stock-movements.report');
 });

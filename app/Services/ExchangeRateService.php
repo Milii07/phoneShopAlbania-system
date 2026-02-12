@@ -130,21 +130,21 @@ class ExchangeRateService
         $crawler = new Crawler($html);
         $rates = [];
 
-        // Find all rate lines
+
         $crawler->filter('div.line[rate]')->each(function (Crawler $node) use (&$rates) {
             try {
                 $rateAttribute = $node->attr('rate');
 
                 $currencyElement = $node->filter('span b');
                 if ($currencyElement->count() === 0) {
-                    return; // Skip if currency not found
+                    return;
                 }
                 $currency = trim($currencyElement->text());
 
                 $spans = $node->filter('span');
 
                 if ($spans->count() < 3) {
-                    return; // Need at least 3 spans (currency, buy, sell)
+                    return;
                 }
 
                 $buyText = trim($spans->eq(1)->text());
@@ -175,7 +175,7 @@ class ExchangeRateService
      */
     private function extractPrice(string $text): ?float
     {
-        // Remove any non-numeric characters except decimal point
+
         $cleaned = preg_replace('/[^0-9.]/', '', $text);
 
         if (empty($cleaned)) {

@@ -166,6 +166,20 @@
                     </div>
                     @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('stock-movements.index'))
+                    <a class="nav-link menu-link" href="#sidebarStockMovements" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarStockMovements">
+                        <i class=" ri-todo-line"></i> <span data-key="t-apps">Stock Movements</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarStockMovements">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('stock-movements.index') }}" class="nav-link" data-key="t-calendar"> Stock Movements List </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    @endif
+
                     @if(function_exists('user_can_access_route') && user_can_access_route('sales.daily-report'))
                     <a class="nav-link menu-link" href="#sidebarRaportet" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRaportet">
                         <i class=" ri-bar-chart-fill"></i> <span data-key="t-apps">Daily Reports</span>
@@ -179,6 +193,8 @@
                         </ul>
                     </div>
                     @endif
+
+
                 </li>
 
 

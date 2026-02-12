@@ -146,7 +146,9 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <p class="mb-1 opacity-75">Xhiro Totale</p>
-                    <h3 class="mb-0">{{ $totals['xhiro_totale'] }} L</h3>
+                    @foreach($totals['by_currency'] as $code => $c)
+                    <h5 class="mb-0">{{ $c['xhiro'] }} {{ $c['symbol'] }}</h5>
+                    @endforeach
                 </div>
                 <div>
                     <i class="ri-money-dollar-circle-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -159,9 +161,11 @@
         <div class="stat-box success">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <p class="mb-1 opacity-75">Fitimi Total</p>
-                    <h3 class="mb-0">{{ $totals['fitimi_total'] }} L</h3>
-                    <small class="opacity-75">Para ndarjes</small>
+                    <p class="mb-1 ">Fitimi Total</p>
+                    @foreach($totals['by_currency'] as $code => $c)
+                    <h5 class="mb-0 text-white">{{ $c['fitimi_total'] }} {{ $c['symbol'] }}</h5>
+                    @endforeach
+                    <small class="">Para ndarjes</small>
                 </div>
                 <div>
                     <i class="ri-line-chart-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -175,7 +179,9 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <p class="mb-1 opacity-75">Fitimi Juaj</p>
-                    <h3 class="mb-0">{{ $totals['fitimi_juaj'] }} L</h3>
+                    @foreach($totals['by_currency'] as $code => $c)
+                    <h5 class="mb-0 text-primary">{{ $c['fitimi_juaj'] }} {{ $c['symbol'] }}</h5>
+                    @endforeach
                     <small class="opacity-75">Pas ndarjes</small>
                 </div>
                 <div>
@@ -231,16 +237,14 @@
                     <div class="p-3 bg-white rounded border">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">💰 Xhiro Totale:</span>
-                            <strong class="text-primary fs-5">{{ $warehouse['xhiro_totale'] }} L</strong>
+
                         </div>
+                        @foreach($warehouse['by_currency'] as $code => $c)
                         <div class="d-flex justify-content-between small">
-                            <span>Euro:</span>
-                            <span class="text-success">{{ $warehouse['xhiro_euro'] }} €</span>
+                            <span>{{ $code }}:</span>
+                            <span class="text-success">{{ $c['xhiro'] }} {{ $c['symbol'] }}</span>
                         </div>
-                        <div class="d-flex justify-content-between small">
-                            <span>Lekë:</span>
-                            <span class="text-info">{{ $warehouse['xhiro_leke'] }} L</span>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -248,7 +252,9 @@
                 <div class="col-6">
                     <div class="p-3 bg-white rounded border">
                         <small class="text-muted d-block mb-1">📈 Fitimi Total:</small>
-                        <h5 class="mb-0 text-success">{{ $warehouse['fitimi_total'] }} L</h5>
+                        @foreach($warehouse['by_currency'] as $code => $c)
+                        <h5 class="mb-0 text-success">{{ $c['fitimi_total'] }} {{ $c['symbol'] }}</h5>
+                        @endforeach
                         <small class="text-muted">Para ndarjes</small>
                     </div>
                 </div>
@@ -256,7 +262,9 @@
                 <div class="col-6">
                     <div class="p-3 bg-white rounded border">
                         <small class="text-muted d-block mb-1">💵 Fitimi Juaj:</small>
-                        <h5 class="mb-0 text-primary">{{ $warehouse['fitimi_juaj'] }} L</h5>
+                        @foreach($warehouse['by_currency'] as $code => $c)
+                        <h5 class="mb-0 text-primary">{{ $c['fitimi_juaj'] }} {{ $c['symbol'] }}</h5>
+                        @endforeach
                         <small class="text-muted">{{ $warehouse['perqindja_fitimit'] }} nga totali</small>
                     </div>
                 </div>
@@ -265,14 +273,16 @@
                 <div class="col-12">
                     <div class="p-3 bg-white rounded border">
                         <small class="text-muted d-block mb-2">💳 Mënyra e Pagesës:</small>
+                        @foreach($warehouse['by_currency'] as $code => $c)
                         <div class="d-flex justify-content-between mb-1">
-                            <span>Cash:</span>
-                            <strong>{{ $warehouse['pagesa_cash'] }} L</strong>
+                            <span>Cash ({{ $code }}):</span>
+                            <strong>{{ $c['cash'] }} {{ $c['symbol'] }}</strong>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <span>Bank:</span>
-                            <strong>{{ $warehouse['pagesa_banke'] }} L</strong>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Bank ({{ $code }}):</span>
+                            <strong>{{ $c['bank'] }} {{ $c['symbol'] }}</strong>
                         </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -322,21 +332,53 @@
                                         {{ $warehouse['perqindja_fitimit'] }}
                                     </span>
                                 </td>
-                                <td><strong>{{ $warehouse['xhiro_totale'] }} L</strong></td>
-                                <td><strong class="text-success">{{ $warehouse['fitimi_total'] }} L</strong></td>
-                                <td><strong class="text-primary">{{ $warehouse['fitimi_juaj'] }} L</strong></td>
+                                <td>
+                                    @foreach($warehouse['by_currency'] as $code => $c)
+                                    <div>{{ $c['xhiro'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @foreach($warehouse['by_currency'] as $code => $c)
+                                    <div class="text-success">{{ $c['fitimi_total'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @foreach($warehouse['by_currency'] as $code => $c)
+                                    <div class="text-primary">{{ $c['fitimi_juaj'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
                                 <td><span class="badge bg-info">{{ $warehouse['shitje_count'] }}</span></td>
-                                <td>{{ $warehouse['pagesa_cash'] }} L</td>
-                                <td>{{ $warehouse['pagesa_banke'] }} L</td>
+                                <td>
+                                    @foreach($warehouse['by_currency'] as $code => $c)
+                                    <div>{{ $c['cash'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @foreach($warehouse['by_currency'] as $code => $c)
+                                    <div>{{ $c['bank'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="table-secondary">
                             <tr>
                                 <td colspan="3" class="text-end"><strong>TOTALI:</strong></td>
-                                <td><strong>{{ $totals['xhiro_totale'] }} L</strong></td>
-                                <td><strong class="text-success">{{ $totals['fitimi_total'] }} L</strong></td>
-                                <td><strong class="text-primary">{{ $totals['fitimi_juaj'] }} L</strong></td>
+                                <td>
+                                    @foreach($totals['by_currency'] as $code => $c)
+                                    <div>{{ $c['xhiro'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @foreach($totals['by_currency'] as $code => $c)
+                                    <div class="text-success">{{ $c['fitimi_total'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
+                                <td>
+                                    @foreach($totals['by_currency'] as $code => $c)
+                                    <div class="text-primary">{{ $c['fitimi_juaj'] }} {{ $c['symbol'] }}</div>
+                                    @endforeach
+                                </td>
                                 <td><strong>{{ $totals['shitje_totale'] }}</strong></td>
                                 <td colspan="2"></td>
                             </tr>

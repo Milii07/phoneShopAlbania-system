@@ -32,19 +32,36 @@ class PartnerController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
-
         ], [
             'name.required' => 'Emri është i detyrueshëm.',
             'phone.required' => 'Numri i telefonit është i detyrueshëm.',
-
         ]);
 
         try {
-            Partner::create($validated);
+            $partner = Partner::create($validated);
 
+            // Nëse është AJAX request (nga modali)
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Klienti u shtua me sukses!',
+                    'partner' => $partner
+                ]);
+            }
+
+            // Nëse është normal form submission
             return redirect()->route('partners.index')
                 ->with('success', 'Partneri u shtua me sukses!');
         } catch (\Exception $e) {
+            // Nëse është AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ka ndodhur një gabim: ' . $e->getMessage()
+                ], 500);
+            }
+
+            // Nëse është normal form submission
             return redirect()->back()
                 ->with('error', 'Ka ndodhur një gabim: ' . $e->getMessage())
                 ->withInput();
@@ -103,11 +120,9 @@ class PartnerController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|max:255',
-
             ], [
                 'name.required' => 'Emri është i detyrueshëm.',
                 'phone.required' => 'Numri i telefonit është i detyrueshëm.',
-
             ]);
 
             $partner->update($validated);

@@ -429,6 +429,18 @@
     .warranty-info-box strong {
         color: #2e7d32;
     }
+
+    .modal {
+        z-index: 1060 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+
+    .modal-backdrop.show {
+        opacity: 0.5;
+    }
 </style>
 @endpush
 
@@ -436,12 +448,12 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">CREATE INVOICE</h4>
+            <h4 class="mb-sm-0">Krijo Shitje</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('sales.index') }}">Invoice</a></li>
-                    <li class="breadcrumb-item active">Create Invoice</li>
+                    <li class="breadcrumb-item"><a href="{{ route('sales.index') }}">Shitjet</a></li>
+                    <li class="breadcrumb-item active">Krijo Shitje</li>
                 </ol>
             </div>
         </div>
@@ -460,11 +472,11 @@
                             <input type="date" class="form-control" name="invoice_date" id="invoice_date" value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Delivery Date</label>
+                            <label class="form-label">Data e Blerjes</label>
                             <input type="date" class="form-control" name="delivery_date" value="{{ date('Y-m-d') }}">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                            <label class="form-label">Dyqani <span class="text-danger">*</span></label>
                             <select class="form-select" name="warehouse_id" id="warehouse_id" required>
                                 <option value="">Depot</option>
                                 @foreach($warehouses as $warehouse)
@@ -477,24 +489,24 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Payment Status <span class="text-danger">*</span></label>
+                            <label class="form-label">Statusi i Pagesës <span class="text-danger">*</span></label>
                             <select class="form-select" name="payment_status" required>
-                                <option value="Unpaid">UnPaid</option>
-                                <option value="Paid" selected>Paid</option>
-                                <option value="Partial">Partial</option>
+                                <option value="Unpaid">Pa Pagesë</option>
+                                <option value="Paid" selected>Me Pagesë</option>
+                                <option value="Partial">Pjesërisht i Paguar</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Sale Status <span class="text-danger">*</span></label>
+                            <label class="form-label">Statusi i Shitjes <span class="text-danger">*</span></label>
                             <select class="form-select" name="sale_status" required>
-                                <option value="Confirmed">Confirmed</option>
+                                <option value="Confirmed">Konfirmuar</option>
                                 <option value="Draft">Draft</option>
-                                <option value="PrePaid">PrePaid</option>
-                                <option value="Rejected">Rejected</option>
+                                <option value="PrePaid">Parapaguar</option>
+                                <option value="Rejected">Refuzuar</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Payment Method <span class="text-danger">*</span></label>
+                            <label class="form-label">Metoda e Pagesës <span class="text-danger">*</span></label>
                             <div class="d-flex gap-3 mt-2">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="payment_method" value="Cash" checked>
@@ -507,13 +519,64 @@
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Client <span class="text-danger">*</span></label>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">Client <span class="text-danger">*</span></label>
+                                <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createClientModal">
+                                    <i class="ri-add-line"></i> Shto Klient
+                                </button>
+                            </div>
                             <select class="form-select select2-client" name="partner_id" id="partner_id" required>
                                 <option value="">Choose...</option>
                                 @foreach($partners as $partner)
-                                <option value="{{ $partner->id }}" data-name="{{ $partner->name }}" data-address="{{ $partner->address ?? '' }}" data-phone="{{ $partner->phone ?? '' }}">{{ $partner->name }}</option>
+                                <option value="{{ $partner->id }}"
+                                    data-name="{{ $partner->name }}"
+                                    data-address="{{ $partner->address ?? '' }}"
+                                    data-phone="{{ $partner->phone ?? '' }}">
+                                    {{ $partner->name }}
+                                </option>
                                 @endforeach
                             </select>
+                        </div>
+                        <!-- Create Client Modal -->
+                        <div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary">
+                                        <h5 class="modal-title text-white" id="createClientModalLabel">
+                                            <i class="ri-add-line align-middle me-1"></i> Shto Klient të Ri
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" action="{{ route('partners.store') }}" id="createClientForm">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="client_name" class="form-label">Emri <span class="text-danger">*</span></label>
+                                                <input type="text"
+                                                    class="form-control"
+                                                    id="client_name"
+                                                    name="name"
+                                                    placeholder="Shkruani emrin e klientit">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="client_phone" class="form-label">Nr. Telefoni <span class="text-danger">*</span></label>
+                                                <input type="text"
+                                                    class="form-control"
+                                                    id="client_phone"
+                                                    name="phone"
+                                                    placeholder="+355 69 123 4567">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anulo</button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="ri-save-line align-middle me-1"></i> Ruaj Klientin
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Seller <span class="text-danger">*</span></label>
@@ -548,12 +611,11 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Payment Term</label>
                             <select class="form-select" name="payment_term">
-                                <option value="">Select...</option>
-                                <option value="Due on Receipt">Due on Receipt</option>
-                                <option value="Net 15">Net 15</option>
-                                <option value="Net 30">Net 30</option>
-                                <option value="Net 45">Net 45</option>
-                                <option value="Net 60">Net 60</option>
+                                <option value="Due on Receipt" selected>NE momentin e pranimit</option>
+                                <option value="Net 15">pas 15</option>
+                                <option value="Net 30">pas 30</option>
+                                <option value="Net 45">pas 45</option>
+                                <option value="Net 60">pas 60</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -1328,6 +1390,150 @@
                     text: msg
                 });
             }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // Fix modal z-index
+        $('#createClientModal').on('show.bs.modal', function() {
+            setTimeout(function() {
+                $('#createClientModal').css('z-index', 1060);
+                $('.modal-backdrop').css('z-index', 1050);
+            }, 10);
+        });
+
+        // Clean up backdrop
+        $('#createClientModal').on('hidden.bs.modal', function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+        });
+
+        // Form submission
+        $('#createClientForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const name = $('#client_name').val().trim();
+            const phone = $('#client_phone').val().trim();
+
+            if (!name || !phone) {
+                alert('Ju lutem plotësoni të gjitha fushat!');
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("partners.store") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    name: name,
+                    phone: phone
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Close modal
+                        $('#createClientModal').modal('hide');
+
+                        // Add to select
+                        const newOption = new Option(response.partner.name, response.partner.id, true, true);
+                        $(newOption).attr('data-name', response.partner.name);
+                        $(newOption).attr('data-phone', response.partner.phone);
+                        $(newOption).attr('data-address', '');
+
+                        $('#partner_id').append(newOption).trigger('change');
+
+                        // Reset form
+                        $('#createClientForm')[0].reset();
+
+                        // Success message
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success('Klienti u shtua me sukses!');
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Ndodhi një gabim!';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(errorMsg);
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+            });
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#createClientModal').on('show.bs.modal', function(e) {
+            setTimeout(function() {
+                $('#createClientModal').css('z-index', 1060);
+                $('.modal-backdrop').css('z-index', 1050);
+            }, 0);
+        });
+
+        $('#createClientModal').on('hidden.bs.modal', function(e) {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+        });
+
+        let saveTimeout;
+
+        function saveClient() {
+            const name = $('#client_name').val().trim();
+            const phone = $('#client_phone').val().trim();
+
+            if (name && phone && name.length >= 2 && phone.length >= 6) {
+                $.ajax({
+                    url: '{{ route("partners.store") }}',
+                    method: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        name: name,
+                        phone: phone
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#createClientModal').modal('hide');
+
+                            const newOption = new Option(response.partner.name, response.partner.id, true, true);
+                            $(newOption).attr('data-name', response.partner.name);
+                            $(newOption).attr('data-phone', response.partner.phone);
+                            $('#partner_id').append(newOption).trigger('change');
+
+                            $('#createClientForm')[0].reset();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error:', xhr);
+                    }
+                });
+            }
+        }
+
+
+        $('#client_name, #client_phone').on('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveClient, 500);
+        });
+
+
+        $('#client_name, #client_phone').on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                clearTimeout(saveTimeout);
+                saveClient();
+            }
+        });
+
+        $('#createClientForm').on('submit', function(e) {
+            e.preventDefault();
+            clearTimeout(saveTimeout);
+            saveClient();
         });
     });
 </script>

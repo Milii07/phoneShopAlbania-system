@@ -43,12 +43,12 @@
                 <li class="nav-item">
                     @if(function_exists('user_can_access_route') && user_can_access_route('warehouses.index'))
                     <a class="nav-link menu-link" href="#sidebarWarehouse" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarWarehouse">
-                        <i class="ri-store-2-line"></i> <span data-key="t-apps">Warehouse</span>
+                        <i class="ri-store-2-line"></i> <span data-key="t-apps">Dyqanet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarWarehouse">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('warehouses.index') }}" class="nav-link" data-key="t-calendar"> Warehouse </a>
+                                <a href="{{ route('warehouses.index') }}" class="nav-link" data-key="t-calendar"> Dyqanet </a>
                             </li>
                         </ul>
                     </div>
@@ -56,12 +56,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('categories.index'))
                     <a class="nav-link menu-link" href="#sidebarCategories" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategories">
-                        <i class="ri-smartphone-fill"></i> <span data-key="t-apps">Categories</span>
+                        <i class="ri-smartphone-fill"></i> <span data-key="t-apps">Kategorite</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarCategories">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('categories.index') }}" class="nav-link" data-key="t-calendar"> Category </a>
+                                <a href="{{ route('categories.index') }}" class="nav-link" data-key="t-calendar"> Kategorite </a>
                             </li>
 
                         </ul>
@@ -70,12 +70,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('brands.index'))
                     <a class="nav-link menu-link" href="#sidebarBrands" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBrands">
-                        <i class="ri-apple-fill"></i> <span data-key="t-apps">Brands</span>
+                        <i class="ri-apple-fill"></i> <span data-key="t-apps">Brendet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarBrands">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('brands.index') }}" class="nav-link" data-key="t-calendar"> Brand </a>
+                                <a href="{{ route('brands.index') }}" class="nav-link" data-key="t-calendar"> Brendet </a>
                             </li>
 
                         </ul>
@@ -84,12 +84,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('currencies.index'))
                     <a class="nav-link menu-link" href="#sidebarCurrency" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCurrency">
-                        <i class="ri-money-pound-box-fill"></i> <span data-key="t-apps">Currency</span>
+                        <i class="ri-money-pound-box-fill"></i> <span data-key="t-apps">Monedhat</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarCurrency">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('currencies.index') }}" class="nav-link" data-key="t-calendar"> Currency </a>
+                                <a href="{{ route('currencies.index') }}" class="nav-link" data-key="t-calendar"> Monedhat </a>
                             </li>
 
                         </ul>
@@ -98,12 +98,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('products.index'))
                     <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
-                        <i class="ri-barcode-line"></i> <span data-key="t-apps">Products</span>
+                        <i class="ri-barcode-line"></i> <span data-key="t-apps">Produktet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarProducts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('products.index') }}" class="nav-link" data-key="t-calendar"> Product </a>
+                                <a href="{{ route('products.index') }}" class="nav-link" data-key="t-calendar"> Produktet </a>
                             </li>
 
                         </ul>
@@ -112,12 +112,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('partners.index'))
                     <a class="nav-link menu-link" href="#sidebarPartners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPartners">
-                        <i class="ri-group-2-fill"></i> <span data-key="t-apps">Partners</span>
+                        <i class="ri-group-2-fill"></i> <span data-key="t-apps">Partnerët</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarPartners">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('partners.index') }}" class="nav-link" data-key="t-calendar"> Partner </a>
+                                <a href="{{ route('partners.index') }}" class="nav-link" data-key="t-calendar"> Partnerët </a>
                             </li>
 
                         </ul>
@@ -126,12 +126,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('sellers.index'))
                     <a class="nav-link menu-link" href="#sidebarSellers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellers">
-                        <i class="ri-user-add-fill"></i> <span data-key="t-apps">Sellers</span>
+                        <i class="ri-user-add-fill"></i> <span data-key="t-apps">Shitesit</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarSellers">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('sellers.index') }}" class="nav-link" data-key="t-calendar"> Seller </a>
+                                <a href="{{ route('sellers.index') }}" class="nav-link" data-key="t-calendar"> Shitesit </a>
                             </li>
 
                         </ul>
@@ -140,12 +140,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('purchases.index'))
                     <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
-                        <i class="ri-file-list-3-fill"></i><span data-key="t-apps">Purchases</span>
+                        <i class="ri-file-list-3-fill"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarPurchases">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-calendar"> Purchase </a>
+                                <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-calendar"> Blerjet </a>
                             </li>
 
                         </ul>
@@ -154,12 +154,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('sales.index'))
                     <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
-                        <i class="ri-price-tag-3-line"></i><span data-key="t-apps">Sales</span>
+                        <i class="ri-price-tag-3-line"></i><span data-key="t-apps">Shitjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarSales">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('sales.index') }}" class="nav-link" data-key="t-calendar"> Sale </a>
+                                <a href="{{ route('sales.index') }}" class="nav-link" data-key="t-calendar"> Shitjet </a>
                             </li>
 
                         </ul>
@@ -168,12 +168,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('stock-movements.index'))
                     <a class="nav-link menu-link" href="#sidebarStockMovements" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarStockMovements">
-                        <i class=" ri-todo-line"></i> <span data-key="t-apps">Stock Movements</span>
+                        <i class=" ri-todo-line"></i> <span data-key="t-apps">Inventari</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarStockMovements">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('stock-movements.index') }}" class="nav-link" data-key="t-calendar"> Stock Movements List </a>
+                                <a href="{{ route('stock-movements.index') }}" class="nav-link" data-key="t-calendar">Inventari</a>
                             </li>
 
                         </ul>
@@ -182,12 +182,12 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('sales.daily-report'))
                     <a class="nav-link menu-link" href="#sidebarRaportet" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRaportet">
-                        <i class=" ri-bar-chart-fill"></i> <span data-key="t-apps">Daily Reports</span>
+                        <i class=" ri-bar-chart-fill"></i> <span data-key="t-apps">Raportet ditore</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarRaportet">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('sales.daily-report') }}" class="nav-link" data-key="t-calendar"> Reports </a>
+                                <a href="{{ route('sales.daily-report') }}" class="nav-link" data-key="t-calendar"> Raportet </a>
                             </li>
 
                         </ul>

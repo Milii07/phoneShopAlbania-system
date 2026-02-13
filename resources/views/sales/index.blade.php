@@ -6,12 +6,12 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">INVOICE LIST</h4>
+            <h4 class="mb-sm-0">LISTA E FATURAVE</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item">Sales</li>
-                    <li class="breadcrumb-item active">Invoice List</li>
+                    <li class="breadcrumb-item">Shitjet</li>
+                    <li class="breadcrumb-item active">Lista e Faturave</li>
                 </ol>
             </div>
         </div>
@@ -23,9 +23,9 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Invoices</h5>
+                    <h5 class="card-title mb-0">Faturat</h5>
                     <a href="{{ route('sales.create') }}" class="btn btn-primary">
-                        <i class="ri-add-line me-1"></i> Create Invoice
+                        <i class="ri-add-line me-1"></i> Krijo Faturë
                     </a>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request('status') == 'PrePaid' ? 'active' : '' }}"
-                            href="{{ route('sales.index', ['status' => 'PrePaid']) }}">PrePaid</a>
+                            href="{{ route('sales.index', ['status' => 'PrePaid']) }}">Parapaguar</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request('status') == 'Confirmed' ? 'active' : '' }}"
@@ -50,7 +50,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request('status') == 'Rejected' ? 'active' : '' }}"
-                            href="{{ route('sales.index', ['status' => 'Rejected']) }}">Rejected</a>
+                            href="{{ route('sales.index', ['status' => 'Rejected']) }}">Refuzuar</a>
                     </li>
                 </ul>
 
@@ -68,7 +68,7 @@
 
                     <div class="col-md-2">
                         <select class="form-select select2-warehouse" name="warehouse_id" id="sales_filter_warehouse">
-                            <option value="">All Warehouses</option>
+                            <option value="">Dyqanet</option>
                             @foreach($warehouses as $w)
                             <option value="{{ $w->id }}" {{ request('warehouse_id') == $w->id ? 'selected' : '' }}>{{ $w->name }}</option>
                             @endforeach
@@ -77,10 +77,10 @@
 
                     <div class="col-md-2">
                         <select class="form-select" name="payment_status">
-                            <option value="">Payment Status</option>
-                            <option value="Paid" {{ request('payment_status') == 'Paid' ? 'selected' : '' }}>Paid</option>
-                            <option value="Unpaid" {{ request('payment_status') == 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
-                            <option value="Partial" {{ request('payment_status') == 'Partial' ? 'selected' : '' }}>Partial</option>
+                            <option value="">Statusi i Pagesës</option>
+                            <option value="Paid" {{ request('payment_status') == 'Paid' ? 'selected' : '' }}>E Paguar</option>
+                            <option value="Unpaid" {{ request('payment_status') == 'Unpaid' ? 'selected' : '' }}>E Papaguar</option>
+                            <option value="Partial" {{ request('payment_status') == 'Partial' ? 'selected' : '' }}>Parapaguese</option>
                         </select>
                     </div>
 
@@ -93,7 +93,7 @@
 
                     <div class="col-md-3">
                         <select class="form-select" name="partner_id">
-                            <option value="">Select Client</option>
+                            <option value="">Zgjidh Klientin</option>
                             @foreach($partners as $partner)
                             <option value="{{ $partner->id }}" {{ request('partner_id') == $partner->id ? 'selected' : '' }}>
                                 {{ $partner->name }}
@@ -128,14 +128,14 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Invoice Number</th>
-                                <th>Client</th>
-                                <th>Invoice Date</th>
-                                <th>Due Date</th>
-                                <th>Grand Total</th>
-                                <th>Status</th>
-                                <th>Payment Status</th>
-                                <th class="no-sort">Action</th>
+                                <th>Numri i Faturës</th>
+                                <th>Klienti</th>
+                                <th>Data e Faturës</th>
+                                <th>Data e Skadencës</th>
+                                <th>Totali</th>
+                                <th>Statusi</th>
+                                <th>Statusi i Pagesës</th>
+                                <th class="no-sort">Veprimi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -155,22 +155,22 @@
                                 </td>
                                 <td>
                                     @if($sale->sale_status === 'Confirmed')
-                                    <span class="badge bg-success">Completed</span>
+                                    <span class="badge bg-success">E Konfirmuar</span>
                                     @elseif($sale->sale_status === 'Draft')
                                     <span class="badge bg-secondary">Draft</span>
                                     @elseif($sale->sale_status === 'PrePaid')
-                                    <span class="badge bg-info">PrePaid</span>
+                                    <span class="badge bg-info">Parapaguese</span>
                                     @else
-                                    <span class="badge bg-danger">Rejected</span>
+                                    <span class="badge bg-danger">Refuzuar</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($sale->payment_status === 'Paid')
-                                    <span class="badge bg-success">Paid</span>
+                                    <span class="badge bg-success">E Paguar</span>
                                     @elseif($sale->payment_status === 'Partial')
-                                    <span class="badge bg-warning">Partially Paid</span>
+                                    <span class="badge bg-warning">E Paguar Pjesërisht</span>
                                     @else
-                                    <span class="badge bg-danger">Unpaid</span>
+                                    <span class="badge bg-danger">E Papaguar</span>
                                     @endif
                                 </td>
                                 <td>

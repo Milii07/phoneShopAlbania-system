@@ -506,23 +506,40 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Metoda e Pagesës <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-3 mt-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" value="Cash" checked>
-                                    <label class="form-check-label">Cash</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Metoda e Pagesës <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-3 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" value="Cash" checked>
+                                            <label class="form-check-label">Cash</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" value="Bank">
+                                            <label class="form-check-label">Bank</label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" value="Bank">
-                                    <label class="form-check-label">Bank</label>
+                                <div class="col-md-6">
+                                    <label class="form-label">Vendi i Blerjes <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-3 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="purchase_location" id="shop" value="shop" checked>
+                                            <label class="form-check-label" for="shop">Dyqan</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="purchase_location" id="online" value="online">
+                                            <label class="form-check-label" for="online">Online</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="col-md-4 mb-5">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
                                 <label class="form-label mb-0">Client <span class="text-danger">*</span></label>
-                                <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createClientModal">
-                                    <i class="ri-add-line"></i> Shto Klient
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" type="button" data-bs-toggle="modal" data-bs-target="#createClientModal">
+                                    <i class="ri-user-add-line me-1"></i> Klient i Ri
                                 </button>
                             </div>
                             <select class="form-select select2-client" name="partner_id" id="partner_id" required>
@@ -1534,6 +1551,19 @@
             e.preventDefault();
             clearTimeout(saveTimeout);
             saveClient();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('input[name="purchase_location"]').on('change', function() {
+            const paymentStatus = $('select[name="payment_status"]');
+
+            if ($(this).val() === 'online') {
+                paymentStatus.val('Unpaid');
+            } else {
+                paymentStatus.val('Paid');
+            }
         });
     });
 </script>

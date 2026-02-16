@@ -135,6 +135,7 @@
                                 <th>Totali</th>
                                 <th>Statusi</th>
                                 <th>Statusi i Pagesës</th>
+                                <th>Vendi</th>
                                 <th class="no-sort">Veprimi</th>
                             </tr>
                         </thead>
@@ -171,6 +172,13 @@
                                     <span class="badge bg-warning">E Paguar Pjesërisht</span>
                                     @else
                                     <span class="badge bg-danger">E Papaguar</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($sale->purchase_location == 'shop')
+                                    <span class="badge bg-success">Dyqan</span>
+                                    @else
+                                    <span class="badge bg-info">Online</span>
                                     @endif
                                 </td>
                                 <td>

@@ -39,37 +39,37 @@
                 <!-- Invoice Info -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-    <table class="table table-sm table-borderless">
-        <tr>
-            <th style="width: 180px;">Invoice Number:</th>
-            <td><strong class="text-primary">{{ $sale->invoice_number }}</strong></td>
-        </tr>
-        <tr>
-            <th>Invoice Date:</th>
-            <td>{{ $sale->invoice_date->format('d/m/Y') }}</td>
-        </tr>
-        <tr>
-            <th>Delivery Date:</th>
-            <td>{{ $sale->delivery_date ? $sale->delivery_date->format('d/m/Y') : '-' }}</td>
-        </tr>
-        <tr>
-            <th>Due Date:</th>
-            <td>{{ $sale->due_date ? $sale->due_date->format('d/m/Y') : '-' }}</td>
-        </tr>
-        <tr>
-            <th>Client:</th>
-            <td>{{ $sale->partner->name }}</td>
-        </tr>
-        <tr>
-            <th>Seller:</th> <!-- SHTO KËTË -->
-            <td>{{ $sale->seller ? $sale->seller->name : '-' }}</td>
-        </tr>
-        <tr>
-            <th>Warehouse:</th>
-            <td>{{ $sale->warehouse->name }}</td>
-        </tr>
-    </table>
-</div>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <th style="width: 180px;">Invoice Number:</th>
+                                <td><strong class="text-primary">{{ $sale->invoice_number }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>Invoice Date:</th>
+                                <td>{{ $sale->invoice_date->format('d/m/Y') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Delivery Date:</th>
+                                <td>{{ $sale->delivery_date ? $sale->delivery_date->format('d/m/Y') : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Due Date:</th>
+                                <td>{{ $sale->due_date ? $sale->due_date->format('d/m/Y') : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Client:</th>
+                                <td>{{ $sale->partner->name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Seller:</th> <!-- SHTO KËTË -->
+                                <td>{{ $sale->seller ? $sale->seller->name : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Warehouse:</th>
+                                <td>{{ $sale->warehouse->name }}</td>
+                            </tr>
+                        </table>
+                    </div>
                     <div class="col-md-6">
                         <table class="table table-sm table-borderless">
                             <tr>
@@ -101,6 +101,16 @@
                             <tr>
                                 <th>Payment Method:</th>
                                 <td>{{ $sale->payment_method }}</td>
+                            </tr>
+                            <tr>
+                                <th>Vendi i Blerjes:</th>
+                                <td>
+                                    @if($sale->purchase_location == 'shop')
+                                    <span class="badge bg-success">🏪 Dyqan</span>
+                                    @else
+                                    <span class="badge bg-info">🌐 Online</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <th>Payment Term:</th>

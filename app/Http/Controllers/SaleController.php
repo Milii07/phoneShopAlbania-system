@@ -10,7 +10,9 @@ use App\Models\Partner;
 use App\Models\Warehouse;
 use App\Models\Currency;
 use App\Models\PurchaseItem;
+use App\Models\SellerBonus;
 use App\Services\ExchangeRateService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +24,8 @@ class SaleController extends Controller
         $query = Sale::with(['partner', 'warehouse', 'currency', 'seller']);
 
         if ($request->has('status') && $request->status != 'All') {
-            $query->where('sale_status', $request->status);
+            // Compare case-insensitively to avoid mismatches like 'PrePaid' vs 'prepaid'
+            $query->whereRaw('LOWER(sale_status) = ?', [strtolower($request->status)]);
         }
 
         if ($request->has('payment_status') && $request->payment_status) {
@@ -269,6 +272,53 @@ class SaleController extends Controller
                 }
             }
 
+            // Update or create seller bonus for the sale period
+            try {
+                // Ensure items & related product->category are loaded
+                $sale->load('items.product.category');
+
+                $invoiceDate = Carbon::parse($sale->invoice_date);
+                $periodStart = $invoiceDate->copy()->startOfMonth()->toDateString();
+                $periodEnd = $invoiceDate->copy()->endOfMonth()->toDateString();
+
+                $phoneTotal = 0.0;
+                $accessoryTotal = 0.0;
+
+                foreach ($sale->items as $item) {
+                    $line = (float) ($item->line_total ?? 0);
+                    $categoryName = optional($item->product->category)->name ?? '';
+
+                    // Simple heuristic: category names containing 'phone' or 'telefon' count as phones
+                    if ($categoryName && (stripos($categoryName, 'phone') !== false || stripos($categoryName, 'telefon') !== false)) {
+                        $phoneTotal += $line;
+                    } else {
+                        $accessoryTotal += $line;
+                    }
+                }
+
+                $bonus = SellerBonus::firstOrNew([
+                    'seller_id' => $sale->seller_id,
+                    'period_start' => $periodStart,
+                    'period_end' => $periodEnd,
+                ]);
+
+                $bonus->phone_sales_total = ($bonus->phone_sales_total ?? 0) + $phoneTotal;
+                $bonus->accessory_sales_total = ($bonus->accessory_sales_total ?? 0) + $accessoryTotal;
+                $bonus->total_sales_count = ($bonus->total_sales_count ?? 0) + 1;
+
+                // keep configured percentages if present, fallback to config values or 0
+                $bonus->phone_bonus_percentage = $bonus->phone_bonus_percentage ?? config('seller_bonus.phone_percentage', 0);
+                $bonus->accessory_bonus_percentage = $bonus->accessory_bonus_percentage ?? config('seller_bonus.accessory_percentage', 0);
+
+                $bonus->phone_bonus_amount = ($bonus->phone_sales_total) * (($bonus->phone_bonus_percentage ?? 0) / 100);
+                $bonus->accessory_bonus_amount = ($bonus->accessory_sales_total) * (($bonus->accessory_bonus_percentage ?? 0) / 100);
+                $bonus->total_bonus = ($bonus->phone_bonus_amount ?? 0) + ($bonus->accessory_bonus_amount ?? 0);
+
+                $bonus->save();
+            } catch (\Exception $e) {
+                Log::warning('Failed to update seller bonus for sale ' . ($sale->id ?? 'unknown') . ': ' . $e->getMessage());
+            }
+
             DB::commit();
 
             if ($request->ajax()) {
@@ -325,6 +375,7 @@ class SaleController extends Controller
             'sale_status' => 'required|in:Draft,PrePaid,Confirmed,Rejected',
             'payment_status' => 'required|in:Paid,Unpaid,Partial',
             'payment_method' => 'required|in:Cash,Bank',
+            'purchase_location' => 'required|in:shop,online',
             'payment_term' => 'nullable|string',
             'description' => 'nullable|string',
             'notes' => 'nullable|string',
@@ -436,6 +487,7 @@ class SaleController extends Controller
                 'sale_status' => $validated['sale_status'],
                 'payment_status' => $validated['payment_status'],
                 'payment_method' => $validated['payment_method'],
+                'purchase_location' => $validated['purchase_location'],
                 'payment_term' => $validated['payment_term'],
                 'subtotal' => $subtotal,
                 'tax' => $totalTax,
@@ -590,8 +642,30 @@ class SaleController extends Controller
 
     public function updatePaymentStatus(Request $request, $id)
     {
-        $sale = Sale::findOrFail($id);
-        $sale->update(['payment_status' => $request->payment_status]);
+        $sale = Sale::with('onlineOrder')->findOrFail($id);
+
+        $newStatus = $request->payment_status;
+
+        $sale->update(['payment_status' => $newStatus]);
+
+        // Sync related online order if present
+        try {
+            if ($sale->onlineOrder) {
+                if ($newStatus === 'Paid') {
+                    $sale->onlineOrder->update([
+                        'is_paid' => true,
+                        'payment_received_date' => now(),
+                    ]);
+                } else {
+                    $sale->onlineOrder->update([
+                        'is_paid' => false,
+                        'payment_received_date' => null,
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to sync online order payment status for sale ' . $sale->id . ': ' . $e->getMessage());
+        }
 
         return response()->json(['success' => true, 'message' => 'Payment status updated']);
     }

@@ -138,9 +138,24 @@
                     </div>
                     @endif
 
+
+                    @if(function_exists('user_can_access_route') && user_can_access_route('seller-bonuses.index'))
+                    <a class="nav-link menu-link" href="#sidebarSellerBonuses" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellerBonuses">
+                        <i class="ri-medal-line"></i><span data-key="t-apps">Bonuset</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSellerBonuses">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('seller-bonuses.index') }}" class="nav-link" data-key="t-calendar"> Bonuset </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    @endif
+
                     @if(function_exists('user_can_access_route') && user_can_access_route('purchases.index'))
                     <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
-                        <i class="ri-file-list-3-fill"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
+                        <i class="ri-shopping-bag-3-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarPurchases">
                         <ul class="nav nav-sm flex-column">
@@ -154,7 +169,7 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('sales.index'))
                     <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
-                        <i class="ri-price-tag-3-line"></i><span data-key="t-apps">Shitjet</span>
+                        <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Shitjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarSales">
                         <ul class="nav nav-sm flex-column">
@@ -194,6 +209,33 @@
                     </div>
                     @endif
 
+                    @if(function_exists('user_can_access_route') && user_can_access_route('debts.index'))
+                    <a class="nav-link menu-link" href="#sidebarDebti" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDebti">
+                        <i class="ri-wallet-3-line"></i> <span data-key="t-apps">Menaxhimi i Pagesave</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarDebti">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('debts.index') }}" class="nav-link" data-key="t-calendar"> Menaxhimi i Pagesave </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    @endif
+
+                    @if(function_exists('user_can_access_route') && user_can_access_route('online-orders.index'))
+                    <a class="nav-link menu-link" href="#sidebarOnlineOrders" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOnlineOrders">
+                        <i class="ri-truck-line"></i> <span data-key="t-apps">Porositë Online</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarOnlineOrders">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('online-orders.index') }}" class="nav-link" data-key="t-calendar"> Të gjitha porositë </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                    @endif
 
                 </li>
 

@@ -14,6 +14,10 @@ use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ExchangeRateController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\DebtController;
+use App\Http\Controllers\OnlineOrderController;
+use App\Http\Controllers\SellerBonusController;
+
 
 
 Route::get('/', function () {
@@ -72,4 +76,17 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::get('stock-movements/export/pdf', [StockMovementController::class, 'exportPdf'])->name('stock-movements.export.pdf');
     Route::get('stock-movements/export/xlsx', [StockMovementController::class, 'exportXlsx'])->name('stock-movements.export.xlsx');
     Route::get('stock-movements/report', [StockMovementController::class, 'report'])->name('stock-movements.report');
+
+    // Debts Routes
+    Route::resource('debts', DebtController::class);
+    Route::post('debts/{debt}/add-payment', [DebtController::class, 'addPayment'])->name('debts.add-payment');
+
+    Route::resource('online-orders', OnlineOrderController::class);
+    Route::post('online-orders/{onlineOrder}/mark-paid', [OnlineOrderController::class, 'markAsPaid'])->name('online-orders.mark-paid');
+    Route::post('online-orders/{onlineOrder}/mark-unpaid', [OnlineOrderController::class, 'markAsUnpaid'])->name('online-orders.mark-unpaid');
+
+    // Seller Bonuses Routes
+    Route::resource('seller-bonuses', SellerBonusController::class);
+    Route::post('seller-bonuses/calculate', [SellerBonusController::class, 'calculateBonus'])->name('seller-bonuses.calculate');
+    Route::get('seller-bonuses/seller-report/{seller}', [SellerBonusController::class, 'sellerReport'])->name('seller-bonuses.seller-report');
 });

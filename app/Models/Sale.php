@@ -21,6 +21,7 @@ class Sale extends Model
         'sale_status',
         'payment_status',
         'payment_method',
+        'purchase_location',
         'payment_term',
         'subtotal',
         'tax',
@@ -90,5 +91,9 @@ class Sale extends Model
         ]);
 
         return $this;
+    }
+    public function onlineOrder()
+    {
+        return $this->hasOne(OnlineOrder::class);
     }
 }

@@ -3,6 +3,7 @@
 @section('title', 'Edit Invoice')
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .product-item {
         background: #f8f9fa;
@@ -68,11 +69,11 @@
                             <input type="date" class="form-control" name="invoice_date" value="{{ $sale->invoice_date->format('Y-m-d') }}" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Delivery Date</label>
+                            <label class="form-label">Data e Blerjes</label>
                             <input type="date" class="form-control" name="delivery_date" value="{{ $sale->delivery_date ? $sale->delivery_date->format('Y-m-d') : '' }}">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                            <label class="form-label">Dyqani <span class="text-danger">*</span></label>
                             <select class="form-select" name="warehouse_id" required>
                                 <option value="">Depot</option>
                                 @foreach($warehouses as $warehouse)
@@ -81,50 +82,85 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Payment Status <span class="text-danger">*</span></label>
+                            <label class="form-label">Statusi i Pagesës <span class="text-danger">*</span></label>
                             <select class="form-select" name="payment_status" required>
-                                <option value="Unpaid" {{ $sale->payment_status == 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
-                                <option value="Paid" {{ $sale->payment_status == 'Paid' ? 'selected' : '' }}>Paid</option>
-                                <option value="Partial" {{ $sale->payment_status == 'Partial' ? 'selected' : '' }}>Partial</option>
+                                <option value="Unpaid" {{ $sale->payment_status == 'Unpaid' ? 'selected' : '' }}>Pa Pagesë</option>
+                                <option value="Paid" {{ $sale->payment_status == 'Paid' ? 'selected' : '' }}>Me Pagesë</option>
+                                <option value="Partial" {{ $sale->payment_status == 'Partial' ? 'selected' : '' }}>Pjesërisht i Paguar</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Sale Status <span class="text-danger">*</span></label>
+                            <label class="form-label">Statusi i Shitjes <span class="text-danger">*</span></label>
                             <select class="form-select" name="sale_status" required>
-                                <option value="Confirmed" {{ $sale->sale_status == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="Confirmed" {{ $sale->sale_status == 'Confirmed' ? 'selected' : '' }}>Konfirmuar</option>
                                 <option value="Draft" {{ $sale->sale_status == 'Draft' ? 'selected' : '' }}>Draft</option>
-                                <option value="PrePaid" {{ $sale->sale_status == 'PrePaid' ? 'selected' : '' }}>PrePaid</option>
-                                <option value="Rejected" {{ $sale->sale_status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                                <option value="PrePaid" {{ $sale->sale_status == 'PrePaid' ? 'selected' : '' }}>Parapaguar</option>
+                                <option value="Rejected" {{ $sale->sale_status == 'Rejected' ? 'selected' : '' }}>Refuzuar</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Payment Method <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-3 mt-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" value="Cash" {{ $sale->payment_method == 'Cash' ? 'checked' : '' }}>
-                                    <label class="form-check-label">Cash</label>
+
+                        <!-- Payment Method & Purchase Location në një rresht -->
+                        <div class="col-md-8 mb-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Metoda e Pagesës <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-3 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="payment_cash" value="Cash" {{ $sale->payment_method == 'Cash' ? 'checked' : '' }} required>
+                                            <label class="form-check-label" for="payment_cash">Cash</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="payment_bank" value="Bank" {{ $sale->payment_method == 'Bank' ? 'checked' : '' }} required>
+                                            <label class="form-check-label" for="payment_bank">Bank</label>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" value="Bank" {{ $sale->payment_method == 'Bank' ? 'checked' : '' }}>
-                                    <label class="form-check-label">Bank</label>
+                                <div class="col-md-6">
+                                    <label class="form-label">Vendi i Blerjes <span class="text-danger">*</span></label>
+                                    <div class="d-flex gap-3 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="purchase_location" id="shop" value="shop" {{ $sale->purchase_location == 'shop' ? 'checked' : '' }} required>
+                                            <label class="form-check-label" for="shop">Dyqan</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="purchase_location" id="online" value="online" {{ $sale->purchase_location == 'online' ? 'checked' : '' }} required>
+                                            <label class="form-check-label" for="online">Online</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Client <span class="text-danger">*</span></label>
-                            <select class="form-select" name="partner_id" required>
+                            <select class="form-select select2-client" name="partner_id" required>
                                 <option value="">Choose...</option>
                                 @foreach($partners as $partner)
                                 <option value="{{ $partner->id }}" {{ $sale->partner_id == $partner->id ? 'selected' : '' }}>{{ $partner->name }}</option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Seller <span class="text-danger">*</span></label>
+                            <select class="form-select select2-seller" name="seller_id" required>
+                                <option value="">Choose...</option>
+                                @foreach($sellers as $seller)
+                                <option value="{{ $seller->id }}" {{ $sale->seller_id == $seller->id ? 'selected' : '' }}>{{ $seller->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Currency <span class="text-danger">*</span></label>
-                            <select class="form-select" name="currency_id" required>
-                                <option value="">ALL</option>
+                            <select class="form-select" name="currency_id" id="currency_id" required>
+                                <option value="">Select Currency</option>
                                 @foreach($currencies as $currency)
-                                <option value="{{ $currency->id }}" {{ $sale->currency_id == $currency->id ? 'selected' : '' }}>{{ $currency->code }} ({{ $currency->symbol }})</option>
+                                <option value="{{ $currency->id }}"
+                                    data-symbol="{{ $currency->symbol }}"
+                                    {{ $sale->currency_id == $currency->id ? 'selected' : '' }}>
+                                    {{ $currency->code }} ({{ $currency->symbol }})
+                                </option>
                                 @endforeach
                             </select>
                         </div>
@@ -135,7 +171,7 @@
                         <h5 class="mb-0">Products</h5>
                     </div>
 
-                    <select id="searchProduct" style="width: 100%"></select>
+                    <select id="searchProduct" style="width: 100%" placeholder="Search Product"></select>
 
                     <div id="productsContainer" class="mt-3">
                         @foreach($sale->items as $index => $item)
@@ -207,11 +243,11 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Payment Term</label>
                             <select class="form-select" name="payment_term">
-                                <option value="">Select...</option>
-                                <option value="Net 15" {{ $sale->payment_term == 'Net 15' ? 'selected' : '' }}>Net 15</option>
-                                <option value="Net 30" {{ $sale->payment_term == 'Net 30' ? 'selected' : '' }}>Net 30</option>
-                                <option value="Net 45" {{ $sale->payment_term == 'Net 45' ? 'selected' : '' }}>Net 45</option>
-                                <option value="Net 60" {{ $sale->payment_term == 'Net 60' ? 'selected' : '' }}>Net 60</option>
+                                <option value="Due on Receipt" {{ $sale->payment_term == 'Due on Receipt' ? 'selected' : '' }}>NE momentin e pranimit</option>
+                                <option value="Net 15" {{ $sale->payment_term == 'Net 15' ? 'selected' : '' }}>pas 15</option>
+                                <option value="Net 30" {{ $sale->payment_term == 'Net 30' ? 'selected' : '' }}>pas 30</option>
+                                <option value="Net 45" {{ $sale->payment_term == 'Net 45' ? 'selected' : '' }}>pas 45</option>
+                                <option value="Net 60" {{ $sale->payment_term == 'Net 60' ? 'selected' : '' }}>pas 60</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -239,19 +275,19 @@
                     <div class="summary-box">
                         <div class="summary-row">
                             <span>Sub Total:</span>
-                            <span id="subtotalDisplay">0.00</span>
+                            <span id="subtotalDisplay"><span class="currency-symbol">{{ $sale->currency->symbol }}</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Estimated Tax:</span>
-                            <span id="taxDisplay">0.00</span>
+                            <span id="taxDisplay"><span class="currency-symbol">{{ $sale->currency->symbol }}</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Discount:</span>
-                            <span id="discountDisplay">0.00</span>
+                            <span id="discountDisplay"><span class="currency-symbol">{{ $sale->currency->symbol }}</span> 0.00</span>
                         </div>
                         <div class="summary-row">
                             <span>Total Amount:</span>
-                            <span id="totalDisplay">0.00</span>
+                            <span id="totalDisplay"><span class="currency-symbol">{{ $sale->currency->symbol }}</span> 0.00</span>
                         </div>
                     </div>
                     <div class="mt-4 d-grid gap-2">
@@ -270,13 +306,41 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let productIndex = 0;
+    let currentCurrencySymbol = '{{ $sale->currency->symbol }}';
 
     $(document).ready(function() {
+        // Initialize Select2
+        $('.select2-client, .select2-seller').select2({
+            placeholder: 'Choose...',
+            allowClear: true
+        });
+
+        // Currency symbol update
+        $('#currency_id').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const symbol = selectedOption.data('symbol') || 'L';
+            currentCurrencySymbol = symbol;
+            $('.currency-symbol').text(symbol);
+        });
+
+        // Auto-set payment status to Unpaid when Online is selected
+        $('input[name="purchase_location"]').on('change', function() {
+            if ($(this).val() === 'online') {
+                $('select[name="payment_status"]').val('Unpaid');
+            } else {
+                $('select[name="payment_status"]').val('Paid');
+            }
+        });
+
+        // Search Product
         $('#searchProduct').select2({
             placeholder: 'Search product...',
             minimumInputLength: 2,
+            allowClear: true,
             ajax: {
                 url: '/sales-api/search-products',
                 dataType: 'json',
@@ -289,14 +353,20 @@
                 processResults: function(data) {
                     return {
                         results: data.map(function(product) {
+                            let text = product.name;
+                            if (product.storage) text += ' - ' + product.storage;
+                            if (product.ram) text += ' | ' + product.ram;
+                            if (product.color) text += ' | ' + product.color;
+                            text += ' (Stock: ' + product.quantity + ')';
                             return {
                                 id: product.id,
-                                text: product.name + (product.storage ? ' - ' + product.storage : '') + ' (Stock: ' + product.quantity + ')',
+                                text: text,
                                 product: product
                             };
                         })
                     };
-                }
+                },
+                cache: true
             }
         }).on('select2:select', function(e) {
             addProductItem(e.params.data.product);
@@ -351,7 +421,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Unit Price *</label>
-                <input type="number" class="form-control form-control-sm unit-price-input" name="items[${productIndex}][unit_price]" value="${product.price}" step="0.01" min="0" required>
+                <input type="number" class="form-control form-control-sm unit-price-input" name="items[${productIndex}][unit_price]" value="${product.price || 0}" step="0.01" min="0" required>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Discount</label>
@@ -402,22 +472,25 @@
             totalDiscount += discount;
         });
         const totalAmount = subtotal - totalDiscount + totalTax;
-        $('#subtotalDisplay').text(subtotal.toFixed(2));
-        $('#taxDisplay').text(totalTax.toFixed(2));
-        $('#discountDisplay').text(totalDiscount.toFixed(2));
-        $('#totalDisplay').text(totalAmount.toFixed(2));
+
+        $('#subtotalDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${subtotal.toFixed(2)}`);
+        $('#taxDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalTax.toFixed(2)}`);
+        $('#discountDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalDiscount.toFixed(2)}`);
+        $('#totalDisplay').html(`<span class="currency-symbol">${currentCurrencySymbol}</span> ${totalAmount.toFixed(2)}`);
     }
 
     $('#saleForm').on('submit', function(e) {
         e.preventDefault();
+
         Swal.fire({
-            title: 'Processing...',
-            text: 'Please wait',
+            title: 'Duke Përditësuar...',
+            text: 'Ju lutem prisni',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
+
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
@@ -425,10 +498,14 @@
             success: function(response) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Success!',
-                    text: response.message || 'Invoice updated successfully'
+                    title: 'Sukses!',
+                    text: response.message || 'Fatura u përditësua me sukses'
                 }).then(() => {
-                    if (response.url) window.location.href = response.url;
+                    if (response.url) {
+                        window.location.href = response.url;
+                    } else {
+                        window.location.href = '{{ route("sales.index") }}';
+                    }
                 });
             },
             error: function(xhr) {
@@ -438,11 +515,11 @@
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorsHtml = xhr.responseJSON.message;
                 } else {
-                    errorsHtml = 'An unexpected error occurred.';
+                    errorsHtml = 'Ka ndodhur një gabim i papritur.';
                 }
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validation Error!',
+                    title: 'Gabim në Validim!',
                     html: errorsHtml,
                     width: '600px'
                 });

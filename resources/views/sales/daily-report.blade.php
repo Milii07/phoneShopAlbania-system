@@ -66,6 +66,78 @@
         color: #e65100;
     }
 
+    /* Filter Tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 8px 20px;
+        border-radius: 25px;
+        border: 2px solid #667eea;
+        background: white;
+        color: #667eea;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .filter-tab:hover,
+    .filter-tab.active {
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+    }
+
+    .filter-tab.weekly {
+        border-color: #11998e;
+        color: #11998e;
+    }
+
+    .filter-tab.weekly:hover,
+    .filter-tab.weekly.active {
+        background: #11998e;
+        color: white;
+    }
+
+    .filter-tab.monthly {
+        border-color: #f5576c;
+        color: #f5576c;
+    }
+
+    .filter-tab.monthly:hover,
+    .filter-tab.monthly.active {
+        background: #f5576c;
+        color: white;
+    }
+
+    /* Period Badge */
+    .period-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .period-badge.weekly {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .period-badge.monthly {
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    }
+
     @media print {
         .no-print {
             display: none !important;
@@ -94,53 +166,146 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">📊 RAPORTI DITOR I SHITJEVE</h4>
+            <h4 class="mb-sm-0">📊 RAPORTI I SHITJEVE</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('sales.index') }}">Sales</a></li>
-                    <li class="breadcrumb-item active">Daily Report</li>
+                    <li class="breadcrumb-item active">Raport</li>
                 </ol>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Date Filter -->
+<!-- Filter Section -->
 <div class="row mb-4 no-print">
     <div class="col-lg-12">
         <div class="card">
             <div class="card-body">
-                <form method="GET" action="{{ route('sales.daily-report') }}" class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Zgjidh Datën:</label>
-                        <input type="date"
-                            class="form-control"
-                            name="date"
-                            value="{{ $date }}"
-                            max="{{ date('Y-m-d') }}"
-                            required>
+
+                <!-- Quick Filter Tabs -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold d-block mb-2">
+                        <i class="ri-flashlight-line me-1"></i> Filtro Shpejt:
+                    </label>
+                    <div class="filter-tabs">
+                        {{-- Sot --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'today']) }}"
+                            class="filter-tab {{ $period === 'today' ? 'active' : '' }}">
+                            <i class="ri-sun-line me-1"></i> Sot
+                        </a>
+
+                        {{-- Dje --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'yesterday']) }}"
+                            class="filter-tab {{ $period === 'yesterday' ? 'active' : '' }}">
+                            <i class="ri-calendar-check-line me-1"></i> Dje
+                        </a>
+
+                        {{-- Java Kjo --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'this_week']) }}"
+                            class="filter-tab weekly {{ $period === 'this_week' ? 'active' : '' }}">
+                            <i class="ri-calendar-2-line me-1"></i> Java Aktuale
+                        </a>
+
+                        {{-- Java Kaluar --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'last_week']) }}"
+                            class="filter-tab weekly {{ $period === 'last_week' ? 'active' : '' }}">
+                            <i class="ri-calendar-line me-1"></i> Java Kaluar
+                        </a>
+
+                        {{-- Muaji Ky --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'this_month']) }}"
+                            class="filter-tab monthly {{ $period === 'this_month' ? 'active' : '' }}">
+                            <i class="ri-calendar-event-line me-1"></i> Muaji Aktual
+                        </a>
+
+                        {{-- Muaji Kaluar --}}
+                        <a href="{{ route('sales.daily-report', ['period' => 'last_month']) }}"
+                            class="filter-tab monthly {{ $period === 'last_month' ? 'active' : '' }}">
+                            <i class="ri-calendar-todo-line me-1"></i> Muaji Kaluar
+                        </a>
+
+                        {{-- Custom --}}
+                        <a href="#customFilterSection"
+                            class="filter-tab {{ $period === 'custom' ? 'active' : '' }}"
+                            onclick="toggleCustomFilter(event)">
+                            <i class="ri-settings-3-line me-1"></i> Periudhë Manuale
+                        </a>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="ri-search-line me-1"></i> Shiko Raportin
-                        </button>
-                        <button type="button" onclick="window.print()" class="btn btn-info">
-                            <i class="ri-printer-line me-1"></i> Print
-                        </button>
-                    </div>
-                </form>
+                </div>
+
+                <!-- Custom Date Range (Hidden by default) -->
+                <div id="customFilterSection"
+                    style="{{ $period === 'custom' ? 'display:block' : 'display:none' }}">
+                    <hr>
+                    <form method="GET" action="{{ route('sales.daily-report') }}" class="row g-3">
+                        <input type="hidden" name="period" value="custom">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">
+                                <i class="ri-calendar-line me-1"></i> Nga Data:
+                            </label>
+                            <input type="date"
+                                class="form-control"
+                                name="date_from"
+                                value="{{ $dateFrom ?? '' }}"
+                                max="{{ date('Y-m-d') }}"
+                                required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">
+                                <i class="ri-calendar-line me-1"></i> Deri në Datë:
+                            </label>
+                            <input type="date"
+                                class="form-control"
+                                name="date_to"
+                                value="{{ $dateTo ?? '' }}"
+                                max="{{ date('Y-m-d') }}"
+                                required>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="ri-search-line me-1"></i> Shiko Raportin
+                            </button>
+                            <button type="button" onclick="window.print()" class="btn btn-info">
+                                <i class="ri-printer-line me-1"></i> Print
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Period Label -->
+<div class="row">
+    <div class="col-12 mb-3">
+        @php
+        $periodClass = in_array($period, ['this_week', 'last_week']) ? 'weekly'
+        : (in_array($period, ['this_month', 'last_month']) ? 'monthly' : '');
+
+        $periodLabel = match($period) {
+        'today' => '📅 Sot: ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y'),
+        'yesterday' => '📅 Dje: ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y'),
+        'this_week' => '📅 Java Aktuale: ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') . ' — ' . \Carbon\Carbon::parse($dateTo)->format('d/m/Y'),
+        'last_week' => '📅 Java Kaluar: ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') . ' — ' . \Carbon\Carbon::parse($dateTo)->format('d/m/Y'),
+        'this_month' => '📅 Muaji ' . \Carbon\Carbon::parse($dateFrom)->translatedFormat('F Y') . ': ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') . ' — ' . \Carbon\Carbon::parse($dateTo)->format('d/m/Y'),
+        'last_month' => '📅 Muaji Kaluar (' . \Carbon\Carbon::parse($dateFrom)->translatedFormat('F Y') . '): ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') . ' — ' . \Carbon\Carbon::parse($dateTo)->format('d/m/Y'),
+        'custom' => '📅 Periudhë: ' . \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') . ' — ' . \Carbon\Carbon::parse($dateTo)->format('d/m/Y'),
+        default => '📅 Raport',
+        };
+        @endphp
+        <div class="period-badge {{ $periodClass }}">
+            <i class="ri-time-line"></i>
+            {{ $periodLabel }}
         </div>
     </div>
 </div>
 
 <!-- Summary Cards -->
 <div class="row">
-    <div class="col-12 mb-3">
-        <h5>📅 Data: <strong>{{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</strong></h5>
-    </div>
-
     <div class="col-lg-3 col-md-6">
         <div class="stat-box">
             <div class="d-flex justify-content-between align-items-center">
@@ -161,11 +326,11 @@
         <div class="stat-box success">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <p class="mb-1 ">Fitimi Total</p>
+                    <p class="mb-1">Fitimi Total</p>
                     @foreach($totals['by_currency'] as $code => $c)
                     <h5 class="mb-0 text-white">{{ $c['fitimi_total'] }} {{ $c['symbol'] }}</h5>
                     @endforeach
-                    <small class="">Para ndarjes</small>
+                    <small>Para ndarjes</small>
                 </div>
                 <div>
                     <i class="ri-line-chart-line" style="font-size: 3rem; opacity: 0.3;"></i>
@@ -237,7 +402,6 @@
                     <div class="p-3 bg-white rounded border">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">💰 Xhiro Totale:</span>
-
                         </div>
                         @foreach($warehouse['by_currency'] as $code => $c)
                         <div class="d-flex justify-content-between small">
@@ -292,7 +456,7 @@
     <div class="col-12">
         <div class="alert alert-info text-center">
             <i class="ri-information-line me-2"></i>
-            Nuk ka shitje për datën {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}
+            Nuk ka shitje për periudhën e zgjedhur.
         </div>
     </div>
     @endforelse
@@ -406,11 +570,17 @@
 
 @push('scripts')
 <script>
-    // Auto-set today's date on page load if no date is selected
+    function toggleCustomFilter(e) {
+        e.preventDefault();
+        const section = document.getElementById('customFilterSection');
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        const dateInput = document.querySelector('input[name="date"]');
-        if (!dateInput.value) {
-            dateInput.value = new Date().toISOString().split('T')[0];
+        // Nëse period është custom, shfaq seksionin e datave manuale
+        const period = "{{ $period }}";
+        if (period === 'custom') {
+            document.getElementById('customFilterSection').style.display = 'block';
         }
     });
 </script>

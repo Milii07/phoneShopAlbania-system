@@ -155,7 +155,7 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('purchases.index'))
                     <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
-                        <i class="ri-shopping-bag-3-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
+                        <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarPurchases">
                         <ul class="nav nav-sm flex-column">
@@ -169,7 +169,8 @@
 
                     @if(function_exists('user_can_access_route') && user_can_access_route('sales.index'))
                     <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
-                        <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Shitjet</span>
+                        <i class="ri-shopping-bag-3-line"></i>
+                        <span data-key="t-apps">Shitjet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarSales">
                         <ul class="nav nav-sm flex-column">

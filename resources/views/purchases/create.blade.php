@@ -278,6 +278,8 @@
     </div>
 </form>
 
+@include('purchases.partials.pdf-import')
+
 @endsection
 
 @push('scripts')
@@ -628,4 +630,5 @@
         });
     });
 </script>
+@include('purchases.partials.pdf-import-scripts')
 @endpush

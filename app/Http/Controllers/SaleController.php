@@ -24,7 +24,6 @@ class SaleController extends Controller
         $query = Sale::with(['partner', 'warehouse', 'currency', 'seller']);
 
         if ($request->has('status') && $request->status != 'All') {
-            // Compare case-insensitively to avoid mismatches like 'PrePaid' vs 'prepaid'
             $query->whereRaw('LOWER(sale_status) = ?', [strtolower($request->status)]);
         }
 
@@ -69,51 +68,47 @@ class SaleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'invoice_date' => 'required|date',
-            'delivery_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'partner_id' => 'required|exists:partners,id',
-            'seller_id' => 'required|exists:sellers,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'currency_id' => 'required|exists:currencies,id',
-            'sale_status' => 'required|in:Draft,PrePaid,Confirmed,Rejected',
-            'payment_status' => 'required|in:Paid,Unpaid,Partial',
-            'payment_method' => 'required|in:Cash,Bank',
-            'payment_term' => 'nullable|string',
-            'description' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.unit_type' => 'nullable|string',
-            'items.*.discount' => 'nullable|numeric|min:0',
-            'items.*.tax' => 'nullable|numeric|min:0',
-            'items.*.imei_numbers' => 'nullable|string',
+            'invoice_date'              => 'required|date',
+            'delivery_date'             => 'nullable|date',
+            'due_date'                  => 'nullable|date',
+            'partner_id'                => 'required|exists:partners,id',
+            'seller_id'                 => 'required|exists:sellers,id',
+            'warehouse_id'              => 'required|exists:warehouses,id',
+            'currency_id'               => 'required|exists:currencies,id',
+            'sale_status'               => 'required|in:Draft,PrePaid,Confirmed,Rejected',
+            'payment_status'            => 'required|in:Paid,Unpaid,Partial',
+            'payment_method'            => 'required|in:Cash,Bank',
+            'payment_term'              => 'nullable|string',
+            'description'               => 'nullable|string',
+            'notes'                     => 'nullable|string',
+            'items'                     => 'required|array|min:1',
+            'items.*.product_id'        => 'required|exists:products,id',
+            'items.*.quantity'          => 'required|integer|min:1',
+            'items.*.unit_price'        => 'required|numeric|min:0',
+            'items.*.unit_type'         => 'nullable|string',
+            'items.*.discount'          => 'nullable|numeric|min:0',
+            'items.*.tax'               => 'nullable|numeric|min:0',
+            'items.*.imei_numbers'      => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $warehouseId = $validated['warehouse_id'];
-            $warehouse = Warehouse::findOrFail($warehouseId);
-
-            $saleCurrency = Currency::find($validated['currency_id']);
+            $warehouseId     = $validated['warehouse_id'];
+            $warehouse       = Warehouse::findOrFail($warehouseId);
+            $saleCurrency    = Currency::find($validated['currency_id']);
             $saleCurrencyCode = $saleCurrency ? $saleCurrency->code : null;
 
-            $subtotal = 0;
-            $totalTax = 0;
+            $subtotal      = 0;
+            $totalTax      = 0;
             $totalDiscount = 0;
-            $totalProfit = 0;
-            $ownerProfit = 0;
+            $totalProfit   = 0;
+            $ownerProfit   = 0;
             $allImeiNumbers = [];
-            $errorMsg = [];
+            $errorMsg      = [];
 
-            // Validate items
             foreach ($request->items as $itemIndex => $item) {
-                $product = Product::findOrFail($item['product_id']);
-
-                // Check stock in warehouse
+                $product      = Product::findOrFail($item['product_id']);
                 $availableQty = $product->getQuantityInWarehouse($warehouseId);
 
                 if ($availableQty < $item['quantity']) {
@@ -121,21 +116,20 @@ class SaleController extends Controller
                     continue;
                 }
 
-                $quantity = $item['quantity'];
+                $quantity  = $item['quantity'];
                 $unitPrice = $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
+                $discount  = $item['discount'] ?? 0;
+                $tax       = $item['tax'] ?? 0;
 
-                $subtotal += ($quantity * $unitPrice);
-                $totalTax += $tax;
+                $subtotal      += ($quantity * $unitPrice);
+                $totalTax      += $tax;
                 $totalDiscount += $discount;
 
-                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
-                $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
-                $totalProfit += $itemProfit;
-                $ownerProfit += $itemProfit * ($warehouse->profit_percentage / 100);
+                $purchasePrice  = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
+                $itemProfit     = ($unitPrice - $purchasePrice) * $quantity;
+                $totalProfit   += $itemProfit;
+                $ownerProfit   += $itemProfit * ($warehouse->profit_percentage / 100);
 
-                // IMEI validation (existing code...)
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
                     $imeiCount = count($imeiArray);
@@ -189,35 +183,31 @@ class SaleController extends Controller
 
             $totalAmount = $subtotal - $totalDiscount + $totalTax;
 
-            // Create Sale
             $sale = Sale::create([
                 'invoice_number' => Sale::generateInvoiceNumber(),
-                'invoice_date' => $validated['invoice_date'],
-                'delivery_date' => $validated['delivery_date'],
-                'due_date' => $validated['due_date'],
-                'partner_id' => $validated['partner_id'],
-                'seller_id' => $validated['seller_id'],
-                'warehouse_id' => $validated['warehouse_id'],
-                'currency_id' => $validated['currency_id'],
-                'sale_status' => $validated['sale_status'],
+                'invoice_date'   => $validated['invoice_date'],
+                'delivery_date'  => $validated['delivery_date'],
+                'due_date'       => $validated['due_date'],
+                'partner_id'     => $validated['partner_id'],
+                'seller_id'      => $validated['seller_id'],
+                'warehouse_id'   => $validated['warehouse_id'],
+                'currency_id'    => $validated['currency_id'],
+                'sale_status'    => $validated['sale_status'],
                 'payment_status' => $validated['payment_status'],
                 'payment_method' => $validated['payment_method'],
-                'payment_term' => $validated['payment_term'],
-                'subtotal' => $subtotal,
-                'tax' => $totalTax,
-                'discount' => $totalDiscount,
-                'total_amount' => $totalAmount,
-                'profit_total' => $totalProfit,
-                'owner_profit' => $ownerProfit,
-                'description' => $validated['description'],
-                'notes' => $validated['notes'],
+                'payment_term'   => $validated['payment_term'],
+                'subtotal'       => $subtotal,
+                'tax'            => $totalTax,
+                'discount'       => $totalDiscount,
+                'total_amount'   => $totalAmount,
+                'profit_total'   => $totalProfit,
+                'owner_profit'   => $ownerProfit,
+                'description'    => $validated['description'],
+                'notes'          => $validated['notes'],
             ]);
 
-            // Create Sale Items
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['product_id']);
-
-                // Check stock in warehouse
+                $product      = Product::findOrFail($item['product_id']);
                 $availableQty = $product->getQuantityInWarehouse($warehouseId);
 
                 if ($availableQty < $item['quantity']) {
@@ -225,14 +215,13 @@ class SaleController extends Controller
                     continue;
                 }
 
-                $quantity = $item['quantity'];
-                $unitPrice = $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
-                $lineTotal = ($quantity * $unitPrice) - $discount + $tax;
-
+                $quantity      = $item['quantity'];
+                $unitPrice     = $item['unit_price'];
+                $discount      = $item['discount'] ?? 0;
+                $tax           = $item['tax'] ?? 0;
+                $lineTotal     = ($quantity * $unitPrice) - $discount + $tax;
                 $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
-                $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
+                $itemProfit    = ($unitPrice - $purchasePrice) * $quantity;
                 $itemOwnerProfit = $itemProfit * ($warehouse->profit_percentage / 100);
 
                 $imeiArray = null;
@@ -241,29 +230,28 @@ class SaleController extends Controller
                 }
 
                 SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'warehouse_id' => $warehouseId,
-                    'category_id' => $product->category_id,
-                    'brand_id' => $product->brand_id,
-                    'storage' => $product->storage,
-                    'ram' => $product->ram,
-                    'color' => $product->color,
-                    'quantity' => $quantity,
-                    'unit_type' => $item['unit_type'] ?? 'Pcs',
-                    'unit_price' => $unitPrice,
+                    'sale_id'        => $sale->id,
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'warehouse_id'   => $warehouseId,
+                    'category_id'    => $product->category_id,
+                    'brand_id'       => $product->brand_id,
+                    'storage'        => $product->storage,
+                    'ram'            => $product->ram,
+                    'color'          => $product->color,
+                    'quantity'       => $quantity,
+                    'unit_type'      => $item['unit_type'] ?? 'Pcs',
+                    'unit_price'     => $unitPrice,
                     'purchase_price' => $purchasePrice,
-                    'sale_price' => $unitPrice,
-                    'discount' => $discount,
-                    'tax' => $tax,
-                    'line_total' => $lineTotal,
-                    'profit_total' => $itemProfit,
-                    'owner_profit' => $itemOwnerProfit,
-                    'imei_numbers' => $imeiArray,
+                    'sale_price'     => $unitPrice,
+                    'discount'       => $discount,
+                    'tax'            => $tax,
+                    'line_total'     => $lineTotal,
+                    'profit_total'   => $itemProfit,
+                    'owner_profit'   => $itemOwnerProfit,
+                    'imei_numbers'   => $imeiArray,
                 ]);
 
-                // Decrease product quantity if sale is confirmed
                 if ($validated['sale_status'] === 'Confirmed') {
                     $currentQty = $product->getQuantityInWarehouse($warehouseId);
                     $product->warehouses()->updateExistingPivot($warehouseId, [
@@ -272,23 +260,21 @@ class SaleController extends Controller
                 }
             }
 
-            // Update or create seller bonus for the sale period
+            // Update or create seller bonus
             try {
-                // Ensure items & related product->category are loaded
                 $sale->load('items.product.category');
 
                 $invoiceDate = Carbon::parse($sale->invoice_date);
                 $periodStart = $invoiceDate->copy()->startOfMonth()->toDateString();
-                $periodEnd = $invoiceDate->copy()->endOfMonth()->toDateString();
+                $periodEnd   = $invoiceDate->copy()->endOfMonth()->toDateString();
 
-                $phoneTotal = 0.0;
+                $phoneTotal     = 0.0;
                 $accessoryTotal = 0.0;
 
                 foreach ($sale->items as $item) {
-                    $line = (float) ($item->line_total ?? 0);
+                    $line         = (float) ($item->line_total ?? 0);
                     $categoryName = optional($item->product->category)->name ?? '';
 
-                    // Simple heuristic: category names containing 'phone' or 'telefon' count as phones
                     if ($categoryName && (stripos($categoryName, 'phone') !== false || stripos($categoryName, 'telefon') !== false)) {
                         $phoneTotal += $line;
                     } else {
@@ -297,22 +283,19 @@ class SaleController extends Controller
                 }
 
                 $bonus = SellerBonus::firstOrNew([
-                    'seller_id' => $sale->seller_id,
+                    'seller_id'    => $sale->seller_id,
                     'period_start' => $periodStart,
-                    'period_end' => $periodEnd,
+                    'period_end'   => $periodEnd,
                 ]);
 
-                $bonus->phone_sales_total = ($bonus->phone_sales_total ?? 0) + $phoneTotal;
-                $bonus->accessory_sales_total = ($bonus->accessory_sales_total ?? 0) + $accessoryTotal;
-                $bonus->total_sales_count = ($bonus->total_sales_count ?? 0) + 1;
-
-                // keep configured percentages if present, fallback to config values or 0
+                $bonus->phone_sales_total      = ($bonus->phone_sales_total ?? 0) + $phoneTotal;
+                $bonus->accessory_sales_total  = ($bonus->accessory_sales_total ?? 0) + $accessoryTotal;
+                $bonus->total_sales_count      = ($bonus->total_sales_count ?? 0) + 1;
                 $bonus->phone_bonus_percentage = $bonus->phone_bonus_percentage ?? config('seller_bonus.phone_percentage', 0);
                 $bonus->accessory_bonus_percentage = $bonus->accessory_bonus_percentage ?? config('seller_bonus.accessory_percentage', 0);
-
-                $bonus->phone_bonus_amount = ($bonus->phone_sales_total) * (($bonus->phone_bonus_percentage ?? 0) / 100);
+                $bonus->phone_bonus_amount     = ($bonus->phone_sales_total) * (($bonus->phone_bonus_percentage ?? 0) / 100);
                 $bonus->accessory_bonus_amount = ($bonus->accessory_sales_total) * (($bonus->accessory_bonus_percentage ?? 0) / 100);
-                $bonus->total_bonus = ($bonus->phone_bonus_amount ?? 0) + ($bonus->accessory_bonus_amount ?? 0);
+                $bonus->total_bonus            = ($bonus->phone_bonus_amount ?? 0) + ($bonus->accessory_bonus_amount ?? 0);
 
                 $bonus->save();
             } catch (\Exception $e) {
@@ -325,14 +308,13 @@ class SaleController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Fatura u krijua me sukses!',
-                    'url' => route('sales.index')
+                    'url'     => route('sales.index')
                 ], 200);
             }
 
             return redirect()->route('sales.index')->with('success', 'Fatura u krijua me sukses!');
         } catch (\Exception $e) {
             DB::rollBack();
-
             Log::error('Sale creation error: ' . $e->getMessage());
 
             if ($request->ajax()) {
@@ -352,10 +334,10 @@ class SaleController extends Controller
     public function edit($id)
     {
         $sale = Sale::with('items')->findOrFail($id);
-        $partners = Partner::orderBy('name')->get();
+        $partners   = Partner::orderBy('name')->get();
         $warehouses = Warehouse::orderBy('name')->get();
         $currencies = Currency::orderBy('code')->get();
-        $sellers = Seller::orderBy('name')->get();
+        $sellers    = Seller::orderBy('name')->get();
 
         return view('sales.edit', compact('sale', 'partners', 'warehouses', 'currencies', 'sellers'));
     }
@@ -365,36 +347,35 @@ class SaleController extends Controller
         $sale = Sale::findOrFail($id);
 
         $validated = $request->validate([
-            'invoice_date' => 'required|date',
-            'delivery_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
-            'partner_id' => 'required|exists:partners,id',
-            'seller_id' => 'required|exists:sellers,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'currency_id' => 'required|exists:currencies,id',
-            'sale_status' => 'required|in:Draft,PrePaid,Confirmed,Rejected',
-            'payment_status' => 'required|in:Paid,Unpaid,Partial',
-            'payment_method' => 'required|in:Cash,Bank',
-            'purchase_location' => 'required|in:shop,online',
-            'payment_term' => 'nullable|string',
-            'description' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.discount' => 'nullable|numeric|min:0',
-            'items.*.tax' => 'nullable|numeric|min:0',
-            'items.*.imei_numbers' => 'nullable|string',
+            'invoice_date'          => 'required|date',
+            'delivery_date'         => 'nullable|date',
+            'due_date'              => 'nullable|date',
+            'partner_id'            => 'required|exists:partners,id',
+            'seller_id'             => 'required|exists:sellers,id',
+            'warehouse_id'          => 'required|exists:warehouses,id',
+            'currency_id'           => 'required|exists:currencies,id',
+            'sale_status'           => 'required|in:Draft,PrePaid,Confirmed,Rejected',
+            'payment_status'        => 'required|in:Paid,Unpaid,Partial',
+            'payment_method'        => 'required|in:Cash,Bank',
+            'purchase_location'     => 'required|in:shop,online',
+            'payment_term'          => 'nullable|string',
+            'description'           => 'nullable|string',
+            'notes'                 => 'nullable|string',
+            'items'                 => 'required|array|min:1',
+            'items.*.product_id'    => 'required|exists:products,id',
+            'items.*.quantity'      => 'required|integer|min:1',
+            'items.*.unit_price'    => 'required|numeric|min:0',
+            'items.*.discount'      => 'nullable|numeric|min:0',
+            'items.*.tax'           => 'nullable|numeric|min:0',
+            'items.*.imei_numbers'  => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
 
             $warehouseId = $validated['warehouse_id'];
-            $warehouse = Warehouse::findOrFail($warehouseId);
+            $warehouse   = Warehouse::findOrFail($warehouseId);
 
-            // Reverse old quantities if sale was confirmed
             if ($sale->sale_status === 'Confirmed') {
                 foreach ($sale->items as $item) {
                     $product = Product::find($item->product_id);
@@ -407,42 +388,39 @@ class SaleController extends Controller
                 }
             }
 
-            // Determine sale currency code for conversions
-            $saleCurrency = Currency::find($validated['currency_id']);
+            $saleCurrency    = Currency::find($validated['currency_id']);
             $saleCurrencyCode = $saleCurrency ? $saleCurrency->code : null;
 
-            $subtotal = 0;
-            $totalTax = 0;
+            $subtotal      = 0;
+            $totalTax      = 0;
             $totalDiscount = 0;
-            $totalProfit = 0;
-            $ownerProfit = 0;
-            $errorMsg = [];
+            $totalProfit   = 0;
+            $ownerProfit   = 0;
+            $errorMsg      = [];
 
-            // Validate and calculate
             foreach ($request->items as $itemIndex => $item) {
-                $product = Product::findOrFail($item['product_id']);
-
+                $product      = Product::findOrFail($item['product_id']);
                 $availableQty = $product->getQuantityInWarehouse($warehouseId);
+
                 if ($availableQty < $item['quantity']) {
                     $errorMsg[] = "Produkti '{$product->name}' nuk ka stok të mjaftueshëm.";
                     continue;
                 }
 
-                $quantity = $item['quantity'];
+                $quantity  = $item['quantity'];
                 $unitPrice = $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
+                $discount  = $item['discount'] ?? 0;
+                $tax       = $item['tax'] ?? 0;
 
-                $subtotal += ($quantity * $unitPrice);
-                $totalTax += $tax;
+                $subtotal      += ($quantity * $unitPrice);
+                $totalTax      += $tax;
                 $totalDiscount += $discount;
 
                 $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
-                $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
-                $totalProfit += $itemProfit;
-                $ownerProfit += $itemProfit * ($warehouse->profit_percentage / 100);
+                $itemProfit    = ($unitPrice - $purchasePrice) * $quantity;
+                $totalProfit  += $itemProfit;
+                $ownerProfit  += $itemProfit * ($warehouse->profit_percentage / 100);
 
-                // IMEI validation
                 if (!empty($item['imei_numbers'])) {
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
 
@@ -451,7 +429,6 @@ class SaleController extends Controller
                         continue;
                     }
 
-                    // Check existing IMEI (excluding current sale)
                     foreach ($imeiArray as $imei) {
                         $existingImei = SaleItem::where('sale_id', '!=', $sale->id)
                             ->whereJsonContains('imei_numbers', $imei)
@@ -475,45 +452,41 @@ class SaleController extends Controller
 
             $totalAmount = $subtotal - $totalDiscount + $totalTax;
 
-            // Update Sale
             $sale->update([
-                'invoice_date' => $validated['invoice_date'],
-                'delivery_date' => $validated['delivery_date'],
-                'due_date' => $validated['due_date'],
-                'partner_id' => $validated['partner_id'],
-                'seller_id' => $validated['seller_id'],
-                'warehouse_id' => $validated['warehouse_id'],
-                'currency_id' => $validated['currency_id'],
-                'sale_status' => $validated['sale_status'],
-                'payment_status' => $validated['payment_status'],
-                'payment_method' => $validated['payment_method'],
+                'invoice_date'      => $validated['invoice_date'],
+                'delivery_date'     => $validated['delivery_date'],
+                'due_date'          => $validated['due_date'],
+                'partner_id'        => $validated['partner_id'],
+                'seller_id'         => $validated['seller_id'],
+                'warehouse_id'      => $validated['warehouse_id'],
+                'currency_id'       => $validated['currency_id'],
+                'sale_status'       => $validated['sale_status'],
+                'payment_status'    => $validated['payment_status'],
+                'payment_method'    => $validated['payment_method'],
                 'purchase_location' => $validated['purchase_location'],
-                'payment_term' => $validated['payment_term'],
-                'subtotal' => $subtotal,
-                'tax' => $totalTax,
-                'discount' => $totalDiscount,
-                'total_amount' => $totalAmount,
-                'profit_total' => $totalProfit,
-                'owner_profit' => $ownerProfit,
-                'description' => $validated['description'],
-                'notes' => $validated['notes'],
+                'payment_term'      => $validated['payment_term'],
+                'subtotal'          => $subtotal,
+                'tax'               => $totalTax,
+                'discount'          => $totalDiscount,
+                'total_amount'      => $totalAmount,
+                'profit_total'      => $totalProfit,
+                'owner_profit'      => $ownerProfit,
+                'description'       => $validated['description'],
+                'notes'             => $validated['notes'],
             ]);
 
-            // Delete old items
             $sale->items()->delete();
 
-            // Create new items
             foreach ($request->items as $item) {
-                $product = Product::findOrFail($item['product_id']);
-
-                $quantity = $item['quantity'];
+                $product   = Product::findOrFail($item['product_id']);
+                $quantity  = $item['quantity'];
                 $unitPrice = $item['unit_price'];
-                $discount = $item['discount'] ?? 0;
-                $tax = $item['tax'] ?? 0;
+                $discount  = $item['discount'] ?? 0;
+                $tax       = $item['tax'] ?? 0;
                 $lineTotal = ($quantity * $unitPrice) - $discount + $tax;
 
-                $purchasePrice = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
-                $itemProfit = ($unitPrice - $purchasePrice) * $quantity;
+                $purchasePrice   = $this->getLatestPurchasePriceInCurrency($product, $warehouseId, $saleCurrencyCode);
+                $itemProfit      = ($unitPrice - $purchasePrice) * $quantity;
                 $itemOwnerProfit = $itemProfit * ($warehouse->profit_percentage / 100);
 
                 $imeiArray = null;
@@ -522,29 +495,28 @@ class SaleController extends Controller
                 }
 
                 SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'warehouse_id' => $warehouseId,
-                    'category_id' => $product->category_id,
-                    'brand_id' => $product->brand_id,
-                    'storage' => $product->storage,
-                    'ram' => $product->ram,
-                    'color' => $product->color,
-                    'quantity' => $quantity,
-                    'unit_type' => $item['unit_type'] ?? 'Pcs',
-                    'unit_price' => $unitPrice,
+                    'sale_id'        => $sale->id,
+                    'product_id'     => $product->id,
+                    'product_name'   => $product->name,
+                    'warehouse_id'   => $warehouseId,
+                    'category_id'    => $product->category_id,
+                    'brand_id'       => $product->brand_id,
+                    'storage'        => $product->storage,
+                    'ram'            => $product->ram,
+                    'color'          => $product->color,
+                    'quantity'       => $quantity,
+                    'unit_type'      => $item['unit_type'] ?? 'Pcs',
+                    'unit_price'     => $unitPrice,
                     'purchase_price' => $purchasePrice,
-                    'sale_price' => $unitPrice,
-                    'discount' => $discount,
-                    'tax' => $tax,
-                    'line_total' => $lineTotal,
-                    'profit_total' => $itemProfit,
-                    'owner_profit' => $itemOwnerProfit,
-                    'imei_numbers' => $imeiArray,
+                    'sale_price'     => $unitPrice,
+                    'discount'       => $discount,
+                    'tax'            => $tax,
+                    'line_total'     => $lineTotal,
+                    'profit_total'   => $itemProfit,
+                    'owner_profit'   => $itemOwnerProfit,
+                    'imei_numbers'   => $imeiArray,
                 ]);
 
-                // Decrease quantity if confirmed
                 if ($validated['sale_status'] === 'Confirmed') {
                     $currentQty = $product->getQuantityInWarehouse($warehouseId);
                     $product->warehouses()->updateExistingPivot($warehouseId, [
@@ -559,7 +531,7 @@ class SaleController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Fatura u përditësua me sukses!',
-                    'url' => route('sales.index')
+                    'url'     => route('sales.index')
                 ], 200);
             }
 
@@ -582,7 +554,6 @@ class SaleController extends Controller
 
             $sale = Sale::findOrFail($id);
 
-            // Reverse quantities if sale was confirmed
             if ($sale->sale_status === 'Confirmed') {
                 foreach ($sale->items as $item) {
                     $product = Product::find($item->product_id);
@@ -608,7 +579,7 @@ class SaleController extends Controller
 
     public function searchProducts(Request $request)
     {
-        $search = $request->get('q', '');
+        $search      = $request->get('q', '');
         $warehouseId = $request->get('warehouse_id');
 
         $query = Product::with(['category', 'brand', 'currency', 'warehouses']);
@@ -640,25 +611,89 @@ class SaleController extends Controller
         return response()->json($products);
     }
 
+    /**
+     * Search product by IMEI number.
+     * Returns full product details so the frontend can pre-fill the product row
+     * and automatically populate the IMEI field.
+     *
+     * Route (add to routes/web.php or routes/api.php):
+     *   GET /sales-api/search-by-imei  → [SaleController::class, 'searchByImei']
+     */
+    public function searchByImei(Request $request)
+    {
+        $imei        = trim($request->get('imei', ''));
+        $warehouseId = $request->get('warehouse_id');
+
+        if (empty($imei)) {
+            return response()->json(['error' => 'IMEI mungon'], 422);
+        }
+
+        // Basic format check
+        if (!preg_match('/^\d{15}$/', $imei)) {
+            return response()->json([
+                'error' => 'IMEI duhet të jetë 15 shifra numerike'
+            ], 422);
+        }
+
+        // Find PurchaseItem that contains this IMEI
+        $purchaseItem = PurchaseItem::with([
+            'product.category',
+            'product.brand',
+            'product.currency',
+            'product.warehouses',
+        ])->whereJsonContains('imei_numbers', $imei)->first();
+
+        if (!$purchaseItem) {
+            return response()->json([
+                'error' => "IMEI {$imei} nuk ekziston në sistem"
+            ], 404);
+        }
+
+        // Check if this IMEI has already been sold
+        $existingSale = SaleItem::with('sale')->whereJsonContains('imei_numbers', $imei)->first();
+        if ($existingSale) {
+            $invoiceNo = $existingSale->sale->invoice_number ?? 'unknown';
+            return response()->json([
+                'error' => "IMEI {$imei} është shitur tashmë (Fatura #{$invoiceNo})"
+            ], 409);
+        }
+
+        $product = $purchaseItem->product;
+
+        if (!$product) {
+            return response()->json(['error' => 'Produkti nuk u gjet'], 404);
+        }
+
+        // Attach stock quantity
+        if ($warehouseId) {
+            $product->quantity = $product->getQuantityInWarehouse($warehouseId);
+        } else {
+            $product->quantity = $product->warehouses->sum('pivot.quantity');
+        }
+
+        // Pass found IMEI back so frontend can pre-fill the IMEI textarea
+        $product->found_imei = $imei;
+
+        return response()->json($product);
+    }
+
     public function updatePaymentStatus(Request $request, $id)
     {
-        $sale = Sale::with('onlineOrder')->findOrFail($id);
-
+        $sale      = Sale::with('onlineOrder')->findOrFail($id);
         $newStatus = $request->payment_status;
 
         $sale->update(['payment_status' => $newStatus]);
 
-        // Sync related online order if present
         try {
             if ($sale->onlineOrder) {
                 if ($newStatus === 'Paid') {
                     $sale->onlineOrder->update([
-                        'is_paid' => true,
+                        'is_paid'               => true,
                         'payment_received_date' => now(),
                     ]);
                 } else {
                     $sale->onlineOrder->update([
-                        'is_paid' => false,
+                        'is_paid'               => false,
                         'payment_received_date' => null,
                     ]);
                 }
@@ -671,18 +706,10 @@ class SaleController extends Controller
     }
 
     /**
-     * Get the latest purchase price for a product and convert it to the target currency code.
-     * If purchase record has a different currency, use ExchangeRateService to convert.
-     * Returns a float price in target currency (or original if conversion not possible).
-     *
-     * @param \App\Models\Product $product
-     * @param int|null $warehouseId
-     * @param string|null $targetCurrencyCode
-     * @return float
+     * Get the latest purchase price for a product and convert it to the target currency.
      */
     private function getLatestPurchasePriceInCurrency($product, $warehouseId = null, $targetCurrencyCode = null)
     {
-        // Fetch the latest PurchaseItem (warehouse-scoped first)
         $query = PurchaseItem::where('product_id', $product->id)->with(['purchase.currency']);
 
         if ($warehouseId) {
@@ -713,7 +740,7 @@ class SaleController extends Controller
             if ($rawPrice !== null && $targetCurrencyCode && $purchaseCurrencyCode && $purchaseCurrencyCode !== $targetCurrencyCode) {
                 try {
                     $exchange = new ExchangeRateService();
-                    $rates = $exchange->getExchangeRates();
+                    $rates    = $exchange->getExchangeRates();
                     if (isset($rates['data']) && is_array($rates['data'])) {
                         $rates = $rates['data'];
                     }
@@ -722,8 +749,7 @@ class SaleController extends Controller
                         $rateFrom = $rates[$purchaseCurrencyCode]['buy'] ?? $rates[$purchaseCurrencyCode]['sell'] ?? null;
 
                         if ($rateFrom) {
-                            $amountInLeke = $rawPrice * $rateFrom;
-                            return (float) $amountInLeke;
+                            return (float) ($rawPrice * $rateFrom);
                         }
                     }
                 } catch (\Exception $e) {
@@ -738,8 +764,6 @@ class SaleController extends Controller
             }
         }
 
-
-        // Fallbacks
         if (isset($product->purchase_price)) {
             return (float) $product->purchase_price;
         }
@@ -749,113 +773,155 @@ class SaleController extends Controller
 
     public function dailyReport(Request $request)
     {
-        $date = $request->input('date', now()->format('Y-m-d'));
+        $period = $request->get('period', 'today');
 
-        $sales = Sale::with(['warehouse', 'currency', 'items.product'])
-            ->whereDate('invoice_date', $date)
-            ->where('sale_status', 'Confirmed')
+        switch ($period) {
+            case 'yesterday':
+                $dateFrom = Carbon::yesterday()->startOfDay();
+                $dateTo   = Carbon::yesterday()->endOfDay();
+                break;
+            case 'this_week':
+                $dateFrom = Carbon::now()->startOfWeek(Carbon::MONDAY);
+                $dateTo   = Carbon::now()->endOfDay();
+                break;
+            case 'last_week':
+                $dateFrom = Carbon::now()->subWeek()->startOfWeek(Carbon::MONDAY);
+                $dateTo   = Carbon::now()->subWeek()->endOfWeek(Carbon::SUNDAY);
+                break;
+            case 'this_month':
+                $dateFrom = Carbon::now()->startOfMonth();
+                $dateTo   = Carbon::now()->endOfDay();
+                break;
+            case 'last_month':
+                $dateFrom = Carbon::now()->subMonth()->startOfMonth();
+                $dateTo   = Carbon::now()->subMonth()->endOfMonth();
+                break;
+            case 'custom':
+                $dateFrom = Carbon::parse($request->get('date_from'))->startOfDay();
+                $dateTo   = Carbon::parse($request->get('date_to'))->endOfDay();
+                break;
+            case 'today':
+            default:
+                $period   = 'today';
+                $dateFrom = Carbon::today()->startOfDay();
+                $dateTo   = Carbon::today()->endOfDay();
+                break;
+        }
+
+        $sales = Sale::with([
+            'items.product',
+            'items.category',
+            'warehouse',
+            'currency',
+            'partner'
+        ])
+            ->whereBetween('invoice_date', [
+                $dateFrom->format('Y-m-d H:i:s'),
+                $dateTo->format('Y-m-d H:i:s')
+            ])
             ->get();
 
-        $report = $sales->groupBy('warehouse_id')->map(function ($warehouseSales) {
+        $reportData = [];
+
+        foreach ($sales->groupBy('warehouse_id') as $warehouseId => $warehouseSales) {
             $warehouse = $warehouseSales->first()->warehouse;
+            if (!$warehouse) continue;
 
-            // Aggregate per-currency values for this warehouse
             $byCurrency = [];
-            foreach ($warehouseSales as $s) {
-                $code = $s->currency->code ?? 'LEK';
-                $symbol = $s->currency->symbol ?? '';
 
-                if (!isset($byCurrency[$code])) {
-                    $byCurrency[$code] = [
-                        'symbol' => $symbol,
-                        'xhiro' => 0.0,
-                        'fitimi_total' => 0.0,
-                        'fitimi_juaj' => 0.0,
-                        'cash' => 0.0,
-                        'bank' => 0.0,
+            foreach ($warehouseSales as $sale) {
+                $currencyCode   = $sale->currency->code   ?? 'ALL';
+                $currencySymbol = $sale->currency->symbol ?? 'L';
+
+                if (!isset($byCurrency[$currencyCode])) {
+                    $byCurrency[$currencyCode] = [
+                        'symbol'       => $currencySymbol,
+                        'xhiro'        => 0,
+                        'fitimi_total' => 0,
+                        'fitimi_juaj'  => 0,
+                        'cash'         => 0,
+                        'bank'         => 0,
                     ];
                 }
 
-                $byCurrency[$code]['xhiro'] += (float) $s->total_amount;
-                $byCurrency[$code]['fitimi_total'] += (float) $s->profit_total;
-                $byCurrency[$code]['fitimi_juaj'] += (float) $s->owner_profit;
+                $byCurrency[$currencyCode]['xhiro'] += $sale->total_amount;
 
-                if ($s->payment_method === 'Cash') {
-                    $byCurrency[$code]['cash'] += (float) $s->total_amount;
-                } elseif ($s->payment_method === 'Bank') {
-                    $byCurrency[$code]['bank'] += (float) $s->total_amount;
+                foreach ($sale->items as $item) {
+                    $profit = ($item->unit_price - $item->purchase_price) * $item->quantity;
+                    $byCurrency[$currencyCode]['fitimi_total'] += $profit;
+                }
+
+                if (strtolower($sale->payment_method ?? '') === 'cash') {
+                    $byCurrency[$currencyCode]['cash'] += $sale->total_amount;
+                } else {
+                    $byCurrency[$currencyCode]['bank'] += $sale->total_amount;
                 }
             }
 
-            // Format per-currency for view
-            $byCurrencyFormatted = collect($byCurrency)->map(function ($v) {
-                return [
-                    'symbol' => $v['symbol'],
-                    'xhiro' => number_format($v['xhiro'], 2),
-                    'fitimi_total' => number_format($v['fitimi_total'], 2),
-                    'fitimi_juaj' => number_format($v['fitimi_juaj'], 2),
-                    'cash' => number_format($v['cash'], 2),
-                    'bank' => number_format($v['bank'], 2),
-                ];
-            })->toArray();
+            $profitPercentage = $warehouse->profit_percentage ?? 100;
 
-            $totalXhiro = array_sum(array_column($byCurrency, 'xhiro'));
-            $totalFitimi = array_sum(array_column($byCurrency, 'fitimi_total'));
-            $totalOwner = array_sum(array_column($byCurrency, 'fitimi_juaj'));
+            foreach ($byCurrency as $code => &$c) {
+                $c['fitimi_juaj']  = $c['fitimi_total'] * ($profitPercentage / 100);
+                $c['xhiro']        = number_format($c['xhiro'], 2);
+                $c['fitimi_total'] = number_format($c['fitimi_total'], 2);
+                $c['fitimi_juaj']  = number_format($c['fitimi_juaj'], 2);
+                $c['cash']         = number_format($c['cash'], 2);
+                $c['bank']         = number_format($c['bank'], 2);
+            }
 
-            return [
-                'dyqani' => $warehouse->name,
-                'lokacioni' => $warehouse->location,
-                'perqindja_fitimit' => $warehouse->profit_percentage . '%',
-                'xhiro_totale' => number_format($totalXhiro, 2),
-                'fitimi_total' => number_format($totalFitimi, 2),
-                'fitimi_juaj' => number_format($totalOwner, 2),
-                'shitje_count' => $warehouseSales->count(),
-                'by_currency' => $byCurrencyFormatted,
+            $reportData[] = [
+                'dyqani'            => $warehouse->name,
+                'lokacioni'         => $warehouse->location ?? 'N/A',
+                'perqindja_fitimit' => $profitPercentage . '%',
+                'shitje_count'      => $warehouseSales->count(),
+                'by_currency'       => $byCurrency,
             ];
-        });
+        }
 
-        // Overall totals grouped by currency
+        $report = collect($reportData);
+
         $totalsByCurrency = [];
-        foreach ($sales as $s) {
-            $code = $s->currency->code ?? 'UNK';
-            $symbol = $s->currency->symbol ?? '';
-            if (!isset($totalsByCurrency[$code])) {
-                $totalsByCurrency[$code] = [
-                    'symbol' => $symbol,
-                    'xhiro' => 0.0,
-                    'fitimi_total' => 0.0,
-                    'fitimi_juaj' => 0.0,
-                    'cash' => 0.0,
-                    'bank' => 0.0,
+
+        foreach ($sales as $sale) {
+            $currencyCode   = $sale->currency->code   ?? 'ALL';
+            $currencySymbol = $sale->currency->symbol ?? 'L';
+
+            if (!isset($totalsByCurrency[$currencyCode])) {
+                $totalsByCurrency[$currencyCode] = [
+                    'symbol'       => $currencySymbol,
+                    'xhiro'        => 0,
+                    'fitimi_total' => 0,
+                    'fitimi_juaj'  => 0,
                 ];
             }
-            $totalsByCurrency[$code]['xhiro'] += (float) $s->total_amount;
-            $totalsByCurrency[$code]['fitimi_total'] += (float) $s->profit_total;
-            $totalsByCurrency[$code]['fitimi_juaj'] += (float) $s->owner_profit;
-            if ($s->payment_method === 'Cash') {
-                $totalsByCurrency[$code]['cash'] += (float) $s->total_amount;
-            } elseif ($s->payment_method === 'Bank') {
-                $totalsByCurrency[$code]['bank'] += (float) $s->total_amount;
+
+            $totalsByCurrency[$currencyCode]['xhiro'] += $sale->total_amount;
+            $profitPercentage = $sale->warehouse->profit_percentage ?? 100;
+
+            foreach ($sale->items as $item) {
+                $profit = ($item->unit_price - $item->purchase_price) * $item->quantity;
+                $totalsByCurrency[$currencyCode]['fitimi_total'] += $profit;
+                $totalsByCurrency[$currencyCode]['fitimi_juaj']  += $profit * ($profitPercentage / 100);
             }
         }
 
-        $totalsFormatted = collect($totalsByCurrency)->map(function ($v) {
-            return [
-                'symbol' => $v['symbol'],
-                'xhiro' => number_format($v['xhiro'], 2),
-                'fitimi_total' => number_format($v['fitimi_total'], 2),
-                'fitimi_juaj' => number_format($v['fitimi_juaj'], 2),
-                'cash' => number_format($v['cash'], 2),
-                'bank' => number_format($v['bank'], 2),
-            ];
-        })->toArray();
+        foreach ($totalsByCurrency as $code => &$c) {
+            $c['xhiro']        = number_format($c['xhiro'], 2);
+            $c['fitimi_total'] = number_format($c['fitimi_total'], 2);
+            $c['fitimi_juaj']  = number_format($c['fitimi_juaj'], 2);
+        }
 
         $totals = [
-            'by_currency' => $totalsFormatted,
+            'by_currency'   => $totalsByCurrency,
             'shitje_totale' => $sales->count(),
         ];
 
-        return view('sales.daily-report', compact('date', 'report', 'totals'));
+        return view('sales.daily-report', compact(
+            'report',
+            'totals',
+            'period',
+            'dateFrom',
+            'dateTo'
+        ));
     }
 }

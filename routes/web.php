@@ -54,8 +54,12 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::resource('sellers', SellerController::class);
 
 
+    Route::post('purchase/extract-pdf',   [PurchaseController::class, 'extractPdf'])->name('purchases.extract-pdf');
+
+    Route::post('purchase/extract-image', [PurchaseController::class, 'extractImage'])->name('purchases.extract-image');
 
     Route::resource('purchases', PurchaseController::class);
+
     Route::get('purchases-api/search-products', [PurchaseController::class, 'searchProducts'])->name('purchases.search.products');
 
     Route::resource('sales', SaleController::class);
@@ -81,6 +85,7 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::resource('debts', DebtController::class);
     Route::post('debts/{debt}/add-payment', [DebtController::class, 'addPayment'])->name('debts.add-payment');
 
+
     Route::resource('online-orders', OnlineOrderController::class);
     Route::post('online-orders/{onlineOrder}/mark-paid', [OnlineOrderController::class, 'markAsPaid'])->name('online-orders.mark-paid');
     Route::post('online-orders/{onlineOrder}/mark-unpaid', [OnlineOrderController::class, 'markAsUnpaid'])->name('online-orders.mark-unpaid');
@@ -89,4 +94,7 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
     Route::resource('seller-bonuses', SellerBonusController::class);
     Route::post('seller-bonuses/calculate', [SellerBonusController::class, 'calculateBonus'])->name('seller-bonuses.calculate');
     Route::get('seller-bonuses/seller-report/{seller}', [SellerBonusController::class, 'sellerReport'])->name('seller-bonuses.seller-report');
+
+
+    Route::get('/sales-api/search-by-imei', [SaleController::class, 'searchByImei'])->name('sales.search-by-imei');
 });

@@ -593,13 +593,13 @@
                         </div>
                         <div class="col-md-4 mb-5">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <label class="form-label mb-0">Client <span class="text-danger">*</span></label>
+                                <label class="form-label mb-0">Klient <span class="text-danger">*</span></label>
                                 <button class="btn btn-sm btn-outline-primary rounded-pill px-3" type="button" data-bs-toggle="modal" data-bs-target="#createClientModal">
                                     <i class="ri-user-add-line me-1"></i> Klient i Ri
                                 </button>
                             </div>
                             <select class="form-select select2-client" name="partner_id" id="partner_id" required>
-                                <option value="">Choose...</option>
+                                <option value="">Zgjidh Klientin...</option>
                                 @foreach($partners as $partner)
                                 <option value="{{ $partner->id }}"
                                     data-name="{{ $partner->name }}"
@@ -643,18 +643,18 @@
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Seller <span class="text-danger">*</span></label>
+                            <label class="form-label">Shitesi <span class="text-danger">*</span></label>
                             <select class="form-select select2-seller" name="seller_id" required>
-                                <option value="">Choose...</option>
+                                <option value="">Zgjidh Shitesin...</option>
                                 @foreach($sellers as $seller)
                                 <option value="{{ $seller->id }}">{{ $seller->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Currency <span class="text-danger">*</span></label>
+                            <label class="form-label">Monedha <span class="text-danger">*</span></label>
                             <select class="form-select" name="currency_id" id="currency_id" required>
-                                <option value="">Select Currency</option>
+                                <option value="">Zgjidh Monedhën</option>
                                 @foreach($currencies as $currency)
                                 <option value="{{ $currency->id }}" data-symbol="{{ $currency->symbol }}">
                                     {{ $currency->code }} ({{ $currency->symbol }})
@@ -690,7 +690,7 @@
                     <div class="tab-content border border-top-0 rounded-bottom p-3 mb-3">
                         {{-- ── Tab 1: Search by product name (original) ── --}}
                         <div class="tab-pane fade show active" id="pane-name" role="tabpanel">
-                            <select id="searchProduct" style="width:100%" placeholder="Search Product..."></select>
+                            <select id="searchProduct" style="width:100%" placeholder="Kerko Prduktin..."></select>
                         </div>
 
                         {{-- ── Tab 2: Search by IMEI ── --}}
@@ -773,10 +773,10 @@
                     </div>
                     <div class="mt-4 d-grid gap-2">
                         <button type="submit" class="btn btn-success btn-lg">
-                            <i class="ri-save-line me-1"></i> Save Invoice
+                            <i class="ri-save-line me-1"></i> Rregjistro Shitjen
                         </button>
                         <a href="{{ route('sales.index') }}" class="btn btn-secondary">
-                            <i class="ri-close-line me-1"></i> Cancel
+                            <i class="ri-close-line me-1"></i> Anullo
                         </a>
                     </div>
                 </div>
@@ -860,7 +860,6 @@
     </div>
 </div>
 
-<!-- WARRANTY PRINT MODAL -->
 <div id="warrantyPrintModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeWarrantyPrintModal()">&times;</span>
@@ -1225,17 +1224,17 @@
         // Select2 inits
         if (typeof $.fn.select2 !== 'undefined') {
             $('.select2-client').select2({
-                placeholder: 'Choose client...',
+                placeholder: 'Zgjidh Klientin...',
                 allowClear: true
             });
             $('.select2-seller').select2({
-                placeholder: 'Choose seller...',
+                placeholder: 'Zgjidh Shitesin...',
                 allowClear: true
             });
 
             // Name-based product search
             $('#searchProduct').select2({
-                placeholder: 'Search product...',
+                placeholder: 'Kërko produktin...',
                 minimumInputLength: 2,
                 allowClear: true,
                 ajax: {
@@ -1643,4 +1642,23 @@
         });
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const warehouseSelect = document.getElementById("warehouse_id");
+
+        // 1️⃣ Vendos zgjedhjen e fundit kur hapet faqja
+        let savedWarehouse = localStorage.getItem("selected_warehouse_id");
+        if (savedWarehouse) {
+            warehouseSelect.value = savedWarehouse;
+        }
+
+        // 2️⃣ Ruaj zgjedhjen sa herë ndryshohet
+        warehouseSelect.addEventListener("change", function() {
+            localStorage.setItem("selected_warehouse_id", this.value);
+        });
+
+    });
+</script>
+
 @endpush

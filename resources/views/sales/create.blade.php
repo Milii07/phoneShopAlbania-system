@@ -1357,7 +1357,7 @@
         <div class="col-md-3">
             <label class="form-label small">Unit Price *</label>
             <input type="number" class="form-control form-control-sm unit-price-input"
-                   name="items[${productIndex}][unit_price]" value="" step="0.01" min="0" placeholder="0.00" required>
+                   name="items[${productIndex}][unit_price]" value="${product.selling_price}" step="0.01" min="0" placeholder="0.00" required>
         </div>
         <div class="col-md-3">
             <label class="form-label small">Discount</label>

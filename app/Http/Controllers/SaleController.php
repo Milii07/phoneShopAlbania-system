@@ -674,6 +674,7 @@ class SaleController extends Controller
         // Pass found IMEI back so frontend can pre-fill the IMEI textarea
         $product->found_imei = $imei;
 
+        $product->selling_price = $purchaseItem->selling_price;
         return response()->json($product);
     }
 
@@ -726,9 +727,7 @@ class SaleController extends Controller
 
         $rawPrice = null;
         if ($purchaseItem) {
-            if (isset($purchaseItem->line_total)) {
-                $rawPrice = (float) $purchaseItem->line_total;
-            } elseif (isset($purchaseItem->unit_cost)) {
+            if (isset($purchaseItem->unit_cost)) {
                 $rawPrice = (float) $purchaseItem->unit_cost;
             }
 
@@ -764,8 +763,8 @@ class SaleController extends Controller
             }
         }
 
-        if (isset($product->purchase_price)) {
-            return (float) $product->purchase_price;
+        if (isset($product->unit_price) && empty($rawPrice)) {
+            return (float) $product->unit_price;
         }
 
         return 0.0;

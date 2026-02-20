@@ -19,6 +19,7 @@ class PurchaseItem extends Model
         'quantity',
         'unit_type',
         'unit_cost',
+        'selling_price',
         'discount',
         'tax',
         'line_total',

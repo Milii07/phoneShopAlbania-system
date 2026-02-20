@@ -5,16 +5,16 @@
     // ─────────────────────────────────────────────
     // TOGGLE
     // ─────────────────────────────────────────────
-    function togglePdfSection() {
-        const body = document.getElementById('pdfImportBody');
-        const icon = document.getElementById('pdfToggleIcon');
+    function toggleImportSection() {
+        const body = document.getElementById('importBody');
+        const icon = document.getElementById('importToggleIcon');
         const hidden = body.style.display === 'none';
         body.style.display = hidden ? 'block' : 'none';
         icon.className = hidden ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line';
     }
 
     // ─────────────────────────────────────────────
-    // FILE INPUT TRIGGERS — reset para çdo klikimi
+    // FILE INPUT TRIGGERS
     // ─────────────────────────────────────────────
     function triggerInput(inputId) {
         const inp = document.getElementById(inputId);
@@ -23,20 +23,20 @@
     }
 
     // ─────────────────────────────────────────────
-    // DRAG & DROP — mode = 'pdf' | 'img'
+    // DRAG & DROP — mode = 'pdf' | 'excel'
     // ─────────────────────────────────────────────
     function onDragOver(e, mode) {
         e.preventDefault();
         const zone = mode === 'pdf' ?
             document.querySelector('.pdf-zone') :
-            document.querySelector('.img-zone');
+            document.querySelector('.excel-zone');
         zone.classList.add('dragover');
     }
 
     function onDragLeave(e, mode) {
         const zone = mode === 'pdf' ?
             document.querySelector('.pdf-zone') :
-            document.querySelector('.img-zone');
+            document.querySelector('.excel-zone');
         zone.classList.remove('dragover');
     }
 
@@ -44,7 +44,7 @@
         e.preventDefault();
         const zone = mode === 'pdf' ?
             document.querySelector('.pdf-zone') :
-            document.querySelector('.img-zone');
+            document.querySelector('.excel-zone');
         zone.classList.remove('dragover');
         const file = e.dataTransfer.files[0];
         if (file) processFile(file, mode);
@@ -55,20 +55,24 @@
     }
 
     // ─────────────────────────────────────────────
-    // PROCESS FILE — mode tregon cilin route të dërgojë
+    // PROCESS FILE
     // ─────────────────────────────────────────────
     function processFile(file, mode) {
 
-        // Validim sipas mode-it
+        // Validim
         if (mode === 'pdf') {
             if (file.type !== 'application/pdf') {
                 showError('Butoni PDF pranon vetëm skedarë .pdf');
                 return;
             }
         } else {
-            const imgTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            if (!imgTypes.includes(file.type)) {
-                showError('Butoni Imazh pranon vetëm JPG dhe PNG.');
+            const excelTypes = [
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/csv'
+            ];
+            if (!excelTypes.includes(file.type) && !file.name.match(/\.(xlsx?|csv)$/i)) {
+                showError('Butoni Excel pranon vetëm XLS, XLSX dhe CSV.');
                 return;
             }
         }
@@ -78,15 +82,15 @@
             return;
         }
 
-        // Spinner me tekst sipas mode-it
+        // Spinner
         document.getElementById('overlayText').textContent = mode === 'pdf' ?
             'Duke lexuar PDF-in...' :
-            'Duke analizuar imazhin (OCR)...';
-        document.getElementById('pdfProcessingOverlay').classList.add('active');
+            'Duke lexuar Excel-in...';
+        document.getElementById('processingOverlay').classList.add('active');
 
         const route = mode === 'pdf' ?
             '{{ route("purchases.extract-pdf") }}' :
-            '{{ route("purchases.extract-image") }}';
+            '{{ route("purchases.extract-excel") }}';
 
         const fd = new FormData();
         fd.append('document', file);
@@ -98,7 +102,7 @@
             })
             .then(r => r.json())
             .then(resp => {
-                document.getElementById('pdfProcessingOverlay').classList.remove('active');
+                document.getElementById('processingOverlay').classList.remove('active');
                 if (!resp.success) {
                     showError(resp.message || 'Gabim i panjohur.');
                     return;
@@ -113,7 +117,7 @@
                 setState('preview');
             })
             .catch(err => {
-                document.getElementById('pdfProcessingOverlay').classList.remove('active');
+                document.getElementById('processingOverlay').classList.remove('active');
                 showError('Lidhja dështoi: ' + (err.message || err));
             });
     }
@@ -135,18 +139,17 @@
     function resetToUpload() {
         _importedData = null;
         document.getElementById('pdfFileInput').value = '';
-        document.getElementById('imgFileInput').value = '';
+        document.getElementById('excelFileInput').value = '';
         setState('upload');
     }
 
     // ─────────────────────────────────────────────
-    // RENDER PREVIEW
+    // RENDER PREVIEW (same as before)
     // ─────────────────────────────────────────────
     function renderPreview(data) {
         const partner = data._partner;
         let html = '';
 
-        // Supplier
         html += `
     <div class="import-preview-card">
         <div class="import-badge blue"><i class="ri-building-line"></i> Furnitori</div>
@@ -173,7 +176,6 @@
         </div>
     </div>`;
 
-        // Produktet
         html += `<div class="import-preview-card">
         <div class="import-badge green"><i class="ri-shopping-bag-line"></i> Produktet (${(data.items||[]).length})</div>`;
 
@@ -213,7 +215,6 @@
         });
         html += `</div>`;
 
-        // Totalet
         html += `
     <div class="import-preview-card">
         <div class="import-badge red"><i class="ri-calculator-line"></i> Totalet</div>
@@ -228,14 +229,13 @@
     }
 
     // ─────────────────────────────────────────────
-    // APLIKO NË FORMË
+    // APLIKO NË FORMË (same as before)
     // ─────────────────────────────────────────────
     function applyImportedData() {
         if (!_importedData) return;
         const data = _importedData;
         const partner = data._partner;
 
-        // Partner
         if (partner) {
             const sel = document.getElementById('partner_id');
             if (sel) {
@@ -249,22 +249,19 @@
             setHidden('new_supplier_address', data.supplier.address || '');
         }
 
-        // Data
         const dEl = document.getElementById('purchase_date');
         if (dEl && data.invoice?.date) dEl.value = data.invoice.date;
 
-        // Mënyra pagese
         const method = data.invoice?.payment_method === 'Bank' ? 'bank' : 'cash';
         const radio = document.getElementById('payment_' + method);
         if (radio) radio.checked = true;
 
-        // Pastro dhe rishto produktet
         document.getElementById('productsContainer').innerHTML = '';
         (data.items || []).forEach(item => addImportedProduct(item));
 
         if (typeof calculateTotals === 'function') calculateTotals();
 
-        document.getElementById('pdfImportSection').style.display = 'none';
+        document.getElementById('importSection').style.display = 'none';
 
         Swal.fire({
             icon: 'success',
@@ -277,7 +274,7 @@
     }
 
     // ─────────────────────────────────────────────
-    // SHTO PRODUKT NGA IMPORT
+    // SHTO PRODUKT (same as before)
     // ─────────────────────────────────────────────
     function addImportedProduct(item) {
         if (typeof productIndex === 'undefined') window.productIndex = 0;
@@ -287,8 +284,6 @@
         const imeiStr = imei.join(', ');
         const hasImei = imei.length > 0;
         const border = item.product_found ? '#38a169' : '#e2882a';
-
-        console.log(`[Product ${idx}] "${item.product_name}" IMEI count: ${imei.length}`);
 
         const html = `
     <div class="product-item" data-index="${idx}" style="border-left:4px solid ${border}">

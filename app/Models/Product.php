@@ -15,6 +15,7 @@ class Product extends Model
         'name',
         'unit_price',
         'purchase_price',
+        'selling_price',
         'currency_id',
         'storage',
         'ram',

@@ -55,7 +55,7 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
 
 
     Route::post('purchase/extract-pdf',   [PurchaseController::class, 'extractPdf'])->name('purchases.extract-pdf');
-
+    Route::post('purchases/extract-excel', [PurchaseController::class, 'extractExcel'])->name('purchases.extract-excel');
     Route::post('purchase/extract-image', [PurchaseController::class, 'extractImage'])->name('purchases.extract-image');
 
     Route::resource('purchases', PurchaseController::class);

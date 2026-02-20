@@ -199,6 +199,7 @@ class PurchaseController extends Controller
                     'quantity' => $quantity,
                     'unit_type' => $item['unit_type'] ?? 'Pcs',
                     'unit_cost' => $unitCost,
+                    'selling_price' => $item['selling_price'] ?? 0,
                     'discount' => $discount,
                     'tax' => $tax,
                     'line_total' => $lineTotal,
@@ -282,6 +283,7 @@ class PurchaseController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_cost' => 'required|numeric|min:0',
+            'items.*.selling_price' => 'nullable|numeric|min:0',
             'items.*.discount' => 'nullable|numeric|min:0',
             'items.*.tax' => 'nullable|numeric|min:0',
             'items.*.imei_numbers' => 'nullable|string',
@@ -438,6 +440,7 @@ class PurchaseController extends Controller
                     'quantity' => $quantity,
                     'unit_type' => $item['unit_type'] ?? 'Pcs',
                     'unit_cost' => $unitCost,
+                    'selling_price' => $item['selling_price'] ?? 0,
                     'discount' => $discount,
                     'tax' => $tax,
                     'line_total' => $lineTotal,
@@ -1276,5 +1279,168 @@ class PurchaseController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Gabim PDF: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function extractExcel(Request $request)
+    {
+        $request->validate([
+            'document' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        try {
+            $data = $this->parseExcel($request->file('document')->getRealPath());
+            return $this->resolveAndRespond($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gabim Excel: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // PARSE EXCEL — Format: Nr | PERSHKRIMI | IMEI | NJESIA | SASIA | CMIMI | Totali
+    // ──────────────────────────────────────────────────────────────
+    private function parseExcel(string $filePath): array
+    {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+        $sheet       = $spreadsheet->getActiveSheet();
+        $rows        = $sheet->toArray();
+
+        if (empty($rows)) {
+            throw new \Exception('Skedari Excel është bosh.');
+        }
+
+        $result = [
+            'supplier' => ['name' => '', 'nipt' => '', 'address' => ''],
+            'invoice'  => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
+            'items'    => [],
+            'totals'   => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
+        ];
+
+        // ── GJEJ HEADER ROW ───────────────────────────────────────
+        $headerIdx = null;
+        $colMap    = [];
+
+        foreach ($rows as $idx => $row) {
+            $rowText = mb_strtolower(implode('|', array_map('trim', $row)));
+
+            // Kërko header që përmban "PERSHKRIMI" dhe "IMEI"
+            if (preg_match('/pershkrim/iu', $rowText) && preg_match('/imei/iu', $rowText)) {
+                $headerIdx = $idx;
+
+                // Map kolonat me case-insensitive matching
+                foreach ($row as $colIdx => $header) {
+                    $h = mb_strtolower(trim($header));
+
+                    if (preg_match('/^nr$/iu', $h))           $colMap['nr']      = $colIdx;
+                    if (preg_match('/pershkrim/iu', $h))      $colMap['product'] = $colIdx;
+                    if (preg_match('/imei/iu', $h))           $colMap['imei']    = $colIdx;
+                    if (preg_match('/njesi/iu', $h))          $colMap['unit']    = $colIdx;
+                    if (preg_match('/sasi/iu', $h))           $colMap['qty']     = $colIdx;
+                    if (preg_match('/^cmim/iu', $h))          $colMap['price']   = $colIdx;
+                    if (preg_match('/total/iu', $h))          $colMap['total']   = $colIdx;
+                }
+                break;
+            }
+        }
+
+        if ($headerIdx === null) {
+            throw new \Exception('Nuk u gjet header-i: duhet të përmbajë kolonat "PERSHKRIMI" dhe "IMEI".');
+        }
+
+        // Verifiko që kolonat kryesore janë gjetur
+        if (!isset($colMap['product']) || !isset($colMap['imei']) || !isset($colMap['qty']) || !isset($colMap['price'])) {
+            throw new \Exception('Header-i duhet të përmbajë të paktën: PERSHKRIMI, IMEI, SASIA, CMIMI.');
+        }
+
+        // ── LEXO DATA ROWS ────────────────────────────────────────
+        $rawItems = [];
+
+        for ($i = $headerIdx + 1; $i < count($rows); $i++) {
+            $row = $rows[$i];
+
+            // Ndaloj nëse rreshti është bosh ose përmban "TOTAL"
+            if (empty(array_filter($row, fn($c) => !empty(trim($c))))) {
+                break;
+            }
+
+            $productCell = isset($colMap['product']) ? trim($row[$colMap['product']] ?? '') : '';
+            if (empty($productCell) || preg_match('/total/iu', $productCell)) {
+                break;
+            }
+
+            // Nxjerr të dhënat nga kolonat
+            $productName = $productCell;
+            $imei        = isset($colMap['imei'])  ? trim($row[$colMap['imei']] ?? '')  : '';
+            $qty         = isset($colMap['qty'])   ? (int)   ($row[$colMap['qty']] ?? 1)   : 1;
+            $price       = isset($colMap['price']) ? (float) ($row[$colMap['price']] ?? 0) : 0;
+            $total       = isset($colMap['total']) ? (float) ($row[$colMap['total']] ?? 0) : $price;
+
+            // Validim: duhet të ketë produkt dhe IMEI
+            if (empty($productName)) {
+                continue;
+            }
+
+            // Validim IMEI: duhet të jetë 14-15 shifra
+            if (strlen($imei) < 14 || !preg_match('/^\d{14,15}$/', $imei)) {
+                continue; // Skip rreshtat pa IMEI valid
+            }
+
+            // Hiq "New" nga emri nëse ka
+            $productName = preg_replace('/\s+New\s*$/i', '', $productName);
+
+            // Parse emrin: nxjerr brand, storage, ram, color
+            $parsed             = $this->parseProductName($productName);
+            $parsed['category'] = 'Telefona';
+
+            $rawItems[] = [
+                'product_name' => $productName,
+                'clean_name'   => $parsed['clean_name'],
+                'brand'        => $parsed['brand'],
+                'category'     => 'Telefona',
+                'storage'      => $parsed['storage'],
+                'ram'          => $parsed['ram'],
+                'color'        => $parsed['color'],
+                'quantity'     => $qty,
+                'unit_cost'    => $price,
+                'tax'          => 0.0,
+                'line_total'   => $total,
+                'discount'     => 0,
+                'imei_numbers' => [$imei],
+                '_parsed'      => $parsed,
+            ];
+        }
+
+        if (empty($rawItems)) {
+            throw new \Exception('Nuk u gjet asnjë rresht i vlefshëm në Excel. Sigurohu që ka të dhëna pas header-it.');
+        }
+
+        $grouped = [];
+
+        foreach ($rawItems as $item) {
+
+            $key = mb_strtolower(trim($item['clean_name']))
+                . '|' . ($item['storage'] ?: '')
+                . '|' . ($item['ram'] ?: '')
+                . '|' . $item['unit_cost'];
+
+            if (isset($grouped[$key])) {
+                // Shto në grupin ekzistues
+                $grouped[$key]['quantity']   += 1;
+                $grouped[$key]['line_total'] += $item['unit_cost'];
+                $grouped[$key]['imei_numbers'][] = $item['imei_numbers'][0];
+            } else {
+
+                $grouped[$key] = $item;
+            }
+        }
+
+        $result['items'] = array_values($grouped);
+
+        // ── LLOGARIT TOTALET NGA ITEMS ───────────────────────────
+        $result['totals']['total'] = array_sum(array_column($result['items'], 'line_total'));
+
+        return $result;
     }
 }

@@ -434,6 +434,17 @@
                         required>
                 </div>
                 
+  <div class="col-md-3">
+                    <label class="form-label small">Sale Price *</label>
+                    <input type="number" 
+                        class="form-control form-control-sm unit-cost-input" 
+                        name="items[${productIndex}][selling_price]" 
+                        value="${product.price}" 
+                        step="0.01" 
+                        min="0" 
+                        required>
+                </div>
+
                 <div class="col-md-3">
                     <label class="form-label small">Discount</label>
                     <input type="number" 

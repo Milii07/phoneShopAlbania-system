@@ -20,9 +20,9 @@
         background: #fff5f5;
     }
 
-    .import-btn-zone.img-zone:hover {
-        border-color: #3498db;
-        background: #f0f8ff;
+    .import-btn-zone.excel-zone:hover {
+        border-color: #27ae60;
+        background: #f0fff4;
     }
 
     .import-btn-zone.dragover {
@@ -34,9 +34,9 @@
         background: #fff5f5;
     }
 
-    .import-btn-zone.img-zone.dragover {
-        border-color: #3498db;
-        background: #f0f8ff;
+    .import-btn-zone.excel-zone.dragover {
+        border-color: #27ae60;
+        background: #f0fff4;
     }
 
     .import-btn-zone .zone-icon {
@@ -49,11 +49,11 @@
         color: #e74c3c;
     }
 
-    .import-btn-zone.img-zone .zone-icon {
-        color: #3498db;
+    .import-btn-zone.excel-zone .zone-icon {
+        color: #27ae60;
     }
 
-    .pdf-processing-overlay {
+    .processing-overlay {
         display: none;
         position: fixed;
         inset: 0;
@@ -64,11 +64,11 @@
         backdrop-filter: blur(3px);
     }
 
-    .pdf-processing-overlay.active {
+    .processing-overlay.active {
         display: flex;
     }
 
-    .pdf-processing-card {
+    .processing-card {
         background: white;
         border-radius: 16px;
         padding: 32px 44px;
@@ -78,17 +78,17 @@
         width: 90%;
     }
 
-    .pdf-spinner {
+    .processing-spinner {
         width: 52px;
         height: 52px;
         border: 5px solid #e9ecef;
         border-top-color: #667eea;
         border-radius: 50%;
-        animation: pdfSpin .8s linear infinite;
+        animation: spin .8s linear infinite;
         margin: 0 auto 14px;
     }
 
-    @keyframes pdfSpin {
+    @keyframes spin {
         to {
             transform: rotate(360deg);
         }
@@ -163,28 +163,28 @@
 </style>
 
 <!-- Processing Overlay -->
-<div class="pdf-processing-overlay" id="pdfProcessingOverlay">
-    <div class="pdf-processing-card">
-        <div class="pdf-spinner"></div>
+<div class="processing-overlay" id="processingOverlay">
+    <div class="processing-card">
+        <div class="processing-spinner"></div>
         <h6 class="fw-bold mb-1" id="overlayText">Duke lexuar dokumentin...</h6>
         <p class="text-muted mb-0" style="font-size:13px">Ju luteni prisni</p>
     </div>
 </div>
 
 <!-- Import Card -->
-<div class="card mb-4" id="pdfImportSection">
+<div class="card mb-4" id="importSection">
     <div class="card-header d-flex align-items-center justify-content-between"
         style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px 8px 0 0">
         <div class="d-flex align-items-center gap-2">
             <i class="ri-import-line text-white fs-5"></i>
             <h6 class="text-white mb-0 fw-bold">Import nga Fatura</h6>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-light" onclick="togglePdfSection()">
-            <i id="pdfToggleIcon" class="ri-arrow-up-s-line"></i>
+        <button type="button" class="btn btn-sm btn-outline-light" onclick="toggleImportSection()">
+            <i id="importToggleIcon" class="ri-arrow-up-s-line"></i>
         </button>
     </div>
 
-    <div class="card-body" id="pdfImportBody">
+    <div class="card-body" id="importBody">
 
         <!-- STATE: upload — dy butona të ndarë -->
         <div id="stateUpload">
@@ -200,7 +200,7 @@
                         <span class="zone-icon"><i class="ri-file-pdf-line"></i></span>
                         <h6 class="mb-1 fw-semibold">Lexo PDF</h6>
                         <p class="text-muted mb-0" style="font-size:12px">
-                            Faturat PDF (p.sh. WEST TELECOM)<br>
+                            Faturat PDF (WEST TELECOM, PREVENTIV)<br>
                             <small>Kliko ose zvarrit këtu</small>
                         </p>
                     </div>
@@ -208,22 +208,22 @@
                         onchange="onFileSelected(this,'pdf')">
                 </div>
 
-                <!-- Butoni 2: Imazh -->
+                <!-- Butoni 2: Excel -->
                 <div class="col-md-6">
-                    <div class="import-btn-zone img-zone"
-                        onclick="triggerInput('imgFileInput')"
-                        ondragover="onDragOver(event,'img')"
-                        ondragleave="onDragLeave(event,'img')"
-                        ondrop="onDrop(event,'img')">
-                        <span class="zone-icon"><i class="ri-image-line"></i></span>
-                        <h6 class="mb-1 fw-semibold">Lexo Imazh</h6>
+                    <div class="import-btn-zone excel-zone"
+                        onclick="triggerInput('excelFileInput')"
+                        ondragover="onDragOver(event,'excel')"
+                        ondragleave="onDragLeave(event,'excel')"
+                        ondrop="onDrop(event,'excel')">
+                        <span class="zone-icon"><i class="ri-file-excel-line"></i></span>
+                        <h6 class="mb-1 fw-semibold">Lexo Excel</h6>
                         <p class="text-muted mb-0" style="font-size:12px">
-                            Foto faturash JPG/PNG<br>
+                            Tabelat Excel (XLS, XLSX, CSV)<br>
                             <small>Kliko ose zvarrit këtu</small>
                         </p>
                     </div>
-                    <input type="file" id="imgFileInput" accept=".jpg,.jpeg,.png" style="display:none"
-                        onchange="onFileSelected(this,'img')">
+                    <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="display:none"
+                        onchange="onFileSelected(this,'excel')">
                 </div>
 
             </div>

@@ -120,6 +120,7 @@
                                 <th>Qty</th>
                                 <th>Unit Type</th>
                                 <th>Unit Cost</th>
+                                <th>Sales Price</th>
                                 <th>Discount</th>
                                 <th>Tax</th>
                                 <th>Line Total</th>
@@ -159,6 +160,7 @@
                                 <td>{{ $item->quantity }}</td>
                                 <td>{{ $item->unit_type }}</td>
                                 <td>{{ number_format($item->unit_cost, 2) }}</td>
+                                <td>{{ number_format($item->selling_price, 2) }}</td>
                                 <td>{{ number_format($item->discount, 2) }}</td>
                                 <td>{{ number_format($item->tax, 2) }}</td>
                                 <td><strong>{{ number_format($item->line_total, 2) }}</strong></td>

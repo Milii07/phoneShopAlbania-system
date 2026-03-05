@@ -5,8 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 
+
 class BrandController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view brands')->only(['index', 'show']);
+        $this->middleware('permission:create brands')->only(['create', 'store']);
+        $this->middleware('permission:edit brands')->only(['edit', 'update']);
+        $this->middleware('permission:delete brands')->only(['destroy']);
+    }
+
     public function index()
     {
         $brands = Brand::latest()->paginate(10);
@@ -35,7 +44,6 @@ class BrandController extends Controller
 
     public function show(Brand $brand)
     {
-        // Return JSON for AJAX requests
         if (request()->wantsJson() || request()->ajax()) {
             return response()->json($brand);
         }

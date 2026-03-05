@@ -65,7 +65,7 @@
     </div>
 </div>
 
-<form method="POST" action="{{ route('purchases.store') }}" enctype="multipart/form-data" id="purchaseForm">
+<form method="POST" action="" enctype=" multipart/form-data" id="purchaseForm">
     @csrf
 
     <div class="row">

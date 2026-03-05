@@ -32,231 +32,276 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
 
-                @if(function_exists('user_can_access_route') && user_can_access_route('dashboard'))
+                {{-- Dashboard --}}
+                @can('view statistics')
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ Request::is('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                         <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboards</span>
                     </a>
                 </li>
-                @endif
+                @endcan
 
-                @if(function_exists('user_can_access_route') && user_can_access_route('sales.index'))
-                <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
-                    <i class="ri-shopping-bag-3-line"></i>
-                    <span data-key="t-apps">Shitjet</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarSales">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('sales.create') }}" class="nav-link" data-key="t-calendar"> Shitjet </a>
-                        </li>
-
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && (user_can_access_route('purchases.index') || user_can_access_route('purchases.create')))
-                <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
-                    <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarPurchases">
-                    <ul class="nav nav-sm flex-column">
-                        @if(user_can_access_route('purchases.index'))
-                        <li class="nav-item">
-                            <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-purchases">Blerjet</a>
-                        </li>
-                        @endif
-
-                        @if(user_can_access_route('purchases.create'))
-                        <li class="nav-item">
-                            <a href="{{ route('purchases.create') }}" class="nav-link" data-key="t-purchases-create">Krijo Hyrje</a>
-                        </li>
-                        @endif
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('sales.daily-report'))
-                <a class="nav-link menu-link" href="#sidebarRaportet" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRaportet">
-                    <i class=" ri-bar-chart-fill"></i> <span data-key="t-apps">Raportet ditore</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarRaportet">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('sales.daily-report') }}" class="nav-link" data-key="t-calendar"> Raportet </a>
-                        </li>
-
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('stock-movements.index'))
-                <a class="nav-link menu-link" href="#sidebarStockMovements" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarStockMovements">
-                    <i class=" ri-todo-line"></i> <span data-key="t-apps">Inventari</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarStockMovements">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('stock-movements.index') }}" class="nav-link" data-key="t-calendar">Inventari</a>
-                        </li>
-
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && (user_can_access_route('products.index') || user_can_access_route('products.create')))
-                <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
-                    <i class="ri-barcode-line"></i> <span data-key="t-apps">Produktet</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarProducts">
-                    <ul class="nav nav-sm flex-column">
-                        @if(user_can_access_route('products.index'))
-                        <li class="nav-item">
-                            <a href="{{ route('products.index') }}" class="nav-link" data-key="t-products">Produktet</a>
-                        </li>
-                        @endif
-
-                        @if(user_can_access_route('products.create'))
-                        <li class="nav-item">
-                            <a href="{{ route('products.create') }}" class="nav-link" data-key="t-products-create">Krijo Produkt</a>
-                        </li>
-                        @endif
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('debts.index'))
-                <a class="nav-link menu-link" href="#sidebarDebti" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDebti">
-                    <i class="ri-wallet-3-line"></i> <span data-key="t-apps">Menaxhimi i Pagesave</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarDebti">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('debts.index') }}" class="nav-link" data-key="t-calendar"> Menaxhimi i Pagesave </a>
-                        </li>
-
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('online-orders.index'))
-                <a class="nav-link menu-link" href="#sidebarOnlineOrders" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOnlineOrders">
-                    <i class="ri-truck-line"></i> <span data-key="t-apps">Porositë Online</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarOnlineOrders">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('online-orders.index') }}" class="nav-link" data-key="t-calendar">Të gjitha porositë</a>
-                        </li>
-                    </ul>
-                </div>
-                @endif
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('sellers.index'))
-                <a class="nav-link menu-link" href="#sidebarSellers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellers">
-                    <i class="ri-user-add-fill"></i> <span data-key="t-apps">Shitesit</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarSellers">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('sellers.index') }}" class="nav-link" data-key="t-calendar"> Shitesit </a>
-                        </li>
-
-                    </ul>
-                </div>
-                @endif
-
-
-                @if(function_exists('user_can_access_route') && user_can_access_route('seller-bonuses.index'))
-                <a class="nav-link menu-link" href="#sidebarSellerBonuses" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellerBonuses">
-                    <i class="ri-medal-line"></i><span data-key="t-apps">Bonuset</span>
-                </a>
-                <div class="collapse menu-dropdown" id="sidebarSellerBonuses">
-                    <ul class="nav nav-sm flex-column">
-                        <li class="nav-item">
-                            <a href="{{ route('seller-bonuses.index') }}" class="nav-link" data-key="t-calendar">Bonuset</a>
-                        </li>
-                    </ul>
-                </div>
-                @endif
-
-
+                {{-- Shitjet --}}
+                @canany(['view sales', 'create sales'])
                 <li class="nav-item">
-                    @if(function_exists('user_can_access_route') && user_can_access_route('warehouses.index'))
+                    <a class="nav-link menu-link" href="#sidebarSales" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSales">
+                        <i class="ri-shopping-bag-3-line"></i>
+                        <span data-key="t-apps">Shitjet</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSales">
+                        <ul class="nav nav-sm flex-column">
+                            @can('view sales')
+                            <li class="nav-item">
+                                <a href="{{ route('sales.index') }}" class="nav-link" data-key="t-sales">Shitjet</a>
+                            </li>
+                            @endcan
+                            @can('create sales')
+                            <li class="nav-item">
+                                <a href="{{ route('sales.create') }}" class="nav-link" data-key="t-sales-create">Krijo Shitje</a>
+                            </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+                @endcanany
+
+                {{-- Blerjet & Hyrjet --}}
+                @canany(['view purchases', 'create purchases'])
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
+                        <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarPurchases">
+                        <ul class="nav nav-sm flex-column">
+                            @can('view purchases')
+                            <li class="nav-item">
+                                <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-purchases">Blerjet</a>
+                            </li>
+                            @endcan
+                            @can('create purchases')
+                            <li class="nav-item">
+                                <a href="{{ route('purchases.create') }}" class="nav-link" data-key="t-purchases-create">Krijo Hyrje</a>
+                            </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+                @endcanany
+
+                {{-- Raportet ditore (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarRaportet" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarRaportet">
+                        <i class="ri-bar-chart-fill"></i> <span data-key="t-apps">Raportet ditore</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarRaportet">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('sales.daily-report') }}" class="nav-link" data-key="t-calendar">Raportet</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endrole
+
+                {{-- Inventari (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarStockMovements" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarStockMovements">
+                        <i class="ri-todo-line"></i> <span data-key="t-apps">Inventari</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarStockMovements">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('stock-movements.index') }}" class="nav-link" data-key="t-calendar">Inventari</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endrole
+
+                {{-- Produktet --}}
+                @canany(['view products', 'create products'])
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
+                        <i class="ri-barcode-line"></i> <span data-key="t-apps">Produktet</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarProducts">
+                        <ul class="nav nav-sm flex-column">
+                            @can('view products')
+                            <li class="nav-item">
+                                <a href="{{ route('products.index') }}" class="nav-link" data-key="t-products">Produktet</a>
+                            </li>
+                            @endcan
+                            @can('create products')
+                            <li class="nav-item">
+                                <a href="{{ route('products.index') }}" class="nav-link" data-key="t-products-create">Krijo Produkt</a>
+                            </li>
+                            @endcan
+                        </ul>
+                    </div>
+                </li>
+                @endcanany
+
+                {{-- Menaxhimi i Pagesave (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarDebti" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDebti">
+                        <i class="ri-wallet-3-line"></i> <span data-key="t-apps">Menaxhimi i Pagesave</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarDebti">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('debts.index') }}" class="nav-link" data-key="t-calendar">Menaxhimi i Pagesave</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endrole
+
+                {{-- Porositë Online --}}
+                @can('view orders')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarOnlineOrders" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarOnlineOrders">
+                        <i class="ri-truck-line"></i> <span data-key="t-apps">Porositë Online</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarOnlineOrders">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('online-orders.index') }}" class="nav-link" data-key="t-calendar">Të gjitha porositë</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endcan
+
+                {{-- Shitësit (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarSellers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellers">
+                        <i class="ri-user-add-fill"></i> <span data-key="t-apps">Shitësit</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSellers">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('sellers.index') }}" class="nav-link" data-key="t-calendar">Shitësit</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endrole
+
+                {{-- Bonuset --}}
+                @can('view seller-bonuses')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarSellerBonuses" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSellerBonuses">
+                        <i class="ri-medal-line"></i><span data-key="t-apps">Bonuset</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarSellerBonuses">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('seller-bonuses.index') }}" class="nav-link" data-key="t-calendar">Bonuset</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endcan
+
+                {{-- Seksioni i Administratës (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarWarehouse" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarWarehouse">
                         <i class="ri-store-2-line"></i> <span data-key="t-apps">Dyqanet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarWarehouse">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('warehouses.index') }}" class="nav-link" data-key="t-calendar"> Dyqanet </a>
+                                <a href="{{ route('warehouses.index') }}" class="nav-link" data-key="t-calendar">Dyqanet</a>
                             </li>
                         </ul>
                     </div>
-                    @endif
+                </li>
+                @endrole
 
-                    @if(function_exists('user_can_access_route') && user_can_access_route('categories.index'))
+                {{-- Kategorite --}}
+                @can('view categories')
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarCategories" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCategories">
                         <i class="ri-smartphone-fill"></i> <span data-key="t-apps">Kategorite</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarCategories">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('categories.index') }}" class="nav-link" data-key="t-calendar"> Kategorite </a>
+                                <a href="{{ route('categories.index') }}" class="nav-link" data-key="t-calendar">Kategorite</a>
                             </li>
-
                         </ul>
                     </div>
-                    @endif
+                </li>
+                @endcan
 
-                    @if(function_exists('user_can_access_route') && user_can_access_route('brands.index'))
+                {{-- Brendet --}}
+                @can('view brands')
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarBrands" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBrands">
                         <i class="ri-apple-fill"></i> <span data-key="t-apps">Brendet</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarBrands">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('brands.index') }}" class="nav-link" data-key="t-calendar"> Brendet </a>
+                                <a href="{{ route('brands.index') }}" class="nav-link" data-key="t-calendar">Brendet</a>
                             </li>
-
                         </ul>
                     </div>
-                    @endif
+                </li>
+                @endcan
 
-                    @if(function_exists('user_can_access_route') && user_can_access_route('currencies.index'))
+                {{-- Monedhat --}}
+                @can('view currencies')
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarCurrency" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarCurrency">
                         <i class="ri-money-pound-box-fill"></i> <span data-key="t-apps">Monedhat</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarCurrency">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('currencies.index') }}" class="nav-link" data-key="t-calendar"> Monedhat </a>
+                                <a href="{{ route('currencies.index') }}" class="nav-link" data-key="t-calendar">Monedhat</a>
                             </li>
-
                         </ul>
                     </div>
-                    @endif
+                </li>
+                @endcan
 
-
-
-                    @if(function_exists('user_can_access_route') && user_can_access_route('partners.index'))
+                {{-- Partnerët --}}
+                @can('view partners')
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarPartners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPartners">
                         <i class="ri-group-2-fill"></i> <span data-key="t-apps">Partnerët</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarPartners">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('partners.index') }}" class="nav-link" data-key="t-calendar"> Partnerët </a>
+                                <a href="{{ route('partners.index') }}" class="nav-link" data-key="t-calendar">Partnerët</a>
                             </li>
-
                         </ul>
                     </div>
-                    @endif
-
-
                 </li>
+                @endcan
 
-
+                {{-- Administrata / Lejet (admin only) --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarAdmin" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarAdmin">
+                        <i class="ri-shield-keyhole-line"></i><span>Administrata</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarAdmin">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.permissions.index') }}" class="nav-link">Menaxho Lejet</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endrole
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Pages</span></li>
 
@@ -267,10 +312,10 @@
                     <div class="collapse menu-dropdown" id="sidebarAuth">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-signin"> Sign In </a>
+                                <a href="#" class="nav-link" data-key="t-signin">Sign In</a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-signup"> Sign Up </a>
+                                <a href="#" class="nav-link" data-key="t-signup">Sign Up</a>
                             </li>
                         </ul>
                     </div>

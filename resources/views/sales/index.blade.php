@@ -131,7 +131,6 @@
                                 <th>Numri i Faturës</th>
                                 <th>Klienti</th>
                                 <th>Data e Faturës</th>
-                                <th>Data e Skadencës</th>
                                 <th>Totali</th>
                                 <th>Statusi</th>
                                 <th>Statusi i Pagesës</th>
@@ -150,7 +149,6 @@
                                 </td>
                                 <td>{{ $sale->partner->name }}</td>
                                 <td>{{ $sale->invoice_date->format('d-m-Y') }}</td>
-                                <td>{{ $sale->due_date ? $sale->due_date->format('d-m-Y') : '-' }}</td>
                                 <td>
                                     <strong>{{ $sale->currency->symbol }} {{ number_format($sale->total_amount, 2) }}</strong>
                                 </td>

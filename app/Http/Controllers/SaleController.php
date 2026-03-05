@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Log;
 
 class SaleController extends Controller
 {
+
+
     public function index(Request $request)
     {
         $query = Sale::with(['partner', 'warehouse', 'currency', 'seller']);

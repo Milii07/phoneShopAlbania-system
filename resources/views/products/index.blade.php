@@ -8,7 +8,6 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
-    /* Custom styling for warehouse badges */
     .warehouse-badges {
         display: flex;
         flex-wrap: wrap;
@@ -20,7 +19,6 @@
         padding: 0.25rem 0.5rem;
     }
 
-    /* Select2 custom styles */
     .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
         background-color: #0d6efd;
         border-color: #0d6efd;
@@ -43,7 +41,6 @@
         z-index: 1056;
     }
 
-    /* Stock badge colors */
     .stock-high {
         background-color: #28a745;
     }
@@ -62,7 +59,6 @@
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
             <h4 class="mb-sm-0">Produktet</h4>
-
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -80,6 +76,7 @@
                 <h5 class="card-title mb-0">Lista e Produkteve</h5>
 
                 <div class="d-flex gap-2">
+                    @can('view products')
                     <form method="GET" action="{{ route('products.index') }}" class="d-flex align-items-center">
                         <select name="warehouse_id" id="filter_warehouse" class="form-select form-select-sm" style="min-width:220px">
                             <option value="">Të gjitha Warehouses</option>
@@ -90,10 +87,13 @@
                             @endforeach
                         </select>
                     </form>
+                    @endcan
 
+                    @can('create products')
                     <button type="button" class="btn btn-success" id="btn_create">
                         <i class="ri-add-line align-middle me-1"></i> Shto Produkt
                     </button>
+                    @endcan
                 </div>
             </div>
 
@@ -105,6 +105,7 @@
                 </div>
                 @endif
 
+                @can('view products')
                 <div class="table-responsive">
                     <table id="products_table" class="table table-bordered table-hover table-nowrap align-middle mb-0">
                         <thead class="table-light">
@@ -119,7 +120,9 @@
                                 <th scope="col">Storage</th>
                                 <th scope="col">RAM</th>
                                 <th scope="col">Ngjyra</th>
+                                @canany(['view products', 'edit products', 'delete products'])
                                 <th scope="col" class="no-sort" style="width: 150px;">Veprime</th>
+                                @endcanany
                             </tr>
                         </thead>
                         <tbody>
@@ -156,30 +159,38 @@
                                 <td>{{ $product->storage ?? '-' }}</td>
                                 <td>{{ $product->ram ?? '-' }}</td>
                                 <td>{{ $product->color ?? '-' }}</td>
+                                @canany(['view products', 'edit products', 'delete products'])
                                 <td>
                                     <div class="hstack gap-1">
+                                        @can('view products')
                                         <button type="button"
                                             class="btn btn-sm btn-info btn-show"
                                             data-id="{{ $product->id }}"
                                             title="Shiko">
                                             <i class="ri-eye-line"></i>
                                         </button>
+                                        @endcan
 
+                                        @can('edit products')
                                         <button type="button"
                                             class="btn btn-sm btn-primary btn-edit"
                                             data-id="{{ $product->id }}"
                                             title="Modifiko">
                                             <i class="ri-pencil-line"></i>
                                         </button>
+                                        @endcan
 
+                                        @can('delete products')
                                         <button type="button"
                                             class="btn btn-sm btn-danger btn-delete"
                                             data-id="{{ $product->id }}"
                                             title="Fshij">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
+                                        @endcan
                                     </div>
                                 </td>
+                                @endcanany
                             </tr>
                             @empty
                             <tr>
@@ -198,14 +209,31 @@
                     {{ $products->links('pagination::bootstrap-5') }}
                 </div>
                 @endif
+                @endcan
+
+                {{-- Staff: shfaq vetem mesazh nese nuk ka view products --}}
+                @cannot('view products')
+                <div class="alert alert-info">
+                    <i class="ri-information-line me-2"></i>
+                    Mund të shtoni produkte të reja duke klikuar butonin <strong>"Shto Produkt"</strong> më lart.
+                </div>
+                @endcannot
             </div>
         </div>
     </div>
 </div>
 
+@can('create products')
 @include('products.create')
+@endcan
+
+@can('view products')
 @include('products.show')
+@endcan
+
+@can('edit products')
 @include('products.edit')
+@endcan
 
 @endsection
 
@@ -213,14 +241,13 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        console.log('Products page loaded');
 
-        // Global variables
         let warehouses = @json($warehouses);
         let categories = @json($categories);
         let brands = @json($brands);
         let currencies = @json($currencies);
 
+        @can('view products')
         // Initialize warehouse filter Select2
         $('#filter_warehouse').select2({
             theme: 'bootstrap-5',
@@ -232,21 +259,20 @@
         $('#filter_warehouse').on('change', function() {
             $(this).closest('form').submit();
         });
+        @endcan
 
         // ==================== CREATE MODAL ====================
+        @can('create products')
         $('#btn_create').on('click', function() {
-            console.log('Create button clicked');
             var modal = new bootstrap.Modal(document.getElementById('createModal'));
             $('#createProductForm')[0].reset();
             $('#phone_fields').hide();
             $('#storage, #ram, #color').prop('required', false);
 
-            // Destroy existing Select2 if any
             if ($('#create_warehouse_ids').data('select2')) {
                 $('#create_warehouse_ids').select2('destroy');
             }
 
-            // Initialize Select2 for warehouses
             setTimeout(function() {
                 $('#create_warehouse_ids').select2({
                     theme: 'bootstrap-5',
@@ -261,11 +287,9 @@
             modal.show();
         });
 
-        // Category change for phone fields (CREATE)
         $(document).on('change', '#category_id', function() {
             const selectedOption = $(this).find('option:selected');
             const categoryName = selectedOption.text().trim().toLowerCase();
-            console.log('Category changed to:', categoryName);
 
             if (categoryName === 'telefona' || categoryName === 'telefon') {
                 $('#phone_fields').slideDown();
@@ -276,18 +300,18 @@
             }
         });
 
-        // Cleanup Select2 on modal close
         $('#createModal').on('hidden.bs.modal', function() {
             if ($('#create_warehouse_ids').data('select2')) {
                 $('#create_warehouse_ids').select2('destroy');
             }
         });
+        @endcan
 
         // ==================== SHOW MODAL ====================
+        @can('view products')
         $(document).on('click', '.btn-show', function(e) {
             e.preventDefault();
             var id = $(this).data('id');
-            console.log('Show clicked for ID:', id);
 
             const modal = new bootstrap.Modal(document.getElementById('showModal'));
             const modalBody = document.getElementById('showModalBody');
@@ -310,8 +334,6 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Show data received:', data);
-
                     let phoneFields = '';
                     const catName = data.category.name.toLowerCase();
                     if (catName === 'telefona' || catName === 'telefon') {
@@ -334,7 +356,6 @@
                         `;
                     }
 
-                    // Warehouse info
                     let warehouseInfo = '';
                     if (data.warehouses && data.warehouses.length > 0) {
                         warehouseInfo = data.warehouses.map(w =>
@@ -387,7 +408,6 @@
                     `;
                 })
                 .catch(error => {
-                    console.error('Show fetch error:', error);
                     modalBody.innerHTML = `
                         <div class="alert alert-danger" role="alert">
                             <i class="ri-error-warning-line align-middle me-2"></i>
@@ -396,12 +416,13 @@
                     `;
                 });
         });
+        @endcan
 
         // ==================== EDIT MODAL ====================
+        @can('edit products')
         $(document).on('click', '.btn-edit', function(e) {
             e.preventDefault();
             var id = $(this).data('id');
-            console.log('Edit clicked for ID:', id);
 
             const modal = new bootstrap.Modal(document.getElementById('editModal'));
             const modalBody = document.getElementById('editModalBody');
@@ -426,7 +447,6 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Edit data received:', data);
                     const catName = data.category.name.toLowerCase();
                     const isPhone = (catName === 'telefona' || catName === 'telefon');
 
@@ -459,9 +479,7 @@
                     modalBody.innerHTML = `
                         <div class="row">
                             <div class="col-md-12 mb-3">
-                                <label for="edit_warehouse_ids" class="form-label">
-                                    Warehouses <span class="text-danger">*</span>
-                                </label>
+                                <label for="edit_warehouse_ids" class="form-label">Warehouses <span class="text-danger">*</span></label>
                                 <select class="form-select" id="edit_warehouse_ids" name="warehouse_ids[]" multiple="multiple" required>
                                     ${warehouses.map(w => `
                                         <option value="${w.id}" ${selectedWarehouseIds.includes(w.id) ? 'selected' : ''}>
@@ -500,26 +518,20 @@
                                 </select>
                             </div>
                         </div>
-                        
                         ${phoneFieldsHTML}
                     `;
 
-                    // Initialize Select2 for edit warehouses
                     $('#edit_warehouse_ids').select2({
                         theme: 'bootstrap-5',
                         width: '100%',
                         placeholder: 'Zgjidh warehouses',
                         allowClear: true,
                         closeOnSelect: false,
-                        tags: false,
                         dropdownParent: $('#editModal')
                     });
 
-                    // Category change handler for edit
                     $(document).off('change', '#edit_category_id').on('change', '#edit_category_id', function() {
-                        const selectedCategoryId = $(this).val();
-                        const selectedCategory = categories.find(c => c.id == selectedCategoryId);
-
+                        const selectedCategory = categories.find(c => c.id == $(this).val());
                         if (selectedCategory) {
                             const catName = selectedCategory.name.toLowerCase();
                             if (catName === 'telefona' || catName === 'telefon') {
@@ -530,15 +542,15 @@
                                             <h6 class="mb-3"><i class="ri-smartphone-line me-1"></i> Detaje për Telefon</h6>
                                             <div class="row">
                                                 <div class="col-md-6 mb-3">
-                                                    <label for="edit_storage" class="form-label">Storage (GB) <span class="text-danger">*</span></label>
+                                                    <label class="form-label">Storage (GB) <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control" id="edit_storage" name="storage" value="" placeholder="p.sh. 128GB" required>
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label for="edit_ram" class="form-label">RAM <span class="text-danger">*</span></label>
+                                                    <label class="form-label">RAM <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control" id="edit_ram" name="ram" value="" placeholder="p.sh. 8GB" required>
                                                 </div>
                                                 <div class="col-md-6 mb-3">
-                                                    <label for="edit_color" class="form-label">Ngjyra <span class="text-danger">*</span></label>
+                                                    <label class="form-label">Ngjyra <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control" id="edit_color" name="color" value="" placeholder="p.sh. Black" required>
                                                 </div>
                                             </div>
@@ -556,7 +568,6 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Edit fetch error:', error);
                     modalBody.innerHTML = `
                         <div class="alert alert-danger" role="alert">
                             <i class="ri-error-warning-line align-middle me-2"></i>
@@ -566,18 +577,18 @@
                 });
         });
 
-        // Cleanup Select2 on edit modal close
         $('#editModal').on('hidden.bs.modal', function() {
             if ($('#edit_warehouse_ids').data('select2')) {
                 $('#edit_warehouse_ids').select2('destroy');
             }
         });
+        @endcan
 
         // ==================== DELETE ====================
+        @can('delete products')
         $(document).on('click', '.btn-delete', function(e) {
             e.preventDefault();
             var id = $(this).data('id');
-            console.log('Delete clicked for ID:', id);
 
             Swal.fire({
                 title: 'A jeni të sigurt?',
@@ -608,13 +619,14 @@
                     form.appendChild(csrfToken);
                     form.appendChild(methodField);
                     document.body.appendChild(form);
-
                     form.submit();
                 }
             });
         });
+        @endcan
 
         // ==================== DATATABLES ====================
+        @can('view products')
         try {
             if ($.fn.DataTable) {
                 $('#products_table').DataTable({
@@ -639,6 +651,7 @@
         } catch (e) {
             console.warn('DataTables init failed:', e);
         }
+        @endcan
     });
 </script>
 

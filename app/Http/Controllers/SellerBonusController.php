@@ -12,6 +12,10 @@ use Carbon\Carbon;
 
 class SellerBonusController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view seller-bonuses')->only(['index', 'show']);
+    }
     public function index(Request $request)
     {
         $query = SellerBonus::with('seller');

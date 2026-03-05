@@ -7,9 +7,13 @@ use Illuminate\Http\Request;
 
 class PartnerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        $this->middleware('permission:view partners')->only(['index', 'show']);
+        $this->middleware('permission:create partners')->only(['create', 'store']);
+        $this->middleware('permission:edit partners')->only(['edit', 'update']);
+        $this->middleware('permission:delete partners')->only(['destroy']);
+    }
     public function index()
     {
         $partners = Partner::latest()->paginate(10);

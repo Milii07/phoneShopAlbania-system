@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Product;
@@ -18,6 +20,10 @@ use thiagoalessio\TesseractOCR\TesseractOCR;
 
 class PurchaseController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:create purchases')->only(['create', 'store']);
+    }
     public function index(Request $request)
     {
         $query = Purchase::with(['partner', 'warehouse', 'currency'])

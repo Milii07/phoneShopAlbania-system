@@ -53,7 +53,11 @@
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    @if(auth()->user()->isAdmin())
                     <li class="breadcrumb-item"><a href="{{ route('purchases.index') }}">Blerjet</a></li>
+                    @else
+                    <li class="breadcrumb-item">Blerjet</li>
+                    @endif
                     <li class="breadcrumb-item active">Krijo Blerje</li>
                 </ol>
             </div>
@@ -268,9 +272,11 @@
                         <button type="submit" class="btn btn-success btn-lg">
                             <i class="ri-save-line me-1"></i> Ruaj Blerjen
                         </button>
+                        @if(auth()->user()->isAdmin())
                         <a href="{{ route('purchases.index') }}" class="btn btn-secondary">
                             <i class="ri-close-line me-1"></i> Anulo
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -423,23 +429,23 @@
                     </select>
                 </div>
                 
-                <div class="col-md-3">
-                    <label class="form-label small">Unit Cost *</label>
-                    <input type="number" 
-                        class="form-control form-control-sm unit-cost-input" 
-                        name="items[${productIndex}][unit_cost]" 
-                        value="${product.price}" 
-                        step="0.01" 
-                        min="0" 
-                        required>
-                </div>
+           <div class="col-md-3">
+    <label class="form-label small">Unit Cost *</label>
+    <input type="number" 
+        class="form-control form-control-sm unit-cost-input" 
+        name="items[${productIndex}][unit_cost]" 
+        value="${product.last_purchase_cost ?? product.price}" 
+        step="0.01" 
+        min="0" 
+        required>
+</div>
                 
   <div class="col-md-3">
                     <label class="form-label small">Sale Price *</label>
                     <input type="number" 
                         class="form-control form-control-sm unit-cost-input" 
                         name="items[${productIndex}][selling_price]" 
-                        value="${product.price}" 
+                        value="${product.last_purchase_cost ?? product.price}"
                         step="0.01" 
                         min="0" 
                         required>

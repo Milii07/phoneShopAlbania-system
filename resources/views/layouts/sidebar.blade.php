@@ -55,16 +55,23 @@
                 </div>
                 @endif
 
-                @if(function_exists('user_can_access_route') && user_can_access_route('purchases.index'))
+                @if(function_exists('user_can_access_route') && (user_can_access_route('purchases.index') || user_can_access_route('purchases.create')))
                 <a class="nav-link menu-link" href="#sidebarPurchases" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPurchases">
                     <i class="ri-shopping-cart-2-line"></i><span data-key="t-apps">Blerjet & Hyrjet</span>
                 </a>
                 <div class="collapse menu-dropdown" id="sidebarPurchases">
                     <ul class="nav nav-sm flex-column">
+                        @if(user_can_access_route('purchases.index'))
                         <li class="nav-item">
-                            <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-calendar"> Blerjet </a>
+                            <a href="{{ route('purchases.index') }}" class="nav-link" data-key="t-purchases">Blerjet</a>
                         </li>
+                        @endif
 
+                        @if(user_can_access_route('purchases.create'))
+                        <li class="nav-item">
+                            <a href="{{ route('purchases.create') }}" class="nav-link" data-key="t-purchases-create">Krijo Hyrje</a>
+                        </li>
+                        @endif
                     </ul>
                 </div>
                 @endif
@@ -97,16 +104,23 @@
                 </div>
                 @endif
 
-                @if(function_exists('user_can_access_route') && user_can_access_route('products.index'))
+                @if(function_exists('user_can_access_route') && (user_can_access_route('products.index') || user_can_access_route('products.create')))
                 <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarProducts">
                     <i class="ri-barcode-line"></i> <span data-key="t-apps">Produktet</span>
                 </a>
                 <div class="collapse menu-dropdown" id="sidebarProducts">
                     <ul class="nav nav-sm flex-column">
+                        @if(user_can_access_route('products.index'))
                         <li class="nav-item">
-                            <a href="{{ route('products.index') }}" class="nav-link" data-key="t-calendar"> Produktet </a>
+                            <a href="{{ route('products.index') }}" class="nav-link" data-key="t-products">Produktet</a>
                         </li>
+                        @endif
 
+                        @if(user_can_access_route('products.create'))
+                        <li class="nav-item">
+                            <a href="{{ route('products.create') }}" class="nav-link" data-key="t-products-create">Krijo Produkt</a>
+                        </li>
+                        @endif
                     </ul>
                 </div>
                 @endif
@@ -132,9 +146,8 @@
                 <div class="collapse menu-dropdown" id="sidebarOnlineOrders">
                     <ul class="nav nav-sm flex-column">
                         <li class="nav-item">
-                            <a href="{{ route('online-orders.index') }}" class="nav-link" data-key="t-calendar"> Të gjitha porositë </a>
+                            <a href="{{ route('online-orders.index') }}" class="nav-link" data-key="t-calendar">Të gjitha porositë</a>
                         </li>
-
                     </ul>
                 </div>
                 @endif
@@ -161,9 +174,8 @@
                 <div class="collapse menu-dropdown" id="sidebarSellerBonuses">
                     <ul class="nav nav-sm flex-column">
                         <li class="nav-item">
-                            <a href="{{ route('seller-bonuses.index') }}" class="nav-link" data-key="t-calendar"> Bonuset </a>
+                            <a href="{{ route('seller-bonuses.index') }}" class="nav-link" data-key="t-calendar">Bonuset</a>
                         </li>
-
                     </ul>
                 </div>
                 @endif

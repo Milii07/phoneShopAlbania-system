@@ -78,24 +78,55 @@ class PartnerController extends Controller
     public function show($id)
     {
         try {
-            $partner = Partner::findOrFail($id);
+            $partner = Partner::with([
+                'sales' => function ($q) {
+                    $q->with('currency')->latest()->take(50);
+                }
+            ])->findOrFail($id);
 
-            // Nëse është AJAX request, kthe JSON
             if (request()->wantsJson() || request()->ajax()) {
-                return response()->json($partner);
+                $sales = $partner->sales->map(function ($sale) {
+                    return [
+                        'id'             => $sale->id,
+                        'invoice_number' => $sale->invoice_number,
+                        'invoice_date'   => $sale->invoice_date->format('d-m-Y'),
+                        'total_amount'   => number_format($sale->total_amount, 2),
+                        'currency'       => $sale->currency->symbol ?? 'ALL',
+                        'sale_status'    => $sale->sale_status,
+                        'payment_status' => $sale->payment_status,
+                        'show_url'       => route('sales.show', $sale->id),
+                    ];
+                });
+
+                $allSales = $partner->sales;
+
+                return response()->json([
+                    'id'         => $partner->id,
+                    'name'       => $partner->name,
+                    'phone'      => $partner->phone,
+                    'created_at' => $partner->created_at,
+                    'updated_at' => $partner->updated_at,
+                    'sales'      => $sales,
+                    'stats'      => [
+                        'total_invoices' => $allSales->count(),
+                        'total_spent'    => number_format($allSales->sum('total_amount'), 2),
+                        'paid'           => $allSales->where('payment_status', 'Paid')->count(),
+                        'unpaid'         => $allSales->where('payment_status', 'Unpaid')->count(),
+                        'partial'        => $allSales->where('payment_status', 'Partial')->count(),
+                        'total_unpaid_amount' => number_format(
+                            $allSales->whereIn('payment_status', ['Unpaid', 'Partial'])->sum('total_amount'),
+                            2
+                        ),
+                    ],
+                ]);
             }
 
-            // Nëse jo, kthe view
             return view('partners.show', compact('partner'));
         } catch (\Exception $e) {
             if (request()->wantsJson() || request()->ajax()) {
-                return response()->json([
-                    'error' => 'Partneri nuk u gjet.'
-                ], 404);
+                return response()->json(['error' => 'Partneri nuk u gjet.'], 404);
             }
-
-            return redirect()->route('partners.index')
-                ->with('error', 'Partneri nuk u gjet.');
+            return redirect()->route('partners.index')->with('error', 'Partneri nuk u gjet.');
         }
     }
 

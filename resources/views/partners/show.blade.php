@@ -1,6 +1,6 @@
 <!-- Show Modal -->
 <div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="showModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-info">
                 <h5 class="modal-title text-white" id="showModalLabel">

@@ -204,4 +204,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/users/{user}/edit', [PermissionManagerController::class, 'edit'])->name('edit');
         Route::put('/users/{user}',      [PermissionManagerController::class, 'update'])->name('update');
     });
+
+    Route::get('/global-search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('global.search');
 });

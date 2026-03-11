@@ -24,8 +24,8 @@
         {{-- Roles --}}
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header bg-danger text-white">
-                    <h6 class="mb-0"><i class="ri-shield-user-line me-1"></i> Rolet</h6>
+                <div class="card-header bg-danger">
+                    <h6 class="mb-0" style="color: #fff !important;"><i class="ri-shield-user-line me-1"></i> Rolet</h6>
                 </div>
                 <div class="card-body">
                     @foreach($roles as $role)
@@ -49,8 +49,10 @@
         {{-- Permissions --}}
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0"><i class="ri-key-2-line me-1"></i> Lejet Direkte</h6>
+                <div class="card-header bg-primary">
+                    <h6 class="mb-0" style="color: #fff !important;">
+                        <i class="ri-key-2-line me-1"></i> Lejet Direkte
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">

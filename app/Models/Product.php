@@ -13,7 +13,7 @@ class Product extends Model
         'category_id',
         'brand_id',
         'name',
-        'unit_price',
+        'price',
         'purchase_price',
         'selling_price',
         'currency_id',
@@ -62,6 +62,16 @@ class Product extends Model
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);
+    }
+
+    public function purchaseItems()
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    public function histories()
+    {
+        return $this->hasMany(ProductHistory::class);
     }
 
     // ===== HELPER METHODS =====

@@ -166,6 +166,13 @@
                                         </button>
 
                                         <button type="button"
+                                            class="btn btn-sm btn-warning btn-history"
+                                            data-id="{{ $product->id }}"
+                                            title="Histori">
+                                            <i class="ri-history-line"></i>
+                                        </button>
+
+                                        <button type="button"
                                             class="btn btn-sm btn-primary btn-edit"
                                             data-id="{{ $product->id }}"
                                             title="Modifiko">
@@ -571,6 +578,16 @@
             if ($('#edit_warehouse_ids').data('select2')) {
                 $('#edit_warehouse_ids').select2('destroy');
             }
+        });
+
+        // ==================== PRODUCT HISTORY ====================
+        $(document).on('click', '.btn-history', function(e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+            console.log('History clicked for ID:', id);
+
+            // Redirect to product history page
+            window.location.href = '/product-history/product/' + id;
         });
 
         // ==================== DELETE ====================

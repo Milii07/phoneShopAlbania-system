@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
-
-use App\Models\Product;
+namespace App\Http\Controllers;use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\Category;
 use App\Models\Brand;
@@ -89,7 +87,7 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
             'brand_id' => $validated['brand_id'],
             'name' => $validated['name'],
-            'unit_price' => $validated['price'],
+            'price' => $validated['price'],
             'currency_id' => $validated['currency_id'],
             'storage' => $validated['storage'] ?? null,
             'ram' => $validated['ram'] ?? null,
@@ -159,7 +157,7 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
             'brand_id' => $validated['brand_id'],
             'name' => $validated['name'],
-            'unit_price' => $validated['unit_price'],
+            'price' => $validated['unit_price'],
             'currency_id' => $validated['currency_id'],
             'storage' => $validated['storage'] ?? null,
             'ram' => $validated['ram'] ?? null,

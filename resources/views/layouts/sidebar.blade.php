@@ -111,6 +111,14 @@
                 </div>
                 @endif
 
+                @if(function_exists('user_can_access_route') && user_can_access_route('product-history.index'))
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ Request::is('product-history*') ? 'active' : '' }}" href="{{ route('product-history.index') }}">
+                        <i class="ri-history-line"></i> <span data-key="t-apps">Histori Produkti</span>
+                    </a>
+                </li>
+                @endif
+
                 @if(function_exists('user_can_access_route') && user_can_access_route('debts.index'))
                 <a class="nav-link menu-link" href="#sidebarDebti" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarDebti">
                     <i class="ri-wallet-3-line"></i> <span data-key="t-apps">Menaxhimi i Pagesave</span>

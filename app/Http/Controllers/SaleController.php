@@ -587,7 +587,7 @@ class SaleController extends Controller
         if ($warehouseId) {
             $query->whereHas('warehouses', function ($q) use ($warehouseId) {
                 $q->where('warehouse_id', $warehouseId)
-                    ->where('quantity', '>', 0);
+                ->where('quantity', '>', 0);
             });
         }
 

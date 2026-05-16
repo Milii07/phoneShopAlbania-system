@@ -34,7 +34,8 @@
         }
         ,
         "files": [
-            "app/Helpers/permissions.php"
+            "app/Helpers/permissions.php",
+            "app/Helpers/ProductHistoryHelper.php"
         ]
     },
     "autoload-dev": {

@@ -17,7 +17,7 @@ use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\DebtController;
 use App\Http\Controllers\OnlineOrderController;
 use App\Http\Controllers\SellerBonusController;
-
+use App\Http\Controllers\ProductHistoryController;
 
 
 Route::get('/', function () {
@@ -97,4 +97,16 @@ Route::middleware(['auth', 'verified', 'check.user.access'])->group(function () 
 
 
     Route::get('/sales-api/search-by-imei', [SaleController::class, 'searchByImei'])->name('sales.search-by-imei');
+
+    // Product History Routes
+    Route::prefix('product-history')->name('product-history.')->group(function () {
+        Route::get('/', [ProductHistoryController::class, 'index'])->name('index');
+        Route::get('/search', [ProductHistoryController::class, 'search'])->name('search');
+        Route::get('/filter', [ProductHistoryController::class, 'filter'])->name('filter');
+        Route::get('/export', [ProductHistoryController::class, 'export'])->name('export');
+        Route::get('/stats', [ProductHistoryController::class, 'getStats'])->name('stats');
+        Route::get('/product/{product}', [ProductHistoryController::class, 'show'])->name('show');
+        Route::get('/product/{product}/data', [ProductHistoryController::class, 'getHistoryData'])->name('data');
+        Route::get('/product/{product}/modal', [ProductHistoryController::class, 'modal'])->name('modal');
+    });
 });

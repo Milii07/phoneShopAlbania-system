@@ -5,27 +5,6 @@
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .thank-you-text {
-        text-align: center;
-        font-size: 22px;
-        font-weight: bold;
-        margin-top: 35px;
-        font-family: 'Playfair Display', serif;
-        font-style: italic;
-    }
-
-    .logo-sm {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .logo-sm img {
-        height: 100px;
-        width: auto;
-        margin-bottom: 40px;
-    }
-
     body {
         font-family: Arial, sans-serif;
     }
@@ -58,7 +37,7 @@
     .modal-content {
         background: #fff;
         width: 90%;
-        max-width: 900px;
+        max-width: 780px;
         margin: 30px auto;
         padding: 20px;
         position: relative;
@@ -73,86 +52,176 @@
         z-index: 10;
     }
 
+    /* ══════════════════════════════════════════
+       CERTIFIKATË GARANCIE  –  A4 print area
+    ══════════════════════════════════════════ */
     .a4-paper {
         width: 210mm;
         min-height: 297mm;
-        padding: 18mm 20mm;
+        padding: 14mm 16mm 16mm;
         margin: auto;
-        background: white;
+        background: #fff;
         color: #000;
         font-family: Arial, sans-serif;
-        font-size: 11pt;
+        font-size: 10pt;
+        line-height: 1.45;
+        box-sizing: border-box;
+    }
+
+    /* ── Header ── */
+    .cert-shop-name {
+        text-align: center;
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-size: 18pt;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 0 0 2px;
+    }
+    .cert-title {
+        text-align: center;
+        font-size: 13pt;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 0 0 2px;
+    }
+    .cert-number {
+        text-align: center;
+        font-size: 9.5pt;
+        color: #333;
+        margin: 0 0 14px;
+    }
+
+    /* ── Section header bar ── */
+    .cert-section-title {
+        font-size: 9.5pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        border: 1px solid #000;
+        border-bottom: none;
+        padding: 5px 8px;
+        background: #fff;
+        margin-top: 14px;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── Data table ── */
+    .cert-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #000;
+        margin-bottom: 0;
+    }
+    .cert-table td {
+        border: 1px solid #000;
+        padding: 6px 10px;
+        font-size: 9.5pt;
+        vertical-align: middle;
+    }
+    .cert-table td:first-child {
+        font-weight: 700;
+        width: 38%;
+        background: #fff;
+    }
+    .cert-table tr.highlight-row td {
+        background: #1a1a1a;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    /* ── Exclusions box ── */
+    .cert-box {
+        border: 1px solid #000;
+        padding: 8px 12px;
+        margin-top: 14px;
+    }
+    .cert-box-title {
+        font-size: 9.5pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+    .cert-box ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 16px;
+    }
+    .cert-box ul li {
+        font-size: 9pt;
+        line-height: 1.4;
+    }
+    .cert-box ul li::before { content: "- "; }
+
+    /* ── Conditions box ── */
+    .cert-conditions {
+        border: 1px solid #000;
+        padding: 8px 12px;
+        margin-top: 14px;
+    }
+    .cert-conditions-title {
+        font-size: 9.5pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+    .cert-conditions ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .cert-conditions ul li {
+        font-size: 9pt;
         line-height: 1.5;
     }
+    .cert-conditions ul li::before { content: "- "; }
 
-    .a4-paper .title {
+    /* ── Signature footer ── */
+    .cert-signatures {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 30px;
+        gap: 16px;
+    }
+    .cert-sig-block {
+        flex: 1;
         text-align: center;
-        font-family: 'Arial Black', Impact, sans-serif;
-        font-size: 24pt;
-        font-weight: 900;
-        letter-spacing: 3px;
-        margin-bottom: 20px;
+    }
+    .cert-sig-block .sig-label {
+        font-size: 9pt;
+        font-weight: 700;
         text-transform: uppercase;
-    }
-
-    .a4-paper .client-block p {
-        margin: 2px 0;
-        font-size: 11pt;
-    }
-
-    .a4-paper .section-heading {
-        font-size: 13pt;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin-top: 20px;
-        margin-bottom: 5px;
-    }
-
-    .a4-paper .product-block p {
-        margin: 2.5px 0;
-        font-size: 11pt;
-    }
-
-    .a4-paper .guarantee-intro {
-        font-size: 11pt;
-        font-weight: bold;
-        margin-bottom: 8px;
-    }
-
-    .a4-paper .guarantee-intro p {
-        margin: 3px 0;
-    }
-
-    .a4-paper .bullet-block p {
-        margin: 5px 0;
-        font-size: 10.5pt;
-        text-align: justify;
-    }
-
-    .a4-paper .excluded-block p {
-        font-size: 10.5pt;
-        text-align: justify;
-        margin: 5px 0;
-    }
-
-    .a4-paper .conclusion-block p {
-        font-size: 10.5pt;
-        margin: 5px 0;
-        text-align: justify;
-    }
-
-    .a4-paper .validity-block p {
-        font-size: 10.5pt;
-        margin-top: 12px;
-        text-align: justify;
-    }
-
-    .a4-paper .no-refund {
-        margin-top: 24px;
-        font-size: 14pt;
-        font-weight: 900;
-        font-family: 'Arial Black', Impact, sans-serif;
+        margin-bottom: 28px;
         letter-spacing: 1px;
+    }
+    .cert-sig-block .sig-line {
+        border-top: 1px dashed #555;
+        padding-top: 4px;
+        font-size: 8pt;
+        color: #555;
+    }
+    .cert-sig-stamp {
+        flex: 0 0 120px;
+        text-align: center;
+    }
+    .cert-sig-stamp .stamp-box {
+        border: 1px dashed #555;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9pt;
+        color: #555;
+        margin-bottom: 4px;
+    }
+    .cert-sig-stamp .stamp-label {
+        font-size: 8.5pt;
+        font-weight: 700;
+        text-transform: uppercase;
     }
 
     @media print {
@@ -180,7 +249,7 @@
             top: 0;
             width: 210mm;
             min-height: 297mm;
-            padding: 18mm 20mm;
+            padding: 14mm 16mm 16mm;
             margin: 0;
         }
 
@@ -610,38 +679,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <!-- Create Client Modal -->
-                        <div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-primary">
-                                        <h5 class="modal-title text-white" id="createClientModalLabel">
-                                            <i class="ri-add-line align-middle me-1"></i> Shto Klient të Ri
-                                        </h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <form method="POST" action="{{ route('partners.store') }}" id="createClientForm">
-                                        @csrf
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label for="client_name" class="form-label">Emri <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="client_name" name="name" placeholder="Shkruani emrin e klientit">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="client_phone" class="form-label">Nr. Telefoni <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="client_phone" name="phone" placeholder="+355 69 123 4567">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anulo</button>
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="ri-save-line align-middle me-1"></i> Ruaj Klientin
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Shitesi <span class="text-danger">*</span></label>
                             <select class="form-select select2-seller" name="seller_id" required>
@@ -784,6 +821,38 @@
         </div>
     </div>
 </form>
+                        <!-- Create Client Modal -->
+                        <div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary">
+                                        <h5 class="modal-title text-white" id="createClientModalLabel">
+                                            <i class="ri-add-line align-middle me-1"></i> Shto Klient të Ri
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" action="{{ route('partners.store') }}" id="createClientForm">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="client_name" class="form-label">Emri <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="client_name" name="name" placeholder="Shkruani emrin e klientit">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="client_phone" class="form-label">Nr. Telefoni <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="client_phone" name="phone" placeholder="+355 69 123 4567">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anulo</button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="ri-save-line align-middle me-1"></i> Ruaj Klientin
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
 
 <!-- WARRANTY FORM MODAL -->
 <div id="warrantyModal" class="warranty-modal">
@@ -863,54 +932,91 @@
 <div id="warrantyPrintModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeWarrantyPrintModal()">&times;</span>
+
         <div id="printArea" class="a4-paper">
-            <span class="logo-sm">
-                <img src="{{ asset('assets/images/logoo.png.jpeg') }}" alt="" height="34" width="170">
-            </span>
-            <div class="client-block">
-                <p><strong>KLIENTI:</strong> <span id="print_client_name"></span></p>
-                <p><strong>ADRESA:</strong> <span id="print_warehouse_address">ZOGU ZI, TIRANË, SHQIPËRI</span></p>
-                <p><strong>NR I DYQANIT:</strong> 0696403876</p>
-                <p><strong>INSTAGRAM:</strong> <span id="print_warehouse_instagram">phone_shop.albania</span></p>
+
+            {{-- ═══════ HEADER ═══════ --}}
+            <p class="cert-shop-name">PHONE SHOP ALBANIA</p>
+            <p class="cert-title">Certifikatë Garancie</p>
+            <p class="cert-number">Nr. <span id="print_cert_number"></span> / <span id="print_purchase_date"></span></p>
+
+            {{-- ═══════ DEVICE & BUYER INFO TABLE ═══════ --}}
+            <div class="cert-section-title">TË DHËNAT E PAJISJES DHE BLERËSIT</div>
+            <table class="cert-table">
+                <tr>
+                    <td>Emri i Blerësit</td>
+                    <td id="print_client_name">—</td>
+                </tr>
+                <tr>
+                    <td>Modeli i Pajisjes</td>
+                    <td id="print_model">—</td>
+                </tr>
+                <tr>
+                    <td>IMEI / Nr. Serial</td>
+                    <td id="print_imei">—</td>
+                </tr>
+                <tr>
+                    <td>Data e Blerjes</td>
+                    <td id="print_purchase_date_table">—</td>
+                </tr>
+                <tr>
+                    <td>Çmimi i Blerjes</td>
+                    <td><span id="print_price">—</span> <span id="print_currency">LEK</span></td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>Afati i Garancisë</td>
+                    <td><span id="print_warranty_period">—</span> MUAJ</td>
+                </tr>
+            </table>
+
+            {{-- ═══════ EXCLUSIONS ═══════ --}}
+            <div class="cert-box" style="margin-top:14px;">
+                <div class="cert-box-title">Përjashtimet nga Garancia</div>
+                <ul>
+                    <li>Dëmtime fizike (rënie, goditje, thyerje)</li>
+                    <li>Aksesorë jo origjinalë</li>
+                    <li>Ekspozim ndaj lëngjeve ose lagështisë</li>
+                    <li>Probleme softuerike / instalime jozyrtare</li>
+                    <li>Konsum normal (bateri, aksesorë)</li>
+                    <li>Dëmtime nga rrymë, zjarr, fatkeqësi natyrore</li>
+                    <li>Përdorim i gabuar ose neglizhencë</li>
+                    <li>Heqje/dëmtim i numrit serial</li>
+                    <li>Riparime nga servise të paautorizuara</li>
+                </ul>
             </div>
-            <h3 class="section-heading">TE DHËNAT PËR PRODUKTIT.</h3>
-            <div class="product-block">
-                <p><strong>GARANCIA.</strong> <span id="print_warranty_period"></span> MUAJ. <strong>DATA E BLERJES.</strong> <span id="print_purchase_date"></span></p>
-                <p><strong>ÇMIMI.</strong> <span id="print_price"></span> <span id="print_currency">LEKE</span></p>
-                <p><strong>MODELI I SMARTPHONE-IT:</strong> <span id="print_model"></span></p>
-                <p><strong>IMEI:</strong> <span id="print_imei"></span></p>
-                <p><strong>GJENDJA E PRODUKTIT:</strong> <span id="print_condition"></span></p>
+
+            {{-- ═══════ CONDITIONS ═══════ --}}
+            <div class="cert-conditions">
+                <div class="cert-conditions-title">Kushtet dhe Informacione të Rëndësishme</div>
+                <ul>
+                    <li>Dokumenti është i vlefshëm vetëm me vulë dhe nënshkrim të dyqanit.</li>
+                    <li>Garancioni lidhet vetëm me IMEI/Serial të pajisjes.</li>
+                    <li>Afati mesatar i servisimit: 7–21 ditë pune.</li>
+                    <li>Ruajeni këtë dokument për çdo pretendim garancie.</li>
+                </ul>
             </div>
-            <h3 class="section-heading">KUSHTET E GARANCISË.</h3>
-            <div class="guarantee-intro">
-                <p>Phone Shop Albania garanton që produkti eshte pa defekte te fabrikimit ne momentin e blerjes</p>
-                <p>Garancia mbulon vetem difektet e brendshme qe nuk jane shkak i perdorimit nga klienti</p>
+
+            {{-- ═══════ SIGNATURES ═══════ --}}
+            <div class="cert-signatures">
+                <div class="cert-sig-block">
+                    <div class="sig-label">Shitësi</div>
+                    <div class="sig-line">Emri dhe Nënshkrimi</div>
+                </div>
+                <div class="cert-sig-stamp">
+                    <div class="stamp-label" style="margin-bottom:6px;">Vula</div>
+                    <div class="stamp-box">Vula e<br>Dyqanit</div>
+                </div>
+                <div class="cert-sig-block">
+                    <div class="sig-label">Blerësi</div>
+                    <div class="sig-line">Emri dhe Nënshkrimi</div>
+                </div>
             </div>
-            <div class="bullet-block">
-                <p>- Nëse pajisja hapet ose riparohet nga një servis jo i autorizuar, garancia anulohet automatikisht dhe nuk do të ofrohet asnjë mbulim.</p>
-                <p>- Nëse pajisja hapet ose riparohet nga një servis jo i autorizuar, garancia anulohet automatikisht dhe nuk do të ofrohet asnjë mbulim.</p>
-                <p>- Nëse një problem teknik i natyrës së fabrikimit raportohet brenda 7 ditëve nga data e blerjes, pajisja do të shqyrtuar nga teknikët tanë për të vlerësuar situatën dhe do të riparohet sipas rregullave të garancisë.</p>
-                <p>- Garancia nuk mbulon dëmtime të shkaktuara nga uji, përplasjet, pluhuri, ekspozimi ndaj temperatrave të larta, apo përdorimi i aksesorëve të papërshtatshëm.</p>
-            </div>
-            <h3 class="section-heading">PJESET DHE DEFETET QE NUK MBULOHEN NGA GARANCIA</h3>
-            <div class="excluded-block">
-                <p>:Ekrani, bateria, porta e karikimit dhe kamera --Dëmtime fizike si çarje, gërvishtje, apo përkulje të pajisjes.--Dëmtime nga përplasjet, kontakti me ujë ose përdorimi i gabuar.--Probleme nga pluhuri, lagështia ose temperaturat ekstreme.--Riparime nga persona ose servise të paautorizuara.-- Defekte nga përdorimi i aksesorëve jo originale.--Probleme të shkaktuara nga softueri i modifikuar nga përdoruesi.-Defekte nga përdorimi i gabuar i pajisjes ose mbingarkesa e baterisë.</p>
-            </div>
-            <h3 class="section-heading">PERFUNDIMI DHE KUSHTET PERFUNDIMTARE</h3>
-            <div class="conclusion-block">
-                <p>Phone Shop Albania angazhohet të ofrojë një shërbim cilesor dhe të drejtë për klientët e saj.<br>
-                    Për çdo pyetje ose asistencë teknike, ju mund të na kontaktoni në numrin tone të telefonit ose në Instagram.</p>
-            </div>
-            <div class="validity-block">
-                <p>Garancia mbetet në fuqi vetem nëse kushtet e saj respektohen nga përdoruesi dhe pajisja nuk eshte dëmtuar për shkak të neglizhencë</p>
-            </div>
-            <p class="no-refund"><strong>Nuk behet kthim pagese mbrapsht</strong></p>
-            <p class="thank-you-text">
-                Ju falenderojmë që keni zgjedhur Phone Shop Albania dhe besoni në cilësinë tonë!
-            </p>
-        </div>
-        <div style="text-align:center; margin-top:15px; padding-bottom:15px;">
-            <button onclick="generatePDF()" class="btn-print">Download PDF Garancia</button>
+
+        </div><!-- /printArea -->
+
+        <div style="text-align:center; margin-top:15px; padding-bottom:15px; display:flex; gap:12px; justify-content:center;">
+            <button onclick="window.print()" class="btn-print"><i class="ri-printer-line me-1"></i> Print</button>
+            <button onclick="generatePDF()" class="btn-print">Download PDF</button>
         </div>
     </div>
 </div>
@@ -1150,30 +1256,32 @@
         const productDetails = productItem.data('product-details');
         const fullModel = productName + (productDetails ? ' ' + productDetails : '');
         const selectedClient = $('#partner_id option:selected');
-        const clientName = selectedClient.data('name') || selectedClient.text() || '';
-        const selectedWarehouse = $('#warehouse_id option:selected');
-        const warehouseAddress = selectedWarehouse.data('address') || 'ZOGU ZI, TIRANË, SHQIPËRI';
-        const warehouseInstagram = selectedWarehouse.data('instagram') || 'phone_shop.albania';
+        const clientName = selectedClient.data('name') || selectedClient.text() || 'Klient i panjohur';
         const selectedCurrency = $('#currency_id option:selected');
-        const currencySymbol = selectedCurrency.data('symbol') || 'LEKE';
+        const currencySymbol = selectedCurrency.data('symbol') || 'LEK';
         const purchaseDate = $('#invoice_date').val();
         const unitPrice = productItem.find('.unit-price-input').val() || '0';
         const imeiRaw = $(`#imei_${index}`).val() || '';
-        const imeiFirst = imeiRaw.split(',').map(s => s.trim()).filter(s => s.length > 0)[0] || '';
+        const imeiFirst = imeiRaw.split(',').map(s => s.trim()).filter(s => s.length > 0)[0] || 'N/A';
         const wd = warrantyData[index] || {};
         const warrantyPeriod = wd.warranty_period || '12';
-        const condition = wd.product_condition || 'I RI NË KUTI';
 
-        $('#print_client_name').text(clientName.toUpperCase());
-        $('#print_warehouse_address').text(warehouseAddress.toUpperCase());
-        $('#print_warehouse_instagram').text(warehouseInstagram);
-        $('#print_warranty_period').text(warrantyPeriod);
-        $('#print_purchase_date').text(formatDateDisplay(purchaseDate));
-        $('#print_price').text(Number(unitPrice).toLocaleString('en-US'));
-        $('#print_currency').text(currencySymbol);
+        // Auto-generate certificate number: random 8-digit + date digits
+        const certNum = Math.floor(10000000 + Math.random() * 90000000);
+
+        // Format purchase date for display (e.g. "May 12, 2026")
+        const displayDate = formatDateDisplay(purchaseDate);
+
+        // Populate all certificate fields
+        $('#print_cert_number').text(certNum);
+        $('#print_purchase_date').text(displayDate);
+        $('#print_purchase_date_table').text(displayDate);
+        $('#print_client_name').text(clientName || 'Klient i panjohur');
         $('#print_model').text(fullModel);
         $('#print_imei').text(imeiFirst);
-        $('#print_condition').text(condition.toUpperCase());
+        $('#print_price').text(Number(unitPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        $('#print_currency').text(currencySymbol.toUpperCase());
+        $('#print_warranty_period').text(warrantyPeriod);
 
         $('#warrantyPrintModal').show();
         $('body').css('overflow', 'hidden');
@@ -1491,8 +1599,36 @@
     $('#saleForm').on('submit', function(e) {
         e.preventDefault();
 
+        // Validim i fushave kryesore
+        const warehouse = $('#warehouse_id').val();
+        const partner = $('#partner_id').val();
+        const seller = $('select[name="seller_id"]').val();
+        const currency = $('#currency_id').val();
+        const invoiceDate = $('#invoice_date').val();
+
+        if (!warehouse) {
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Zgjidhni dyqanin!'});
+            return false;
+        }
+        if (!partner) {
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Zgjidhni klientin!'});
+            return false;
+        }
+        if (!seller) {
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Zgjidhni shitesin!'});
+            return false;
+        }
+        if (!currency) {
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Zgjidhni monedhën!'});
+            return false;
+        }
+        if (!invoiceDate) {
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Vendosni datën!'});
+            return false;
+        }
+
         if ($('.product-item').length === 0) {
-            alert('Duhet të shtoni të paktën një produkt!');
+            Swal.fire({icon: 'error', title: 'Gabim', text: 'Duhet të shtoni të paktën një produkt!'});
             return false;
         }
 
@@ -1503,11 +1639,24 @@
             const item = $(this);
             const needsImei = item.data('needs-imei');
             const productName = item.find('h6').text().trim();
+            const quantity = parseInt(item.find('.quantity-input').val()) || 0;
+            const price = parseFloat(item.find('.unit-price-input').val()) || 0;
+
+            if (quantity <= 0) {
+                hasError = true;
+                errorMessages.push(`${productName}: Sasia duhet të jetë më e madhe se 0`);
+                return;
+            }
+
+            if (price <= 0) {
+                hasError = true;
+                errorMessages.push(`${productName}: Çmimi duhet të jetë më i madh se 0`);
+                return;
+            }
 
             if (needsImei) {
                 const imeiInput = item.find('.imei-input');
                 const imeiText = imeiInput.val().trim();
-                const quantity = parseInt(item.find('.quantity-input').val()) || 0;
 
                 if (!imeiText) {
                     hasError = true;
@@ -1518,20 +1667,20 @@
                 const imeiArray = imeiText.split(',').map(s => s.trim()).filter(s => s.length > 0);
                 if (imeiArray.length !== quantity) {
                     hasError = true;
-                    errorMessages.push(`${productName}: Kërkohen ${quantity} IMEI`);
+                    errorMessages.push(`${productName}: Kërkohen ${quantity} IMEI, por keni ${imeiArray.length}`);
                     return;
                 }
 
                 if ([...new Set(imeiArray)].length !== imeiArray.length) {
                     hasError = true;
-                    errorMessages.push(`${productName}: IMEI të dubluar`);
+                    errorMessages.push(`${productName}: Ka IMEI të dubluar!`);
                     return;
                 }
 
-                for (let imei of imeiArray) {
-                    if (!/^\d{15}$/.test(imei)) {
+                for (let i = 0; i < imeiArray.length; i++) {
+                    if (!/^\d{15}$/.test(imeiArray[i])) {
                         hasError = true;
-                        errorMessages.push(`${productName}: IMEI jo-valid`);
+                        errorMessages.push(`${productName}: IMEI #${i + 1} (${imeiArray[i]}) jo-valid - duhet 15 shifra`);
                         return;
                     }
                 }
@@ -1539,9 +1688,24 @@
         });
 
         if (hasError) {
-            alert(errorMessages.join('\n'));
+            Swal.fire({
+                icon: 'error',
+                title: 'Gabim në Validim',
+                html: errorMessages.map(msg => `<p style="text-align:left;margin:5px 0">${msg}</p>`).join(''),
+                confirmButtonText: 'Rregulloni Gabimin'
+            });
             return false;
         }
+
+        // Show loading
+        Swal.fire({
+            title: 'Duke ruajtur...',
+            html: 'Ju lutem prisni, fatura po ruhet',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         $.ajax({
             url: $(this).attr('action'),
@@ -1549,24 +1713,44 @@
             data: $(this).serialize(),
             success: function(response) {
                 Swal.fire({
-                        icon: 'success',
-                        title: response.message || 'Fatura u krijua me sukses',
-                        timer: 2000,
-                        showConfirmButton: false
-                    })
-                    .then(function() {
-                        if (response.url) window.location.href = response.url;
-                    });
+                    icon: 'success',
+                    title: response.message || 'Fatura u krijua me sukses!',
+                    text: 'Fatura po hapet...',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(function() {
+                    if (response.url) {
+                        window.location.href = response.url;
+                    } else {
+                        window.location.href = '{{ route("sales.index") }}';
+                    }
+                });
             },
             error: function(xhr) {
-                let msg = 'Gabim në validim';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    msg = Array.isArray(xhr.responseJSON.message) ? xhr.responseJSON.message.join('\n') : xhr.responseJSON.message;
+                let msg = 'Gabim gjatë ruajtes të faturës';
+                let details = [];
+
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    if (xhr.responseJSON.errors) {
+                        details = Object.entries(xhr.responseJSON.errors).map(([key, errors]) => {
+                            return `<strong>${key}:</strong> ${Array.isArray(errors) ? errors.join(', ') : errors}`;
+                        });
+                    }
                 }
+
+                let htmlContent = `<p>${msg}</p>`;
+                if (details.length > 0) {
+                    htmlContent += `<div style="text-align:left;margin-top:10px">${details.join('<br>')}</div>`;
+                }
+
                 Swal.fire({
                     icon: 'error',
-                    title: 'Gabim',
-                    text: msg
+                    title: 'Gabim!',
+                    html: htmlContent,
+                    confirmButtonText: 'Kthehu prapa'
                 });
             }
         });
@@ -1574,72 +1758,197 @@
 </script>
 
 <script>
+
     $(document).ready(function() {
+        let activeBackdrops = 0;
         // Fix modal z-index
         $('#createClientModal').on('show.bs.modal', function() {
+            activeBackdrops++;
             setTimeout(function() {
-                $('#createClientModal').css('z-index', 1060);
-                $('.modal-backdrop').css('z-index', 1050);
+                const baseZIndex = 1070 + (activeBackdrops * 10);
+                $('#createClientModal').css('z-index', baseZIndex);
+                $('body').find('.modal-backdrop').last().css('z-index', baseZIndex - 10);
             }, 10);
         });
+
         $('#createClientModal').on('hidden.bs.modal', function() {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open').css('padding-right', '');
+            activeBackdrops = Math.max(0, activeBackdrops - 1);
+            // Cleanup backdrops
+            const count = $('body').find('.modal-backdrop').length;
+            if (count > 0) {
+                $('body').find('.modal-backdrop').last().remove();
+            }
         });
 
+        // ═══════════════════════════════════════════════════════════════════
+        // CLIENT CREATION
+        // ═══════════════════════════════════════════════════════════════════
         let saveTimeout;
+        let isCreatingClient = false;
 
         function saveClient() {
+            if (isCreatingClient) return;
+
             const name = $('#client_name').val().trim();
             const phone = $('#client_phone').val().trim();
-            if (name && phone && name.length >= 2 && phone.length >= 6) {
-                $.ajax({
-                    url: '{{ route("partners.store") }}',
-                    method: 'POST',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content'),
-                        name,
-                        phone
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            $('#createClientModal').modal('hide');
-                            const newOption = new Option(response.partner.name, response.partner.id, true, true);
-                            $(newOption).attr('data-name', response.partner.name);
-                            $(newOption).attr('data-phone', response.partner.phone);
-                            $(newOption).attr('data-address', '');
-                            $('#partner_id').append(newOption).trigger('change');
-                            $('#createClientForm')[0].reset();
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error:', xhr);
-                    }
-                });
+
+            if (!name || !phone) return;
+            if (name.length < 2) return;
+            if (phone.length < 6) return;
+
+            isCreatingClient = true;
+            const saveBtn = $('#createClientForm').find('button[type="submit"]');
+            
+            if (saveBtn.length === 0) {
+                console.error('Save button nuk u gjet');
+                isCreatingClient = false;
+                return;
             }
+
+            const originalText = saveBtn.html();
+            saveBtn.html('<i class="ri-loader-4-line me-1" style="animation:spin 1s linear infinite"></i> Duke ruajtur...').prop('disabled', true);
+
+            $.ajax({
+                url: '{{ route("partners.store") }}',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    name: name,
+                    phone: phone
+                },
+                timeout: 15000,
+                success: function(response) {
+                    if (response.success && response.partner) {
+                        // Krijo option të ri
+                        const newOption = new Option(response.partner.name, response.partner.id, true, true);
+                        $(newOption).attr('data-name', response.partner.name);
+                        $(newOption).attr('data-phone', response.partner.phone || '');
+                        $(newOption).attr('data-address', '');
+
+                        // Shto në select
+                        const partnerSelect = $('#partner_id');
+                        if (partnerSelect.length > 0) {
+                            partnerSelect.append(newOption);
+                            partnerSelect.val(response.partner.id).trigger('change');
+                        }
+
+                        // Rregjo forman
+                        const form = $('#createClientForm');
+                        if (form.length > 0 && form[0]) {
+                            form[0].reset();
+                        }
+
+                        // Mbyll modalin
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('createClientModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sukses!',
+                                text: `Klienti "${name}" u ruajt dhe u zgjodh automatikisht!`,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }, 100);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gabim!',
+                            text: 'Përgjigja e serverit nuk ishte e vlefshme'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Gabim gjatë ruajtes të klientit';
+
+                    if (xhr.status === 0) {
+                        errorMsg = 'Problemi i lidhjes me serverin';
+                    } else if (xhr.statusText === 'timeout') {
+                        errorMsg = 'Timeout - serveri nuk përgjigjet';
+                    } else if (xhr.responseJSON) {
+                        if (xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        if (xhr.responseJSON.errors) {
+                            const errors = xhr.responseJSON.errors;
+                            if (errors.name) errorMsg = 'Emri: ' + errors.name[0];
+                            if (errors.phone) errorMsg = 'Telefoni: ' + errors.phone[0];
+                        }
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gabim!',
+                        text: errorMsg
+                    });
+                },
+                complete: function() {
+                    isCreatingClient = false;
+                    saveBtn.html(originalText).prop('disabled', false);
+                }
+            });
         }
 
-        $('#client_name, #client_phone').on('input', function() {
+        // Auto-save me delay
+        $(document).on('input', '#client_name, #client_phone', function() {
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(saveClient, 500);
+            // Nuk e save automatikisht - vetëm kur submit
         });
-        $('#client_name, #client_phone').on('keypress', function(e) {
+
+        // Submit kur shtypet Enter
+        $(document).on('keypress', '#client_name, #client_phone', function(e) {
             if (e.which === 13) {
                 e.preventDefault();
-                clearTimeout(saveTimeout);
                 saveClient();
             }
         });
+
+        // Submit button click
         $('#createClientForm').on('submit', function(e) {
             e.preventDefault();
-            clearTimeout(saveTimeout);
             saveClient();
+        });
+
+        // Verifikoni që forma ekziston para se të bindni events
+        if ($('#createClientForm').length === 0) {
+            console.warn('createClientForm nuk u gjet në DOM');
+        }
+
+        // Riset forman kur hapet modali
+        $('#createClientModal').on('show.bs.modal', function() {
+            const form = $('#createClientForm');
+            if (form.length > 0 && form[0]) {
+                form[0].reset();
+            }
+            setTimeout(() => {
+                $('#client_name').focus();
+            }, 100);
         });
 
         // purchase_location → payment_status
         $('input[name="purchase_location"]').on('change', function() {
             $('select[name="payment_status"]').val($(this).val() === 'online' ? 'Unpaid' : 'Paid');
         });
+
+        // Animation CSS
+        if (!document.querySelector('style[data-spin]')) {
+            const style = document.createElement('style');
+            style.setAttribute('data-spin', 'true');
+            style.innerHTML = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     });
 </script>
 <script>

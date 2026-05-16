@@ -29,7 +29,16 @@ if (! function_exists('allowed_user_routes')) {
             'profile.update',
             'profile.destroy',
             'purchases.search.products',
-            'sales.search.products'
+            'purchases.create',
+            'purchases.store',
+            'sales.search.products',
+            'products.create',
+            'products.store',
+            'online-orders.index',
+            'seller-bonuses.index',
+            'categories.index',
+            'brands.index',
+            'currencies.index',
         ];
     }
 }

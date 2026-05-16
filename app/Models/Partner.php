@@ -36,4 +36,10 @@ class Partner extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+
+public function sales()
+{
+    return $this->hasMany(Sale::class);
+}
 }

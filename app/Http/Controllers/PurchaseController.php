@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Product;
@@ -18,6 +20,10 @@ use thiagoalessio\TesseractOCR\TesseractOCR;
 
 class PurchaseController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:create purchases')->only(['create', 'store']);
+    }
     public function index(Request $request)
     {
         $query = Purchase::with(['partner', 'warehouse', 'currency'])
@@ -215,14 +221,18 @@ class PurchaseController extends Controller
 
             DB::commit();
 
+            $user = auth()->user();
+            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+            $redirectUrl = $isAdmin ? route('purchases.index') : route('purchases.create');
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Purchase created successfully',
-                    'url' => route('purchases.index')
+                    'url' => $redirectUrl
                 ], 200);
             } else {
-                return redirect()->route('purchases.index')
+                return redirect($redirectUrl)
                     ->with('success', 'Blerja u krijua me sukses!');
             }
         } catch (\Exception $e) {
@@ -535,6 +545,13 @@ class PurchaseController extends Controller
                 $product->current_warehouse_quantity = $product->getQuantityInWarehouse($warehouseId);
             }
             $product->total_quantity = $product->total_quantity;
+
+            // Çmimi i fundit i hyrjes për këtë produkt
+            $lastPurchaseItem = PurchaseItem::where('product_id', $product->id)
+                ->orderByDesc('id')
+                ->first();
+            $product->last_purchase_cost = $lastPurchaseItem ? (float) $lastPurchaseItem->unit_cost : (float) $product->unit_price;
+
             return $product;
         });
 

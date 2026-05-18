@@ -23,7 +23,7 @@ use App\Http\Controllers\ProductHistoryController;
 
 
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    return redirect()->route('sales.create');
 });
 
 

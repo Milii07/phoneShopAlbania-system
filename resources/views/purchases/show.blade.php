@@ -89,8 +89,8 @@
                             <div class="card-body p-4">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <div>
-                                        <h3>{{ $purchase->currency->symbol }}{{ number_format($purchase->tax + $purchase->discount, 2) }}</h3>
-                                        <p class="text-muted mb-0">Tax + Discount</p>
+                                        <h3>{{ $purchase->items->sum('quantity') }}</h3>
+                                        <p class="text-muted mb-0">Total IMEI Numbers</p>
                                     </div>
                                     <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
                                         <i class="ri-percent-line"></i>

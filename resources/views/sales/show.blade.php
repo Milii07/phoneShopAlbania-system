@@ -45,6 +45,7 @@
                                     <div>
                                         <h3>{{ $sale->items->count() }}</h3>
                                         <p class="text-muted mb-0">Items</p>
+                                        <p class="text-muted mb-0">Total Quantity: {{ $sale->items->sum('quantity') }}</p>
                                     </div>
                                     <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
                                         <i class="ri-shopping-cart-line"></i>

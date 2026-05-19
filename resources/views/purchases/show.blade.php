@@ -34,6 +34,73 @@
                 </div>
             </div>
             <div class="card-body">
+                <!-- Purchase Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h3>{{ $purchase->items->count() }}</h3>
+                                        <p class="text-muted mb-0">Items</p>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                                        <i class="ri-shopping-cart-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h3>{{ $purchase->currency->symbol }}{{ number_format($purchase->total_amount, 2) }}</h3>
+                                        <p class="text-muted mb-0">Total Amount</p>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                                        <i class="ri-money-dollar-circle-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h3>{{ $purchase->currency->symbol }}{{ number_format($purchase->subtotal, 2) }}</h3>
+                                        <p class="text-muted mb-0">Subtotal</p>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                                        <i class="ri-calculator-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h3>{{ $purchase->currency->symbol }}{{ number_format($purchase->tax + $purchase->discount, 2) }}</h3>
+                                        <p class="text-muted mb-0">Tax + Discount</p>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                                        <i class="ri-percent-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Purchase Info -->
                 <div class="row mb-4">
                     <div class="col-md-6">

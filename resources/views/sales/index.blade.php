@@ -18,6 +18,73 @@
     </div>
 </div>
 
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h3>{{ $sales->total() }}</h3>
+                        <p class="text-muted mb-0">Total Sales</p>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-shopping-bag-3-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h3>${{ number_format($sales->sum('total_amount'), 2) }}</h3>
+                        <p class="text-muted mb-0">Total Amount</p>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-money-dollar-circle-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h3>${{ $sales->count() > 0 ? number_format($sales->sum('total_amount') / $sales->count(), 2) : '0.00' }}</h3>
+                        <p class="text-muted mb-0">Average Order</p>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-calculator-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h3>{{ $sales->where('payment_status', 'Unpaid')->count() }}</h3>
+                        <p class="text-muted mb-0">Pending Orders</p>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-time-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-lg-12">
         <div class="card">

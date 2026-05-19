@@ -18,6 +18,73 @@
     </div>
 </div>
 
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">Total Purchases</p>
+                        <h3 class="mb-0 fw-bold">{{ $purchases->total() }}</h3>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-shopping-cart-2-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">Total Amount</p>
+                        <h3 class="mb-0 fw-bold">${{ number_format($purchases->sum('total_amount'), 2) }}</h3>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-money-dollar-circle-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">Average Order</p>
+                        <h3 class="mb-0 fw-bold">${{ $purchases->count() > 0 ? number_format($purchases->sum('total_amount') / $purchases->count(), 2) : '0.00' }}</h3>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-bar-chart-2-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1">Pending Orders</p>
+                        <h3 class="mb-0 fw-bold">{{ $purchases->where('payment_status', 'Unpaid')->count() }}</h3>
+                    </div>
+                    <div class="text-muted" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="ri-time-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-lg-12">
         <div class="card">
@@ -233,4 +300,75 @@
         }
     });
 </script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for warehouse filter (if Select2 is loaded globally)
+        try {
+            if ($.fn.select2) {
+                $('#purchases_filter_warehouse').select2({
+                    placeholder: 'Filter by warehouse',
+                    allowClear: true,
+                    width: 'resolve'
+                });
+
+                $('#purchases_filter_warehouse').on('change', function() {
+                    $(this).closest('form').submit();
+                });
+            }
+        } catch (e) {
+            console.warn('Select2 init failed:', e);
+        }
+
+        $(document).on('click', '.btn-delete', function(e) {
+            e.preventDefault();
+            var id = $(this).data('id');
+
+            Swal.fire({
+                title: 'A jeni të sigurt?',
+                text: "Kjo blerje do të fshihet përgjithmonë!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Po, fshije!',
+                cancelButtonText: 'Anulo',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/purchases/' + id;
+
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+
+                    const methodField = document.createElement('input');
+                    methodField.type = 'hidden';
+                    methodField.name = '_method';
+                    methodField.value = 'DELETE';
+
+                    form.appendChild(csrfToken);
+                    form.appendChild(methodField);
+                    document.body.appendChild(form);
+
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Sukses!',
+        text: '{{ session("success") }}',
+        timer: 3000,
+        showConfirmButton: false
+    });
+</script>
+@endif
 @endpush

@@ -131,7 +131,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('purchases',                 [PurchaseController::class, 'index'])->middleware('permission:view purchases')->name('purchases.index');
     Route::get('purchases/create',          [PurchaseController::class, 'create'])->middleware('permission:create purchases')->name('purchases.create');
-    Route::post('purchases',                [PurchaseController::class, 'store'])->middleware('permission:create purchases')->name('purchases.store');
+    Route::post('purchases/create',                [PurchaseController::class, 'store'])->middleware('permission:create purchases')->name('purchases.store');
     Route::get('purchases/{purchase}',      [PurchaseController::class, 'show'])->middleware('permission:view purchases')->name('purchases.show');
     Route::get('purchases/{purchase}/edit', [PurchaseController::class, 'edit'])->middleware('permission:edit purchases')->name('purchases.edit');
     Route::put('purchases/{purchase}',      [PurchaseController::class, 'update'])->middleware('permission:edit purchases')->name('purchases.update');

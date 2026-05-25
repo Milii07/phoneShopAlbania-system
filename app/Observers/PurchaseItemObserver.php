@@ -13,8 +13,13 @@ class PurchaseItemObserver
      */
     public function created(PurchaseItem $purchaseItem): void
     {
+
         try {
-            if ($purchaseItem->purchase && $purchaseItem->product) {
+
+            $exists = ProductHistory::where('product_id', $purchaseItem->product_id)
+                ->where('invoice_number', $purchaseItem->purchase->purchase_number);
+
+            if ($purchaseItem->purchase && $purchaseItem->product && $purchaseItem->product->exists() && (!$exists->exists() || ($exists->exists() && ($purchaseItem->quantity > $exists->quantity || $purchaseItem->quantity < $exists->quantity)))) {
                 ProductHistory::create([
                     'product_id' => $purchaseItem->product_id,
                     'warehouse_to_id' => $purchaseItem->purchase->warehouse_id,
@@ -40,6 +45,8 @@ class PurchaseItemObserver
      */
     public function updated(PurchaseItem $purchaseItem): void
     {
+
+        die();
         try {
             $changes = $purchaseItem->getChanges();
 
@@ -48,6 +55,8 @@ class PurchaseItemObserver
                 $oldQuantity = $purchaseItem->getOriginal('quantity');
                 $newQuantity = $purchaseItem->quantity;
 
+                var_dump($oldQuantity, $newQuantity);
+                die();
                 if ($newQuantity > $oldQuantity) {
                     // Quantity increased
                     ProductHistory::create([

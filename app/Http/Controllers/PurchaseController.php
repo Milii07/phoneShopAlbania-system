@@ -45,10 +45,12 @@ class PurchaseController extends Controller
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
+        $categories = Category::all();
+        $brands = Brand::all();
 
         $purchaseNumber = Purchase::generatePurchaseNumber();
 
-        return view('purchases.create', compact('partners', 'warehouses', 'currencies', 'purchaseNumber'));
+        return view('purchases.create', compact('partners', 'warehouses', 'currencies', 'categories', 'brands', 'purchaseNumber'));
     }
 
     public function store(Request $request)
@@ -265,9 +267,11 @@ class PurchaseController extends Controller
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
+        $categories = Category::all();
+        $brands = Brand::all();
         $products = Product::with(['category', 'brand'])->get();
 
-        return view('purchases.edit', compact('purchase', 'partners', 'warehouses', 'currencies', 'products'));
+        return view('purchases.edit', compact('purchase', 'partners', 'warehouses', 'currencies', 'categories', 'brands', 'products'));
     }
 
     public function update(Request $request, $id)
@@ -454,7 +458,7 @@ class PurchaseController extends Controller
                     'discount' => $discount,
                     'tax' => $tax,
                     'line_total' => $lineTotal,
-                    'imei_numbers' =>  $this->parseImeiInput($item['imei_numbers'] ?? null)
+                    'imei_numbers' => $this->parseImeiInput($item['imei_numbers'] ?? null)
                 ]);
 
                 // Update product quantity if order is received
@@ -566,8 +570,8 @@ class PurchaseController extends Controller
 
         try {
             $parser = new PdfParser();
-            $pdf    = $parser->parseFile($request->file('document')->getRealPath());
-            $text   = $pdf->getText();
+            $pdf = $parser->parseFile($request->file('document')->getRealPath());
+            $text = $pdf->getText();
 
             $data = $this->parseInvoiceText($text);
 
@@ -577,17 +581,17 @@ class PurchaseController extends Controller
                 $partner = Partner::where('nipt', $data['supplier']['nipt'])->first();
             }
             if (!$partner && !empty($data['supplier']['name'])) {
-                $name    = explode(' - ', $data['supplier']['name'])[0];
+                $name = explode(' - ', $data['supplier']['name'])[0];
                 $partner = Partner::where('name', 'like', "%{$name}%")->first();
             }
 
             $resolvedItems = [];
             foreach ($data['items'] as $item) {
-                $parsed  = $item['_parsed'];   // të dhënat e parsimit
+                $parsed = $item['_parsed'];   // të dhënat e parsimit
                 $product = $this->findProduct($parsed);
 
-                $resolvedItem                 = $item;
-                $resolvedItem['product_id']   = $product?->id;
+                $resolvedItem = $item;
+                $resolvedItem['product_id'] = $product?->id;
                 $resolvedItem['product_found'] = (bool) $product;
                 unset($resolvedItem['_parsed']); // mos e dërgo te frontend
                 $resolvedItems[] = $resolvedItem;
@@ -596,7 +600,7 @@ class PurchaseController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => $data,
+                'data' => $data,
                 'partner' => $partner ? ['id' => $partner->id, 'name' => $partner->name] : null,
             ]);
         } catch (\Exception $e) {
@@ -629,13 +633,13 @@ class PurchaseController extends Controller
 
     private function parseProductName(string $rawName): array
     {
-        $name   = trim($rawName);
-        $words  = explode(' ', $name);
+        $name = trim($rawName);
+        $words = explode(' ', $name);
         $result = [
-            'brand'      => '',
-            'color'      => '',
-            'storage'    => '',
-            'ram'        => '',
+            'brand' => '',
+            'color' => '',
+            'storage' => '',
+            'ram' => '',
             'clean_name' => $name,
         ];
 
@@ -727,7 +731,8 @@ class PurchaseController extends Controller
 
     private function parseImeiInput(mixed $value): ?array
     {
-        if (empty($value)) return null;
+        if (empty($value))
+            return null;
         if (is_array($value)) {
             $arr = array_values(array_filter(array_map('trim', $value)));
             return empty($arr) ? null : $arr;
@@ -741,20 +746,21 @@ class PurchaseController extends Controller
     // ────────────────────────────────────────────────────────────── 
     private function parseInvoiceText(string $rawText): array
     {
-        $lines    = array_values(array_filter(array_map('trim', explode("\n", $rawText)), fn($l) => $l !== ''));
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $rawText)), fn($l) => $l !== ''));
         $fullText = implode("\n", $lines);
 
         $result = [
             'supplier' => ['name' => '', 'nipt' => '', 'address' => ''],
-            'invoice'  => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
-            'items'    => [],
-            'totals'   => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
+            'invoice' => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
+            'items' => [],
+            'totals' => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
         ];
 
         // ── Supplier ──────────────────────────────────────────────
         $supplierLines = [];
         foreach ($lines as $line) {
-            if (stripos($line, 'FATUR') !== false) break;
+            if (stripos($line, 'FATUR') !== false)
+                break;
             $supplierLines[] = $line;
         }
         if (!empty($supplierLines)) {
@@ -764,8 +770,10 @@ class PurchaseController extends Controller
             }
         }
         foreach ($supplierLines as $line) {
-            if (preg_match('/NIPT[:\s]*([A-Z0-9]+)/i', $line, $m)) $result['supplier']['nipt']    = trim($m[1]);
-            if (preg_match('/Adresa[:\s]*(.+)/i',       $line, $m)) $result['supplier']['address'] = trim($m[1]);
+            if (preg_match('/NIPT[:\s]*([A-Z0-9]+)/i', $line, $m))
+                $result['supplier']['nipt'] = trim($m[1]);
+            if (preg_match('/Adresa[:\s]*(.+)/i', $line, $m))
+                $result['supplier']['address'] = trim($m[1]);
         }
 
         // ── Invoice ───────────────────────────────────────────────
@@ -788,23 +796,27 @@ class PurchaseController extends Controller
                 $inShenime = true;
                 $shenimeText = $m[1] ?? '';
                 preg_match_all('/\b\d{15}\b/', $m[1] ?? '', $sameLine);
-                if (!empty($sameLine[0])) $allImei = array_merge($allImei, $sameLine[0]);
+                if (!empty($sameLine[0]))
+                    $allImei = array_merge($allImei, $sameLine[0]);
                 continue;
             }
 
             if ($inShenime) {
-                if (preg_match('/Artikulli|Vlefta\s+me|Kodi\s+Nj/iu', $line)) break;
+                if (preg_match('/Artikulli|Vlefta\s+me|Kodi\s+Nj/iu', $line))
+                    break;
                 $shenimeText .= ' ' . $line;
             } else {
                 preg_match_all('/\b\d{15}\b/', $line, $matches);
-                if (!empty($matches[0])) $allImei = array_merge($allImei, $matches[0]);
+                if (!empty($matches[0]))
+                    $allImei = array_merge($allImei, $matches[0]);
             }
         }
 
         if ($shenimeText !== '') {
             $cleaned = preg_replace('/(\d)\.(\s|$)/', '$1 ', $shenimeText);
             preg_match_all('/\b\d{15}\b/', $cleaned, $imeiMatches);
-            if (!empty($imeiMatches[0])) $allImei = array_merge($allImei, $imeiMatches[0]);
+            if (!empty($imeiMatches[0]))
+                $allImei = array_merge($allImei, $imeiMatches[0]);
         }
 
         $allImei = array_values(array_unique($allImei));
@@ -818,7 +830,8 @@ class PurchaseController extends Controller
                 continue;
             }
             if ($tableStart) {
-                if (preg_match('/Nivelet e TVSH|Total pa TVSH|NSLF|NIVF/iu', $line)) break;
+                if (preg_match('/Nivelet e TVSH|Total pa TVSH|NSLF|NIVF/iu', $line))
+                    break;
                 $tableLines[] = $line;
             }
         }
@@ -829,7 +842,8 @@ class PurchaseController extends Controller
             if (preg_match('/(\d{3})\s+cope\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)/i', $line, $m)) {
                 $namePart = trim(substr($line, 0, strpos($line, $m[0])));
                 $namePart = trim(preg_replace('/\b(tvsh|vlefta|me|pa)\b/iu', '', $namePart));
-                if ($namePart !== '') $currentNameParts[] = $namePart;
+                if ($namePart !== '')
+                    $currentNameParts[] = $namePart;
 
                 $name = implode(' ', $currentNameParts);
                 $name = trim(preg_replace('/\s+\bd\b\s*$/u', '', $name));
@@ -838,25 +852,26 @@ class PurchaseController extends Controller
 
                 $rawItems[] = [
                     'product_name' => $name,
-                    'kodi'         => $m[1],
-                    'quantity'     => (float) str_replace(',', '', $m[2]),
-                    'unit_cost'    => (float) str_replace(',', '', $m[3]),
-                    'tax'          => (float) str_replace(',', '', $m[5]),
-                    'line_total'   => (float) str_replace(',', '', $m[6]),
-                    'discount'     => 0,
+                    'kodi' => $m[1],
+                    'quantity' => (float) str_replace(',', '', $m[2]),
+                    'unit_cost' => (float) str_replace(',', '', $m[3]),
+                    'tax' => (float) str_replace(',', '', $m[5]),
+                    'line_total' => (float) str_replace(',', '', $m[6]),
+                    'discount' => 0,
                 ];
                 $currentNameParts = [];
             } else {
                 $clean = trim(preg_replace('/\b(tvsh|vlefta|me|pa|grande|piccolo|medio)\b/iu', '', $line));
-                if ($clean !== '') $currentNameParts[] = $clean;
+                if ($clean !== '')
+                    $currentNameParts[] = $clean;
             }
         }
 
         // ── Cakto IMEI dhe parse emrin ────────────────────────────
-        $imeiIdx    = 0;
+        $imeiIdx = 0;
         $finalItems = [];
         foreach ($rawItems as $item) {
-            $qty   = (int) $item['quantity'];
+            $qty = (int) $item['quantity'];
             $slice = array_slice($allImei, $imeiIdx, $qty);
             $imeiIdx += $qty;
 
@@ -868,28 +883,31 @@ class PurchaseController extends Controller
 
             $finalItems[] = [
                 'product_name' => $item['product_name'],  // emri i plotë nga fatura
-                'clean_name'   => $parsed['clean_name'],  // emri pa storage/color/ram
-                'brand'        => $parsed['brand'],
-                'category'     => $parsed['category'],
-                'storage'      => $parsed['storage'],
-                'ram'          => $parsed['ram'],
-                'color'        => $parsed['color'],
-                'kodi'         => $item['kodi'],
-                'quantity'     => $item['quantity'],
-                'unit_cost'    => $item['unit_cost'],
-                'tax'          => $item['tax'],
-                'line_total'   => $item['line_total'],
-                'discount'     => $item['discount'],
+                'clean_name' => $parsed['clean_name'],  // emri pa storage/color/ram
+                'brand' => $parsed['brand'],
+                'category' => $parsed['category'],
+                'storage' => $parsed['storage'],
+                'ram' => $parsed['ram'],
+                'color' => $parsed['color'],
+                'kodi' => $item['kodi'],
+                'quantity' => $item['quantity'],
+                'unit_cost' => $item['unit_cost'],
+                'tax' => $item['tax'],
+                'line_total' => $item['line_total'],
+                'discount' => $item['discount'],
                 'imei_numbers' => $slice,
-                '_parsed'      => $parsed,  // për findProduct() — hiqet para JSON response
+                '_parsed' => $parsed,  // për findProduct() — hiqet para JSON response
             ];
         }
         $result['items'] = $finalItems;
 
         // ── Totalet ───────────────────────────────────────────────
-        if (preg_match('/Total pa TVSH\s+([\d,\.]+)/iu', $fullText, $m)) $result['totals']['subtotal'] = (float) str_replace(',', '', $m[1]);
-        if (preg_match('/Total me TVSH\s+([\d,\.]+)/iu', $fullText, $m)) $result['totals']['total']    = (float) str_replace(',', '', $m[1]);
-        if (preg_match('/^TVSH\s+([\d,\.]+)\s+LEK/ium',  $fullText, $m)) $result['totals']['tax']      = (float) str_replace(',', '', $m[1]);
+        if (preg_match('/Total pa TVSH\s+([\d,\.]+)/iu', $fullText, $m))
+            $result['totals']['subtotal'] = (float) str_replace(',', '', $m[1]);
+        if (preg_match('/Total me TVSH\s+([\d,\.]+)/iu', $fullText, $m))
+            $result['totals']['total'] = (float) str_replace(',', '', $m[1]);
+        if (preg_match('/^TVSH\s+([\d,\.]+)\s+LEK/ium', $fullText, $m))
+            $result['totals']['tax'] = (float) str_replace(',', '', $m[1]);
 
         return $result;
     }
@@ -902,9 +920,9 @@ class PurchaseController extends Controller
             $partner = Partner::firstOrCreate(
                 ['nipt' => $request->new_supplier_nipt ?: null],
                 [
-                    'name'    => $request->new_supplier_name,
+                    'name' => $request->new_supplier_name,
                     'address' => $request->new_supplier_address ?? '',
-                    'type'    => 'supplier',
+                    'type' => 'supplier',
                 ]
             );
             $request->merge(['partner_id' => $partner->id]);
@@ -919,13 +937,13 @@ class PurchaseController extends Controller
                 }
 
                 // Lexo të dhënat e parsimit nga hidden inputs
-                $cleanName    = $item['new_clean_name']   ?? $item['new_product_name'];
-                $brandName    = $item['new_brand']         ?? '';
-                $categoryName = $item['new_category']      ?? '';
-                $storage      = $item['new_storage']       ?? null;
-                $ram          = $item['new_ram']           ?? null;
-                $color        = $item['new_color']         ?? null;
-                $hasImei      = !empty($item['imei_numbers']);
+                $cleanName = $item['new_clean_name'] ?? $item['new_product_name'];
+                $brandName = $item['new_brand'] ?? '';
+                $categoryName = $item['new_category'] ?? '';
+                $storage = $item['new_storage'] ?? null;
+                $ram = $item['new_ram'] ?? null;
+                $color = $item['new_color'] ?? null;
+                $hasImei = !empty($item['imei_numbers']);
 
                 // Category — nëse nuk ka nga hidden input, vendos nga IMEI
                 if (empty($categoryName)) {
@@ -941,19 +959,19 @@ class PurchaseController extends Controller
 
                 // Product — kërko fillimisht nëse ekziston me këto atribute
                 $product = Product::where('name', $cleanName)
-                    ->when($brand,   fn($q) => $q->where('brand_id', $brand->id))
-                    ->when($storage, fn($q) => $q->where('storage',  $storage))
-                    ->when($color,   fn($q) => $q->where('color',    $color))
+                    ->when($brand, fn($q) => $q->where('brand_id', $brand->id))
+                    ->when($storage, fn($q) => $q->where('storage', $storage))
+                    ->when($color, fn($q) => $q->where('color', $color))
                     ->first();
 
                 if (!$product) {
                     $product = Product::create([
-                        'name'        => $cleanName,
-                        'brand_id'    => $brand?->id,
+                        'name' => $cleanName,
+                        'brand_id' => $brand?->id,
                         'category_id' => $category->id,
-                        'storage'     => $storage  ?: null,
-                        'ram'         => $ram      ?: null,
-                        'color'       => $color    ?: null,
+                        'storage' => $storage ?: null,
+                        'ram' => $ram ?: null,
+                        'color' => $color ?: null,
                     ]);
                 }
 
@@ -967,22 +985,24 @@ class PurchaseController extends Controller
     private function normalizeImei(string $raw): string
     {
         $digits = preg_replace('/\D/', '', $raw);
-        $len    = strlen($digits);
-        if ($len === 15) return $digits;
-        if ($len === 16) return substr($digits, 0, 15); // hiq shifren shtesë
+        $len = strlen($digits);
+        if ($len === 15)
+            return $digits;
+        if ($len === 16)
+            return substr($digits, 0, 15); // hiq shifren shtesë
         return $digits; // 14 = OCR humbi 1, kthe si është
     }
 
     private function parseFormat2(string $rawText): array
     {
-        $lines    = array_values(array_filter(array_map('trim', explode("\n", $rawText)), fn($l) => $l !== ''));
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $rawText)), fn($l) => $l !== ''));
         $fullText = implode("\n", $lines);
 
         $result = [
             'supplier' => ['name' => '', 'nipt' => '', 'address' => ''],
-            'invoice'  => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
-            'items'    => [],
-            'totals'   => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
+            'invoice' => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
+            'items' => [],
+            'totals' => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
         ];
 
         // ── Supplier ──────────────────────────────────────────────
@@ -1016,7 +1036,7 @@ class PurchaseController extends Controller
         }
 
         // ── Tabela: lexo çdo rresht ───────────────────────────────
-        $inTable  = false;
+        $inTable = false;
         $rawItems = [];
 
         foreach ($lines as $line) {
@@ -1027,7 +1047,8 @@ class PurchaseController extends Controller
             if ($inTable && preg_match('/TOTALI?\s*:|DEBIA|BLERESI|SHITESI/iu', $line)) {
                 $inTable = false;
             }
-            if (!$inTable) continue;
+            if (!$inTable)
+                continue;
 
             // Pastro artefakte OCR: [], |, brackets, tiret
             $clean = preg_replace('/[\[\]|]/', ' ', $line);
@@ -1035,16 +1056,18 @@ class PurchaseController extends Controller
 
             // Gjej IMEI (13-16 shifra, zakonisht fillon me 3)
             if (!preg_match('/\b(3\d{12,15})\b/', $clean, $imeiM)) {
-                if (!preg_match('/\b(\d{14,16})\b/', $clean, $imeiM)) continue;
+                if (!preg_match('/\b(\d{14,16})\b/', $clean, $imeiM))
+                    continue;
             }
             $imei = $this->normalizeImei($imeiM[1]);
 
             // Gjej emrin e produktit — para IMEI
-            $beforeImei  = trim(substr($clean, 0, strpos($clean, $imeiM[1])));
+            $beforeImei = trim(substr($clean, 0, strpos($clean, $imeiM[1])));
             $productName = trim(preg_replace('/^\d+\s*/', '', $beforeImei)); // hiq nr rreshti
             $productName = preg_replace('/^[a-z]{1,2}(?=[A-Z])/u', '', $productName); // hiq "j" artefakte OCR
             $productName = trim($productName);
-            if (empty($productName)) continue;
+            if (empty($productName))
+                continue;
 
             // Gjej çmim dhe total — pas IMEI
             $afterImei = trim(substr($clean, strpos($clean, $imeiM[1]) + strlen($imeiM[1])));
@@ -1052,11 +1075,11 @@ class PurchaseController extends Controller
             preg_match_all('/([\d,\.]+)/', $afterImei, $nums);
             $numList = array_values(array_filter($nums[1], fn($n) => (float) str_replace(',', '', $n) > 0));
 
-            $qty   = 1;
+            $qty = 1;
             $price = 0.0;
             $total = 0.0;
             if (count($numList) >= 3) {
-                $qty   = (float) str_replace(',', '', $numList[0]);
+                $qty = (float) str_replace(',', '', $numList[0]);
                 $price = (float) str_replace(',', '', $numList[1]);
                 $total = (float) str_replace(',', '', $numList[2]);
             } elseif (count($numList) >= 2) {
@@ -1065,26 +1088,27 @@ class PurchaseController extends Controller
             } elseif (count($numList) === 1) {
                 $price = $total = (float) str_replace(',', '', $numList[0]);
             }
-            if ($qty < 1) $qty = 1;
+            if ($qty < 1)
+                $qty = 1;
 
-            $parsed             = $this->parseProductName($productName);
+            $parsed = $this->parseProductName($productName);
             $parsed['category'] = 'Telefona';
 
             $rawItems[] = [
                 'product_name' => $productName,
-                'clean_name'   => $parsed['clean_name'],
-                'brand'        => $parsed['brand'],
-                'category'     => 'Telefona',
-                'storage'      => $parsed['storage'],
-                'ram'          => $parsed['ram'],
-                'color'        => $parsed['color'],
-                'quantity'     => $qty,
-                'unit_cost'    => $price,
-                'tax'          => 0.0,
-                'line_total'   => $total ?: ($qty * $price),
-                'discount'     => 0,
+                'clean_name' => $parsed['clean_name'],
+                'brand' => $parsed['brand'],
+                'category' => 'Telefona',
+                'storage' => $parsed['storage'],
+                'ram' => $parsed['ram'],
+                'color' => $parsed['color'],
+                'quantity' => $qty,
+                'unit_cost' => $price,
+                'tax' => 0.0,
+                'line_total' => $total ?: ($qty * $price),
+                'discount' => 0,
                 'imei_numbers' => $imei ? [$imei] : [],
-                '_parsed'      => $parsed,
+                '_parsed' => $parsed,
             ];
         }
 
@@ -1093,7 +1117,7 @@ class PurchaseController extends Controller
         foreach ($rawItems as $item) {
             $key = mb_strtolower(trim($item['product_name'])) . '|' . $item['unit_cost'];
             if (isset($grouped[$key])) {
-                $grouped[$key]['quantity']   += 1;
+                $grouped[$key]['quantity'] += 1;
                 $grouped[$key]['line_total'] += $item['unit_cost'];
                 if (!empty($item['imei_numbers'][0])) {
                     $grouped[$key]['imei_numbers'][] = $item['imei_numbers'][0];
@@ -1124,7 +1148,8 @@ class PurchaseController extends Controller
         // Provo me GD
         if (extension_loaded('gd')) {
             $info = @getimagesize($filePath);
-            if (!$info) return $filePath;
+            if (!$info)
+                return $filePath;
 
             [$w, $h, $type] = [$info[0], $info[1], $info[2]];
             $newW = $w * $scale;
@@ -1132,10 +1157,11 @@ class PurchaseController extends Controller
 
             $src = match ($type) {
                 IMAGETYPE_JPEG => imagecreatefromjpeg($filePath),
-                IMAGETYPE_PNG  => imagecreatefrompng($filePath),
-                default        => null,
+                IMAGETYPE_PNG => imagecreatefrompng($filePath),
+                default => null,
             };
-            if (!$src) return $filePath;
+            if (!$src)
+                return $filePath;
 
             $dst = imagecreatetruecolor($newW, $newH);
 
@@ -1163,7 +1189,7 @@ class PurchaseController extends Controller
             try {
                 $img = new \Imagick($filePath);
                 $img->resizeImage(
-                    $img->getImageWidth()  * $scale,
+                    $img->getImageWidth() * $scale,
                     $img->getImageHeight() * $scale,
                     \Imagick::FILTER_LANCZOS,
                     1
@@ -1216,8 +1242,8 @@ class PurchaseController extends Controller
         if (empty(trim($text ?? ''))) {
             throw new \Exception(
                 'OCR dështoi. Sigurohu: ' .
-                    'composer require thiagoalessio/tesseract_ocr  &&  ' .
-                    'apt-get install tesseract-ocr tesseract-ocr-eng'
+                'composer require thiagoalessio/tesseract_ocr  &&  ' .
+                'apt-get install tesseract-ocr tesseract-ocr-eng'
             );
         }
 
@@ -1234,18 +1260,18 @@ class PurchaseController extends Controller
             $partner = Partner::where('nipt', $data['supplier']['nipt'])->first();
         }
         if (!$partner && !empty($data['supplier']['name'])) {
-            $name    = explode(' - ', $data['supplier']['name'])[0];
+            $name = explode(' - ', $data['supplier']['name'])[0];
             $partner = Partner::where('name', 'like', "%{$name}%")->first();
         }
 
         // Gjej produkte
         $resolvedItems = [];
         foreach ($data['items'] as $item) {
-            $parsed  = $item['_parsed'] ?? $this->parseProductName($item['product_name']);
+            $parsed = $item['_parsed'] ?? $this->parseProductName($item['product_name']);
             $product = $this->findProduct($parsed);
 
-            $resolvedItem                  = $item;
-            $resolvedItem['product_id']    = $product?->id;
+            $resolvedItem = $item;
+            $resolvedItem['product_id'] = $product?->id;
             $resolvedItem['product_found'] = (bool) $product;
             unset($resolvedItem['_parsed']);
             $resolvedItems[] = $resolvedItem;
@@ -1254,7 +1280,7 @@ class PurchaseController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $data,
+            'data' => $data,
             'partner' => $partner ? ['id' => $partner->id, 'name' => $partner->name] : null,
         ]);
     }
@@ -1287,9 +1313,9 @@ class PurchaseController extends Controller
 
         try {
             $parser = new PdfParser();
-            $pdf    = $parser->parseFile($request->file('document')->getRealPath());
-            $text   = $pdf->getText();
-            $data   = $this->parseInvoiceText($text);
+            $pdf = $parser->parseFile($request->file('document')->getRealPath());
+            $text = $pdf->getText();
+            $data = $this->parseInvoiceText($text);
 
             return $this->resolveAndRespond($data);
         } catch (\Exception $e) {
@@ -1320,8 +1346,8 @@ class PurchaseController extends Controller
     private function parseExcel(string $filePath): array
     {
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $rows        = $sheet->toArray();
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
 
         if (empty($rows)) {
             throw new \Exception('Skedari Excel është bosh.');
@@ -1329,14 +1355,14 @@ class PurchaseController extends Controller
 
         $result = [
             'supplier' => ['name' => '', 'nipt' => '', 'address' => ''],
-            'invoice'  => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
-            'items'    => [],
-            'totals'   => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
+            'invoice' => ['number' => '', 'date' => '', 'payment_method' => 'Cash'],
+            'items' => [],
+            'totals' => ['subtotal' => 0, 'tax' => 0, 'total' => 0],
         ];
 
         // ── GJEJ HEADER ROW ───────────────────────────────────────
         $headerIdx = null;
-        $colMap    = [];
+        $colMap = [];
 
         foreach ($rows as $idx => $row) {
             $rowText = mb_strtolower(implode('|', array_map('trim', $row)));
@@ -1349,13 +1375,20 @@ class PurchaseController extends Controller
                 foreach ($row as $colIdx => $header) {
                     $h = mb_strtolower(trim($header));
 
-                    if (preg_match('/^nr$/iu', $h))           $colMap['nr']      = $colIdx;
-                    if (preg_match('/pershkrim/iu', $h))      $colMap['product'] = $colIdx;
-                    if (preg_match('/imei/iu', $h))           $colMap['imei']    = $colIdx;
-                    if (preg_match('/njesi/iu', $h))          $colMap['unit']    = $colIdx;
-                    if (preg_match('/sasi/iu', $h))           $colMap['qty']     = $colIdx;
-                    if (preg_match('/^cmim/iu', $h))          $colMap['price']   = $colIdx;
-                    if (preg_match('/total/iu', $h))          $colMap['total']   = $colIdx;
+                    if (preg_match('/^nr$/iu', $h))
+                        $colMap['nr'] = $colIdx;
+                    if (preg_match('/pershkrim/iu', $h))
+                        $colMap['product'] = $colIdx;
+                    if (preg_match('/imei/iu', $h))
+                        $colMap['imei'] = $colIdx;
+                    if (preg_match('/njesi/iu', $h))
+                        $colMap['unit'] = $colIdx;
+                    if (preg_match('/sasi/iu', $h))
+                        $colMap['qty'] = $colIdx;
+                    if (preg_match('/^cmim/iu', $h))
+                        $colMap['price'] = $colIdx;
+                    if (preg_match('/total/iu', $h))
+                        $colMap['total'] = $colIdx;
                 }
                 break;
             }
@@ -1388,10 +1421,10 @@ class PurchaseController extends Controller
 
             // Nxjerr të dhënat nga kolonat
             $productName = $productCell;
-            $imei        = isset($colMap['imei'])  ? trim($row[$colMap['imei']] ?? '')  : '';
-            $qty         = isset($colMap['qty'])   ? (int)   ($row[$colMap['qty']] ?? 1)   : 1;
-            $price       = isset($colMap['price']) ? (float) ($row[$colMap['price']] ?? 0) : 0;
-            $total       = isset($colMap['total']) ? (float) ($row[$colMap['total']] ?? 0) : $price;
+            $imei = isset($colMap['imei']) ? trim($row[$colMap['imei']] ?? '') : '';
+            $qty = isset($colMap['qty']) ? (int) ($row[$colMap['qty']] ?? 1) : 1;
+            $price = isset($colMap['price']) ? (float) ($row[$colMap['price']] ?? 0) : 0;
+            $total = isset($colMap['total']) ? (float) ($row[$colMap['total']] ?? 0) : $price;
 
             // Validim: duhet të ketë produkt dhe IMEI
             if (empty($productName)) {
@@ -1407,24 +1440,24 @@ class PurchaseController extends Controller
             $productName = preg_replace('/\s+New\s*$/i', '', $productName);
 
             // Parse emrin: nxjerr brand, storage, ram, color
-            $parsed             = $this->parseProductName($productName);
+            $parsed = $this->parseProductName($productName);
             $parsed['category'] = 'Telefona';
 
             $rawItems[] = [
                 'product_name' => $productName,
-                'clean_name'   => $parsed['clean_name'],
-                'brand'        => $parsed['brand'],
-                'category'     => 'Telefona',
-                'storage'      => $parsed['storage'],
-                'ram'          => $parsed['ram'],
-                'color'        => $parsed['color'],
-                'quantity'     => $qty,
-                'unit_cost'    => $price,
-                'tax'          => 0.0,
-                'line_total'   => $total,
-                'discount'     => 0,
+                'clean_name' => $parsed['clean_name'],
+                'brand' => $parsed['brand'],
+                'category' => 'Telefona',
+                'storage' => $parsed['storage'],
+                'ram' => $parsed['ram'],
+                'color' => $parsed['color'],
+                'quantity' => $qty,
+                'unit_cost' => $price,
+                'tax' => 0.0,
+                'line_total' => $total,
+                'discount' => 0,
                 'imei_numbers' => [$imei],
-                '_parsed'      => $parsed,
+                '_parsed' => $parsed,
             ];
         }
 
@@ -1443,7 +1476,7 @@ class PurchaseController extends Controller
 
             if (isset($grouped[$key])) {
                 // Shto në grupin ekzistues
-                $grouped[$key]['quantity']   += 1;
+                $grouped[$key]['quantity'] += 1;
                 $grouped[$key]['line_total'] += $item['unit_cost'];
                 $grouped[$key]['imei_numbers'][] = $item['imei_numbers'][0];
             } else {

@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;use App\Models\Product;
+namespace App\Http\Controllers;
+use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\Category;
 use App\Models\Brand;
@@ -54,15 +55,24 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        // Determine if warehouse_ids is required based on request type
+        $requireWarehouses = !$request->ajax();
+
         $rules = [
-            'warehouse_ids' => 'required|array|min:1',
-            'warehouse_ids.*' => 'exists:warehouses,id',
             'category_id' => 'required|exists:categories,id',
             'brand_id' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'currency_id' => 'required|exists:currencies,id',
         ];
+
+        if ($requireWarehouses) {
+            $rules['warehouse_ids'] = 'required|array|min:1';
+            $rules['warehouse_ids.*'] = 'exists:warehouses,id';
+        } else {
+            $rules['warehouse_ids'] = 'nullable|array';
+            $rules['warehouse_ids.*'] = 'exists:warehouses,id';
+        }
 
         $category = Category::find($request->category_id);
         if ($category && strtolower($category->name) === 'telefona') {
@@ -71,7 +81,7 @@ class ProductController extends Controller
             $rules['color'] = 'required|string|max:50';
         }
 
-        $validated = $request->validate($rules, [
+        $errorMessages = [
             'warehouse_ids.required' => 'Duhet të zgjedhësh të paktën një warehouse.',
             'warehouse_ids.min' => 'Duhet të zgjedhësh të paktën një warehouse.',
             'category_id.required' => 'Kategoria është e detyrueshme.',
@@ -82,7 +92,9 @@ class ProductController extends Controller
             'storage.required' => 'Storage është i detyrueshëm për telefonat.',
             'ram.required' => 'RAM është i detyrueshëm për telefonat.',
             'color.required' => 'Ngjyra është e detyrueshme për telefonat.',
-        ]);
+        ];
+
+        $validated = $request->validate($rules, $errorMessages);
 
         // Create product
         $product = Product::create([
@@ -97,11 +109,23 @@ class ProductController extends Controller
         ]);
 
         // Attach warehouses (quantity = 0 per default)
-        $warehouseData = [];
-        foreach ($validated['warehouse_ids'] as $warehouseId) {
-            $warehouseData[$warehouseId] = ['quantity' => 0];
+        if (!empty($validated['warehouse_ids'])) {
+            $warehouseData = [];
+            foreach ($validated['warehouse_ids'] as $warehouseId) {
+                $warehouseData[$warehouseId] = ['quantity' => 0];
+            }
+            $product->warehouses()->attach($warehouseData);
         }
-        $product->warehouses()->attach($warehouseData);
+
+        // If it's an AJAX request, return JSON
+        if ($request->ajax()) {
+            $product->load(['category', 'brand', 'currency']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Produkti u krijua me sukses!',
+                'product' => $product
+            ]);
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'Produkti u shtua me sukses!');

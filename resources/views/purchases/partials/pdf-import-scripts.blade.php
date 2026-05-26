@@ -100,16 +100,32 @@
                 method: 'POST',
                 body: fd
             })
-            .then(r => r.json())
-            .then(resp => {
+            .then(r => {
+                // Provoj të lexoj JSON, por ka fallback nëse dështon
+                const contentType = r.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return r.text().then(text => {
+                        throw new Error(`Përgjigje e papritur (${r.status}): ${text.substring(0, 200)}`);
+                    });
+                }
+                return r.json().then(json => ({ ok: r.ok, status: r.status, data: json }));
+            })
+            .then(result => {
                 document.getElementById('processingOverlay').classList.remove('active');
-                if (!resp.success) {
-                    showError(resp.message || 'Gabim i panjohur.');
+                
+                // Kontrollo status kodin
+                if (!result.ok || result.status >= 400) {
+                    showError(result.data?.message || `Gabim serveri (${result.status})`);
+                    return;
+                }
+                
+                if (!result.data.success) {
+                    showError(result.data.message || 'Gabim i panjohur.');
                     return;
                 }
 
-                _importedData = resp.data;
-                _importedData._partner = resp.partner;
+                _importedData = result.data.data;
+                _importedData._partner = result.data.partner;
 
                 console.log('[Import] Data:', JSON.stringify(_importedData, null, 2));
 
@@ -118,7 +134,8 @@
             })
             .catch(err => {
                 document.getElementById('processingOverlay').classList.remove('active');
-                showError('Lidhja dështoi: ' + (err.message || err));
+                console.error('[Import Error]', err);
+                showError('Gabim: ' + (err.message || 'Kontrolloni konsolën për detaje'));
             });
     }
 

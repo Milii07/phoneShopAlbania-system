@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth page transitions */
+html {
+    @apply scroll-smooth;
+}
+
+/* Better focus states for accessibility */
+a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+}
+
+button:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+}

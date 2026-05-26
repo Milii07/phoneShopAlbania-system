@@ -972,6 +972,7 @@ class PurchaseController extends Controller
                         'storage' => $storage ?: null,
                         'ram' => $ram ?: null,
                         'color' => $color ?: null,
+                        'price' => $item['unit_cost'] ?? 0,
                     ]);
                 }
 

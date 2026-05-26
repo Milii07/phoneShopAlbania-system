@@ -355,12 +355,12 @@
             <div class="col-md-2">
                 <label class="form-label small">Discount</label>
                 <input type="number" class="form-control form-control-sm discount-input"
-                    name="items[${idx}][discount]" value="0" step="0.01" min="0">
+                    name="items[${idx}][discount]" value="${fmt(item.discount || 0)}" step="0.01" min="0">
             </div>
             <div class="col-md-2">
                 <label class="form-label small">TVSH</label>
                 <input type="number" class="form-control form-control-sm tax-input"
-                    name="items[${idx}][tax]" value="${fmt(item.tax)}" step="0.01" min="0">
+                    name="items[${idx}][tax]" value="${fmt(item.tax || 0)}" step="0.01" min="0">
             </div>
             <div class="col-md-2">
                 <label class="form-label small">Total</label>

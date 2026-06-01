@@ -316,11 +316,11 @@
                                             </label>
                                             <textarea class="form-control form-control-sm imei-input" name="items[{{ $index }}][imei_numbers]"
                                                 rows="2" placeholder="Vendos IMEI të ndara me presje (15 shifra secili)..." required
-                                                value="{{ implode(', ', $item->imei_numbers) }}">{{ implode(', ', $item->imei_numbers) }}</textarea>
+                                                value="{{ is_array($item->imei_numbers) ? implode(', ', $item->imei_numbers) : $item->imei_numbers }}">{{ is_array($item->imei_numbers) ? implode(', ', $item->imei_numbers) : $item->imei_numbers }}</textarea>
                                             <div class="d-flex justify-content-between mt-1">
                                                 <small class="imei-count text-info">
                                                     IMEI të vendosur: <span
-                                                        class="current-count">{{ $item->imei_numbers ? count($item->imei_numbers) : 0 }}</span>
+                                                        class="current-count">{{ is_array($item->imei_numbers) ? count($item->imei_numbers) : 0 }}</span>
                                                     / Kërkohen:
                                                     <span class="required-count">1</span>
                                                 </small>

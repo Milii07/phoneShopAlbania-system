@@ -494,7 +494,10 @@
             if (product.ram) details += (details ? ' | ' : '') + product.ram;
             if (product.color) details += (details ? ' | ' : '') + product.color;
 
-            const needsImei = product.storage || product.ram || product.color;
+            // Check if product's category is "Telefona"
+            const needsImei = product.category && 
+                             product.category.name && 
+                             product.category.name.toLowerCase() === 'telefona';
 
             console.log(needsImei, product)
 
@@ -586,7 +589,7 @@
                                 <div class="col-md-12 imei-container mt-2">
                                     <label class="form-label small">
                                         IMEI <span class="text-danger">*</span> 
-                                        <small class="text-muted">(Vendos ${product.storage || 'telefon'} - Ndaj me presje, p.sh: 123456789012345, 987654321098765)</small>
+                                        <small class="text-muted">(Vendos IMEI - Ndaj me presje, p.sh: 123456789012345, 987654321098765)</small>
                                     </label>
                                     <textarea class="form-control form-control-sm imei-input" 
                                         name="items[${productIndex}][imei_numbers]" 

@@ -99,7 +99,8 @@ class PurchaseController extends Controller
 
             // Validate IMEI and calculate totals
             foreach ($request->items as $itemIndex => $item) {
-                $product = Product::find($item['product_id']);
+                $product = Product::with('category')->find($item['product_id']);
+                $isPhoneCategory = $product && $product->category && strtolower($product->category->name) === 'telefona';
 
                 $quantity = $item['quantity'];
                 $unitCost = $item['unit_cost'];
@@ -111,7 +112,18 @@ class PurchaseController extends Controller
                 $totalTax += $tax;
                 $totalDiscount += $discount;
 
+                // Check if IMEI is required for this product
+                if ($isPhoneCategory && empty($item['imei_numbers'])) {
+                    $errorMsg[] = "Produkti #" . ($itemIndex + 1) . " (" . $product->name . "): IMEI është i detyrueshëm për telefonat.";
+                    continue;
+                }
+
                 if (!empty($item['imei_numbers'])) {
+                    // If IMEI is provided but product is not a phone, skip validation
+                    if (!$isPhoneCategory) {
+                        continue;
+                    }
+
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
                     $imeiCount = count($imeiArray);
 
@@ -263,7 +275,7 @@ class PurchaseController extends Controller
 
     public function edit($id)
     {
-        $purchase = Purchase::with('items')->findOrFail($id);
+        $purchase = Purchase::with(['items.product.category'])->findOrFail($id);
         $partners = Partner::all();
         $warehouses = Warehouse::all();
         $currencies = Currency::all();
@@ -328,7 +340,21 @@ class PurchaseController extends Controller
             $errorMsg = [];
 
             foreach ($request->items as $itemIndex => $item) {
+                $product = Product::with('category')->find($item['product_id']);
+                $isPhoneCategory = $product && $product->category && strtolower($product->category->name) === 'telefona';
+
+                // Check if IMEI is required for this product
+                if ($isPhoneCategory && empty($item['imei_numbers'])) {
+                    $errorMsg[] = "Produkti #" . ($itemIndex + 1) . " (" . $product->name . "): IMEI është i detyrueshëm për telefonat.";
+                    continue;
+                }
+
                 if (!empty($item['imei_numbers'])) {
+                    // If IMEI is provided but product is not a phone, skip validation
+                    if (!$isPhoneCategory) {
+                        continue;
+                    }
+
                     $imeiArray = array_values(array_filter(array_map('trim', explode(',', $item['imei_numbers']))));
                     $imeiCount = count($imeiArray);
                     $quantity = $item['quantity'];

@@ -308,6 +308,7 @@
                                             <input type="text" class="form-control form-control-sm line-total"
                                                 value="{{ number_format($item->line_total, 2) }}" readonly>
                                         </div>
+                                        @if ($item->product && $item->product->category && strtolower($item->product->category->name) === 'telefona')
                                         <div class="col-md-12 imei-container mt-2">
                                             <label class="form-label small">
                                                 IMEI <span class="text-danger">*</span>
@@ -327,6 +328,7 @@
                                                 <small class="imei-validation text-muted"></small>
                                             </div>
                                         </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -697,7 +699,10 @@
             if (product.ram) details += (details ? ' | ' : '') + product.ram;
             if (product.color) details += (details ? ' | ' : '') + product.color;
 
-            const needsImei = product.storage || product.ram || product.color;
+            // Check if product's category is "Telefona"
+            const needsImei = product.category && 
+                             product.category.name && 
+                             product.category.name.toLowerCase() === 'telefona';
 
             console.log(needsImei, product.name, details);
             const html = `
@@ -772,25 +777,25 @@
                             value="0.00" 
                             readonly>
                     </div>
-                                    ${needsImei ? `
-                                                                                                                <div class="col-md-12 imei-container mt-2">
-                                                                                                                    <label class="form-label small">
-                                                                                                                        IMEI <span class="text-danger">*</span> 
-                                                                                                                        <small class="text-muted">(Vendos ${product.storage || 'telefon'} - Ndaj me presje, p.sh: 123456789012345, 987654321098765)</small>
-                                                                                                                    </label>
-                                                                                                                    <textarea class="form-control form-control-sm imei-input" 
-                                                                                                                        name="items[${productIndex}][imei_numbers]" 
-                                                                                                                        rows="2"
-                                                                                                                        placeholder="Vendos IMEI të ndara me presje (15 shifra secili)..."
-                                                                                                                        required></textarea>
-                                                                                                                    <div class="d-flex justify-content-between mt-1">
-                                                                                                                        <small class="imei-count text-info">
-                                                                                                                            IMEI të vendosur: <span class="current-count">0</span> / Kërkohen: <span class="required-count">1</span>
-                                                                                                                        </small>
-                                                                                                                        <small class="imei-validation text-muted"></small>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                                ` : ''}
+                    ${needsImei ? `
+                        <div class="col-md-12 imei-container mt-2">
+                            <label class="form-label small">
+                                IMEI <span class="text-danger">*</span> 
+                                <small class="text-muted">(Vendos IMEI - Ndaj me presje, p.sh: 123456789012345, 987654321098765)</small>
+                            </label>
+                            <textarea class="form-control form-control-sm imei-input" 
+                                name="items[${productIndex}][imei_numbers]" 
+                                rows="2"
+                                placeholder="Vendos IMEI të ndara me presje (15 shifra secili)..."
+                                required></textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="imei-count text-info">
+                                    IMEI të vendosur: <span class="current-count">0</span> / Kërkohen: <span class="required-count">1</span>
+                                </small>
+                                <small class="imei-validation text-muted"></small>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;

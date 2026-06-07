@@ -143,6 +143,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/search-products',             [SaleController::class, 'searchProducts'])->name('sales.search.products');
         Route::post('/update-payment-status/{id}', [SaleController::class, 'updatePaymentStatus']);
         Route::get('/sales/daily-report',          [SaleController::class, 'dailyReport'])->name('sales.daily-report');
+        Route::get('/product-warehouses/{product}', [SaleController::class, 'getProductWarehouses'])->name('sales.product-warehouses');
+        Route::post('/transfer-product-warehouse',  [SaleController::class, 'transferProductWarehouse'])->name('sales.transfer-product-warehouse');
     });
     Route::get('/sales-api/search-by-imei', [SaleController::class, 'searchByImei'])->name('sales.search-by-imei');
 

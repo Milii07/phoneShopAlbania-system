@@ -925,4 +925,45 @@ class SaleController extends Controller
             'dateTo'
         ));
     }
+
+    public function getProductWarehouses(Product $product)
+    {
+        $warehouses = $product->warehouses()
+            ->select('warehouses.id', 'warehouses.name')
+            ->withPivot('quantity')
+            ->get()
+            ->map(fn($w) => [
+                'id'       => $w->id,
+                'name'     => $w->name,
+                'quantity' => $w->pivot->quantity,
+            ]);
+
+        return response()->json([
+            'product'    => ['id' => $product->id, 'name' => $product->name],
+            'warehouses' => $warehouses,
+        ]);
+    }
+
+    public function transferProductWarehouse(Request $request)
+    {
+        $request->validate([
+            'product_id'   => 'required|exists:products,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
+        ]);
+
+        $product   = Product::with('warehouses')->findOrFail($request->product_id);
+        $warehouse = Warehouse::findOrFail($request->warehouse_id);
+
+        $totalQty = $product->warehouses()->sum('product_warehouse.quantity');
+
+        DB::transaction(function () use ($product, $request, $totalQty) {
+            $product->warehouses()->detach();
+            $product->warehouses()->attach($request->warehouse_id, ['quantity' => $totalQty]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "Produkti \"{$product->name}\" u transferua me sukses në dyqanin \"{$warehouse->name}\".",
+        ]);
+    }
 }

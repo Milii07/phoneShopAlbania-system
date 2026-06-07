@@ -224,42 +224,6 @@
         text-transform: uppercase;
     }
 
-    @media print {
-        body {
-            overflow: hidden !important;
-        }
-
-        #warrantyPrintModal {
-            display: block !important;
-            visibility: visible !important;
-            position: static !important;
-            width: auto !important;
-            height: auto !important;
-        }
-
-        #warrantyPrintModal,
-        #printArea,
-        #printArea * {
-            overflow: visible !important;
-        }
-
-        #printArea {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 14mm 16mm 16mm;
-            margin: 0;
-        }
-
-        .modal,
-        .btn-print,
-        .close {
-            display: none !important;
-        }
-    }
-
     /* ── Product items ── */
     .product-item {
         background: #f8f9fa;
@@ -1015,11 +979,58 @@
         </div><!-- /printArea -->
 
         <div style="text-align:center; margin-top:15px; padding-bottom:15px; display:flex; gap:12px; justify-content:center;">
-            <button onclick="window.print()" class="btn-print"><i class="ri-printer-line me-1"></i> Print</button>
+            <button onclick="printWarrantyCertificate()" class="btn-print"><i class="ri-printer-line me-1"></i> Print</button>
             <button onclick="generatePDF()" class="btn-print">Download PDF</button>
         </div>
     </div>
 </div>
+{{-- ════════════════════════════════════════════════════════════
+     TRANSFER TO WAREHOUSE MODAL
+════════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="transferWarehouseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold">
+                    <i class="ri-arrow-left-right-line me-2"></i> Transfer Product to Warehouse
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">
+                    <i class="ri-information-line me-1"></i>
+                    Duke transferuar: <strong id="transferProductName">—</strong>
+                </p>
+                {{-- Warehouse List --}}
+                <div>
+                    <label class="form-label fw-semibold">Zgjidh Dyqanin e Destinacionit <span class="text-danger">*</span></label>
+                    <div id="transferWarehouseList" class="row g-2">
+                        @foreach($warehouses as $wh)
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-center gap-2 border rounded p-3 transfer-wh-label"
+                                   style="cursor:pointer; transition: background .15s;">
+                                <input type="checkbox"
+                                       class="transfer-wh-checkbox form-check-input flex-shrink-0"
+                                       value="{{ $wh->id }}"
+                                       data-name="{{ $wh->name }}"
+                                       style="width:20px;height:20px;">
+                                <span class="fw-medium">{{ $wh->name }}</span>
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Anulo</button>
+                <button type="button" class="btn btn-warning px-4" id="confirmTransferBtn" onclick="confirmTransfer()">
+                    <i class="ri-check-line me-1"></i> Konfirmo Transferin
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1292,6 +1303,53 @@
         $('body').css('overflow', 'auto');
     }
 
+    function printWarrantyCertificate() {
+        const content = document.getElementById('printArea').innerHTML;
+        const win = window.open('', '_blank', 'width=900,height=1200');
+        win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Certifikatë Garancie</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.45;color:#000;background:#fff}
+.a4-paper{width:210mm;min-height:297mm;padding:14mm 16mm 16mm;margin:auto;background:#fff;color:#000;font-family:Arial,sans-serif;font-size:10pt;line-height:1.45}
+.cert-shop-name{text-align:center;font-family:'Arial Black',Arial,sans-serif;font-size:18pt;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 2px}
+.cert-title{text-align:center;font-size:13pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 2px}
+.cert-number{text-align:center;font-size:9.5pt;color:#333;margin:0 0 14px}
+.cert-section-title{font-size:9.5pt;font-weight:700;text-transform:uppercase;border:1px solid #000;border-bottom:none;padding:5px 8px;background:#fff;margin-top:14px;letter-spacing:.5px}
+.cert-table{width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:0}
+.cert-table td{border:1px solid #000;padding:6px 10px;font-size:9.5pt;vertical-align:middle}
+.cert-table td:first-child{font-weight:700;width:38%;background:#fff}
+.cert-table tr.highlight-row td{background:#1a1a1a;color:#fff;font-weight:700}
+.cert-box{border:1px solid #000;padding:8px 12px;margin-top:14px}
+.cert-box-title{font-size:9.5pt;font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.cert-box ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+.cert-box ul li{font-size:9pt;line-height:1.4}
+.cert-box ul li::before{content:"- "}
+.cert-conditions{border:1px solid #000;padding:8px 12px;margin-top:14px}
+.cert-conditions-title{font-size:9.5pt;font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.cert-conditions ul{margin:0;padding:0;list-style:none}
+.cert-conditions ul li{font-size:9pt;line-height:1.5}
+.cert-conditions ul li::before{content:"- "}
+.cert-signatures{display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;gap:16px}
+.cert-sig-block{flex:1;text-align:center}
+.cert-sig-block .sig-label{font-size:9pt;font-weight:700;text-transform:uppercase;margin-bottom:28px;letter-spacing:1px}
+.cert-sig-block .sig-line{border-top:1px dashed #555;padding-top:4px;font-size:8pt;color:#555}
+.cert-sig-stamp{flex:0 0 120px;text-align:center}
+.cert-sig-stamp .stamp-box{border:1px dashed #555;height:70px;display:flex;align-items:center;justify-content:center;font-size:9pt;color:#555;margin-bottom:4px}
+.cert-sig-stamp .stamp-label{font-size:8.5pt;font-weight:700;text-transform:uppercase}
+@media print{body{margin:0}@page{margin:0;size:A4 portrait}}
+</style>
+</head>
+<body>${content}</body>
+</html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => { win.print(); win.close(); }, 300);
+    }
+
     async function generatePDF() {
         const printArea = document.getElementById('printArea');
         try {
@@ -1434,6 +1492,9 @@
         <div>
             <button type="button" class="add-warranty-btn" onclick="openWarrantyModal(${productIndex})">
                 <i class="ri-shield-check-line"></i> Garanci
+            </button>
+            <button type="button" class="btn btn-sm btn-warning ms-2" onclick="openTransferModal(${product.id}, '${product.name}')">
+                <i class="ri-arrow-left-right-line"></i> Transfer
             </button>
             <button type="button" class="btn btn-sm btn-danger remove-item ms-2">
                 <i class="ri-delete-bin-line"></i>
@@ -1594,6 +1655,67 @@
         if (event.target.id === 'warrantyModal') closeWarrantyModal();
         if (event.target.id === 'warrantyPrintModal') closeWarrantyPrintModal();
     });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  TRANSFER TO WAREHOUSE
+    // ═══════════════════════════════════════════════════════════════════════
+    let selectedTransferProductId = null;
+    let selectedTransferWarehouseId = null;
+
+    function openTransferModal(productId, productName) {
+        selectedTransferProductId = productId;
+        selectedTransferWarehouseId = null;
+        $('#transferProductName').text(productName || '—');
+        $('.transfer-wh-checkbox').prop('checked', false);
+        $('.transfer-wh-label').css('background', '');
+        const modal = new bootstrap.Modal(document.getElementById('transferWarehouseModal'));
+        modal.show();
+    }
+
+    // Enforce single-select on warehouse checkboxes
+    $(document).on('change', '.transfer-wh-checkbox', function () {
+        const checked = $(this).is(':checked');
+        $('.transfer-wh-checkbox').prop('checked', false);
+        $('.transfer-wh-label').css('background', '');
+        if (checked) {
+            $(this).prop('checked', true);
+            $(this).closest('.transfer-wh-label').css('background', '#fff3cd');
+            selectedTransferWarehouseId = $(this).val();
+        } else {
+            selectedTransferWarehouseId = null;
+        }
+    });
+
+    function confirmTransfer() {
+        if (!selectedTransferWarehouseId) {
+            Swal.fire({ icon: 'warning', title: 'Dyqan mungon', text: 'Ju lutem zgjidhni dyqanin e destinacionit.' });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Duke transferuar...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        $.ajax({
+            url: '{{ route("sales.transfer-product-warehouse") }}',
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            data: {
+                product_id:   selectedTransferProductId,
+                warehouse_id: selectedTransferWarehouseId,
+            },
+            success: function (res) {
+                bootstrap.Modal.getInstance(document.getElementById('transferWarehouseModal')).hide();
+                Swal.fire({ icon: 'success', title: 'Sukses!', text: res.message, timer: 2500, showConfirmButton: false });
+            },
+            error: function (xhr) {
+                const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Gabim gjatë transferimit.';
+                Swal.fire({ icon: 'error', title: 'Gabim!', text: msg });
+            }
+        });
+    }
 
     // ─── Form submit ───────────────────────────────────────────────────────
     $('#saleForm').on('submit', function(e) {

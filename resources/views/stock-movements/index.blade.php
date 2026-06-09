@@ -75,14 +75,12 @@
                 <div class="card-header d-flex align-items-center">
                     <h5 class="card-title mb-0 flex-grow-1">Lista e Lëvizjeve</h5>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('stock-movements.export.pdf') }}@if (request()->query()) ?{{ http_build_query(request()->query()) }} @endif"
-                            class="btn btn-outline-primary btn-sm ajax-export" data-type="pdf"
-                            data-url="{{ route('stock-movements.export.pdf') }}@if (request()->query()) ?{{ http_build_query(request()->query()) }} @endif">
+                        <a href="{{ route('stock-movements.export.pdf') }}{{ request()->query() ? '?' . http_build_query(request()->query()) : '' }}"
+                            class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer">
                             <i class="ri-file-paper-line align-middle me-1"></i> Export PDF
                         </a>
-                        <a href="{{ route('stock-movements.export.xlsx') }}@if (request()->query()) ?{{ http_build_query(request()->query()) }} @endif"
-                            class="btn btn-outline-secondary btn-sm ajax-export" data-type="xlsx"
-                            data-url="{{ route('stock-movements.export.xlsx') }}@if (request()->query()) ?{{ http_build_query(request()->query()) }} @endif">
+                        <a href="{{ route('stock-movements.export.xlsx') }}{{ request()->query() ? '?' . http_build_query(request()->query()) : '' }}"
+                            class="btn btn-outline-secondary btn-sm">
                             <i class="ri-file-excel-2-line align-middle me-1"></i> Export XLSX
                         </a>
                     </div>

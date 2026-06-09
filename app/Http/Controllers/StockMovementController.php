@@ -14,6 +14,7 @@ use Dompdf\Dompdf;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Illuminate\Support\Facades\Response;
 
 class StockMovementController extends Controller
 {
@@ -313,16 +314,33 @@ class StockMovementController extends Controller
             $prod->unsold_imeis = array_values(array_diff($purchasedList, $soldList));
         }
 
+        // Find maximum number of IMEIs to create dynamic columns
+        $maxImeiCount = 0;
+        foreach ($products as $product) {
+            $count = count($product->unsold_imeis ?? []);
+            if ($count > $maxImeiCount) {
+                $maxImeiCount = $count;
+            }
+        }
+
         if (class_exists(Spreadsheet::class)) {
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            $headers = ['Product', 'Category', 'Brand', 'Unit Price', 'Total Stock', 'Unsold IMEIs'];
+            
+            // Create headers with dynamic IMEI columns
+            $headers = ['Product', 'Category', 'Brand', 'Unit Price', 'Total Stock'];
+            for ($i = 1; $i <= $maxImeiCount; $i++) {
+                $headers[] = "IMEI $i";
+            }
+            
             $col = 1;
             foreach ($headers as $h) {
                 $cell = Coordinate::stringFromColumnIndex($col) . '1';
                 $sheet->setCellValue($cell, $h);
                 $col++;
             }
+            
+            // Fill data
             $row = 2;
             foreach ($products as $p) {
                 $sheet->setCellValue(Coordinate::stringFromColumnIndex(1) . $row, $p->name);
@@ -332,44 +350,91 @@ class StockMovementController extends Controller
                 $sheet->setCellValue(Coordinate::stringFromColumnIndex(5) . $row, $p->warehouses->sum(function ($w) {
                     return isset($w->pivot->quantity) ? (int) $w->pivot->quantity : 0;
                 }));
-                $sheet->setCellValue(Coordinate::stringFromColumnIndex(6) . $row, implode(', ', $p->unsold_imeis ?? []));
+                
+                // Add IMEIs in separate columns
+                $imeiList = $p->unsold_imeis ?? [];
+                for ($i = 0; $i < $maxImeiCount; $i++) {
+                    $imei = $imeiList[$i] ?? '';
+                    $sheet->setCellValue(Coordinate::stringFromColumnIndex(6 + $i) . $row, $imei);
+                }
+                
                 $row++;
             }
 
-            $writer = new XlsxWriter($spreadsheet);
             $filename = 'stock_' . Str::slug(now()->toDateString());
             if ($page > 1) {
                 $filename .= '_page_' . $page;
             }
             $filename .= '.xlsx';
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
-            $writer->save('php://output');
-            exit;
+
+            // Use Response stream to download file
+            $writer = new XlsxWriter($spreadsheet);
+            
+            return Response::stream(function() use ($writer) {
+                $writer->save('php://output');
+            }, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]);
         }
 
+        // Fallback to CSV if PhpSpreadsheet is not available
         $filename = 'stock_' . Str::slug(now()->toDateString());
         if ($page > 1) {
             $filename .= '_page_' . $page;
         }
         $filename .= '.csv';
-        $handle = fopen('php://output', 'w');
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        fputcsv($handle, ['Product', 'Category', 'Brand', 'Unit Price', 'Total Stock', 'Unsold IMEIs']);
-        foreach ($products as $p) {
-            fputcsv($handle, [
-                $p->name,
-                $p->category?->name ?? '',
-                $p->brand?->name ?? '',
-                $p->unit_price ?? $p->price ?? 0,
-                $p->warehouses->sum(function ($w) {
-                    return isset($w->pivot->quantity) ? (int) $w->pivot->quantity : 0;
-                }),
-                implode('|', $p->unsold_imeis ?? []),
-            ]);
-        }
-        fclose($handle);
-        exit;
+        
+        return Response::stream(function() use ($products) {
+            $handle = fopen('php://output', 'w');
+            
+            // Find max IMEI count for CSV headers
+            $maxImeiCount = 0;
+            foreach ($products as $product) {
+                $count = count($product->unsold_imeis ?? []);
+                if ($count > $maxImeiCount) {
+                    $maxImeiCount = $count;
+                }
+            }
+            
+            // Write headers
+            $headers = ['Product', 'Category', 'Brand', 'Unit Price', 'Total Stock'];
+            for ($i = 1; $i <= $maxImeiCount; $i++) {
+                $headers[] = "IMEI $i";
+            }
+            fputcsv($handle, $headers);
+            
+            // Write data rows
+            foreach ($products as $p) {
+                $row = [
+                    $p->name,
+                    $p->category?->name ?? '',
+                    $p->brand?->name ?? '',
+                    $p->unit_price ?? $p->price ?? 0,
+                    $p->warehouses->sum(function ($w) {
+                        return isset($w->pivot->quantity) ? (int) $w->pivot->quantity : 0;
+                    })
+                ];
+                
+                // Add IMEIs in separate columns
+                $imeiList = $p->unsold_imeis ?? [];
+                for ($i = 0; $i < $maxImeiCount; $i++) {
+                    $row[] = $imeiList[$i] ?? '';
+                }
+                
+                fputcsv($handle, $row);
+            }
+            
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
     }
 }

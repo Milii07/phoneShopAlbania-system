@@ -18,6 +18,7 @@ use App\Http\Controllers\DebtController;
 use App\Http\Controllers\OnlineOrderController;
 use App\Http\Controllers\SellerBonusController;
 use App\Http\Controllers\PermissionManagerController;
+use App\Http\Controllers\CashRegisterController;
 
 use App\Http\Controllers\ProductHistoryController;
 
@@ -167,6 +168,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stock-movements/export/pdf',  [StockMovementController::class, 'exportPdf'])->name('stock-movements.export.pdf');
         Route::get('stock-movements/export/xlsx', [StockMovementController::class, 'exportXlsx'])->name('stock-movements.export.xlsx');
         Route::get('stock-movements/report',      [StockMovementController::class, 'report'])->name('stock-movements.report');
+    });
+
+    // ── Cash Register ─────────────────────────────────────────────────────────
+    Route::middleware('role:admin')->group(function () {
+        Route::get('cash-register',                  [CashRegisterController::class, 'index'])->name('cash-register.index');
+        Route::get('cash-register/create',           [CashRegisterController::class, 'create'])->name('cash-register.create');
+        Route::post('cash-register',                 [CashRegisterController::class, 'store'])->name('cash-register.store');
+        Route::get('cash-register/today',            [CashRegisterController::class, 'today'])->name('cash-register.today');
+        Route::get('cash-register/{id}',             [CashRegisterController::class, 'show'])->name('cash-register.show');
+        Route::get('cash-register/{id}/edit',        [CashRegisterController::class, 'edit'])->name('cash-register.edit');
+        Route::put('cash-register/{id}',             [CashRegisterController::class, 'update'])->name('cash-register.update');
+        Route::post('cash-register/{id}/adjustment', [CashRegisterController::class, 'addAdjustment'])->name('cash-register.adjustment');
+        Route::post('cash-register/{id}/close',      [CashRegisterController::class, 'close'])->name('cash-register.close');
+        Route::post('cash-register/{id}/balance',    [CashRegisterController::class, 'balance'])->name('cash-register.balance');
+        Route::get('cash-register/{id}/export-pdf',  [CashRegisterController::class, 'exportPdf'])->name('cash-register.export-pdf');
     });
 
     // ── Debts ─────────────────────────────────────────────────────────────────

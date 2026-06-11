@@ -951,16 +951,51 @@ class SaleController extends Controller
         $request->validate([
             'product_id'   => 'required|exists:products,id',
             'warehouse_id' => 'required|exists:warehouses,id',
+            'custom_qty'     => 'nullable|integer|min:1',
+            'from_warehouse_id' => 'required|exists:warehouses,id',
         ]);
 
+
+        if($request->warehouse_id == $request->from_warehouse_id) {
+            return response()->json(['success' => false, 'message' => 'Magazina e destinacionit dhe magazina e origjinës nuk mund të jenë të njëjta'], 422);
+        }
         $product   = Product::with('warehouses')->findOrFail($request->product_id);
         $warehouse = Warehouse::findOrFail($request->warehouse_id);
 
-        $totalQty = $product->warehouses()->sum('product_warehouse.quantity');
+        $totalQty = $product->warehouses()->where('warehouse_id', $request->from_warehouse_id)->sum('product_warehouse.quantity');
 
-        DB::transaction(function () use ($product, $request, $totalQty) {
-            $product->warehouses()->detach();
-            $product->warehouses()->attach($request->warehouse_id, ['quantity' => $totalQty]);
+        $customQty = $request->custom_qty;
+        if($customQty !== null) {
+            $customQty = (int) $customQty;
+            if($customQty <= 0) {
+                return response()->json(['success' => false, 'message' => 'Sasia e personalizuar duhet të jetë më e madhe se 0'], 422);
+            }
+            if($customQty > $totalQty) {
+                return response()->json(['success' => false, 'message' => 'Sasia e personalizuar nuk mund të jetë më e madhe se sasia totale në magazina'], 422);
+            }
+            $transferQty = $customQty;
+        } else {
+            $transferQty = $product->warehouses()->where('warehouse_id', $request->from_warehouse_id)->sum('product_warehouse.quantity');
+        }
+
+        $leftQty = $totalQty - $transferQty;
+
+        DB::transaction(function () use ($product, $request, $transferQty, $leftQty) {
+ 
+        DB::table('product_warehouse')->updateOrInsert(
+                [
+                    'product_id' => $product->id,
+                    'warehouse_id' => $request->warehouse_id,
+                ],
+                [
+                    'quantity' => $transferQty,
+                    'updated_at' => now(),
+                ]
+            );
+            DB::table('product_warehouse')
+                ->where('product_id', $product->id)
+                ->where('warehouse_id',  $request->from_warehouse_id)
+                ->update(['quantity' => $leftQty,'updated_at' => now()]);
         });
 
         return response()->json([

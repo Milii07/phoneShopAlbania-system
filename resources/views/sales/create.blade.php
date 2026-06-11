@@ -1513,7 +1513,7 @@ body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.45;color:#000;bac
         <div class="col-md-3">
             <label class="form-label small">Qty *</label>
             <input type="number" class="form-control form-control-sm quantity-input"
-                   name="items[${productIndex}][quantity]" value="1" min="1" max="${product.quantity}" required>
+                   name="items[${productIndex}][quantity]" id="items_${product.id}_quantity" value="1" min="1" max="${product.quantity}" required>
         </div>
         <div class="col-md-3">
             <label class="form-label small">Unit Type</label>
@@ -1705,6 +1705,8 @@ body{font-family:Arial,sans-serif;font-size:10pt;line-height:1.45;color:#000;bac
             data: {
                 product_id:   selectedTransferProductId,
                 warehouse_id: selectedTransferWarehouseId,
+                from_warehouse_id: $('#warehouse_id').val(),
+                custom_qty: $('#items_' + selectedTransferProductId + '_quantity').val() || 1
             },
             success: function (res) {
                 bootstrap.Modal.getInstance(document.getElementById('transferWarehouseModal')).hide();

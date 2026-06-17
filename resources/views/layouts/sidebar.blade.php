@@ -167,6 +167,15 @@
                 </li>
                 @endrole
 
+                {{-- Arka --}}
+                @role('admin')
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ Request::is('cash-register*') ? 'active' : '' }}" href="{{ route('cash-register.create') }}">
+                        <i class="ri-safe-2-line"></i> <span data-key="t-apps">Arka</span>
+                    </a>
+                </li>
+                @endrole
+
                 {{-- Porositë Online --}}
                 @can('view orders')
                 <li class="nav-item">

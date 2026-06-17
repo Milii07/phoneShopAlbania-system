@@ -179,6 +179,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('cash-register/{id}',             [CashRegisterController::class, 'show'])->name('cash-register.show');
         Route::get('cash-register/{id}/edit',        [CashRegisterController::class, 'edit'])->name('cash-register.edit');
         Route::put('cash-register/{id}',             [CashRegisterController::class, 'update'])->name('cash-register.update');
+        Route::post('cash-register/{id}/income',      [CashRegisterController::class, 'addIncome'])->name('cash-register.income');
+        Route::post('cash-register/{id}/expense',     [CashRegisterController::class, 'addExpense'])->name('cash-register.expense');
+        Route::post('cash-register/{id}/bulk-add',    [CashRegisterController::class, 'bulkAdd'])->name('cash-register.bulk-add');
+        Route::post('cash-register/{id}/bulk-remove', [CashRegisterController::class, 'bulkRemove'])->name('cash-register.bulk-remove');
         Route::post('cash-register/{id}/adjustment', [CashRegisterController::class, 'addAdjustment'])->name('cash-register.adjustment');
         Route::post('cash-register/{id}/close',      [CashRegisterController::class, 'close'])->name('cash-register.close');
         Route::post('cash-register/{id}/balance',    [CashRegisterController::class, 'balance'])->name('cash-register.balance');

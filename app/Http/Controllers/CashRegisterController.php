@@ -103,13 +103,16 @@ class CashRegisterController extends Controller
      */
     public function show($id)
     {
-        $register = DailyCashRegister::with([
+        $register = DailyCashRegister::findOrFail($id);
+        $register->ensureBalances();
+
+        $register->load([
             'employee',
             'balances.currency',
             'transactions' => function ($q) {
-                $q->orderBy('created_at', 'desc');
-            }
-        ])->findOrFail($id);
+                $q->with(['currency', 'createdBy'])->orderBy('created_at', 'desc');
+            },
+        ]);
 
         $currencies = Currency::orderBy('code')->get();
 
@@ -147,6 +150,82 @@ class CashRegisterController extends Controller
 
         return redirect()->route('cash-register.show', $register)
             ->with('success', 'Arka u përditësua me sukses');
+    }
+
+    /**
+     * Add income (payment received) to cash register
+     */
+    public function addIncome(Request $request, $id)
+    {
+        $register = DailyCashRegister::findOrFail($id);
+
+        $validated = $request->validate([
+            'currency_id'  => 'required|exists:currencies,id',
+            'amount'       => 'required|numeric|min:0.01',
+            'description'  => 'required|string|max:500',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $currency = Currency::findOrFail($validated['currency_id']);
+            $register->addTransaction(
+                $currency,
+                'income',
+                $validated['amount'],
+                $validated['description'],
+                'manual',
+                null,
+                auth()->id()
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Pagesa u shtua me sukses');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding income: ' . $e->getMessage());
+
+            return back()->with('error', 'Gabim gjatë shtimit të pagesës');
+        }
+    }
+
+    /**
+     * Add expense (bill paid) to cash register
+     */
+    public function addExpense(Request $request, $id)
+    {
+        $register = DailyCashRegister::findOrFail($id);
+
+        $validated = $request->validate([
+            'currency_id'  => 'required|exists:currencies,id',
+            'amount'       => 'required|numeric|min:0.01',
+            'description'  => 'required|string|max:500',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $currency = Currency::findOrFail($validated['currency_id']);
+            $register->addTransaction(
+                $currency,
+                'expense',
+                $validated['amount'],
+                $validated['description'],
+                'manual',
+                null,
+                auth()->id()
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Shpenzimi u regjistrua me sukses');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding expense: ' . $e->getMessage());
+
+            return back()->with('error', 'Gabim gjatë regjistrimit të shpenzimit');
+        }
     }
 
     /**
@@ -272,12 +351,88 @@ class CashRegisterController extends Controller
     }
 
     /**
-     * Get today's cash register or create if doesn't exist
+     * Get today's cash register (or create it), then show it
      */
     public function today()
     {
         $register = DailyCashRegister::todayOrCreate();
         return redirect()->route('cash-register.show', $register);
+    }
+
+    /**
+     * Add money to multiple currencies at once
+     */
+    public function bulkAdd(Request $request, $id)
+    {
+        $register = DailyCashRegister::findOrFail($id);
+
+        $validated = $request->validate([
+            'description' => 'required|string|max:500',
+            'amounts'     => 'required|array',
+            'amounts.*'   => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $added = false;
+            foreach ($validated['amounts'] as $currencyId => $amount) {
+                if ($amount > 0) {
+                    $currency = Currency::findOrFail($currencyId);
+                    $register->addTransaction($currency, 'income', $amount, $validated['description'], 'manual', null, auth()->id());
+                    $added = true;
+                }
+            }
+
+            if (!$added) {
+                return back()->with('error', 'Vendos të paktën një shumë pozitive');
+            }
+
+            DB::commit();
+            return back()->with('success', 'Paratë u shtuan me sukses në arkë');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in bulkAdd: ' . $e->getMessage());
+            return back()->with('error', 'Gabim gjatë shtimit të parave');
+        }
+    }
+
+    /**
+     * Remove money from multiple currencies at once
+     */
+    public function bulkRemove(Request $request, $id)
+    {
+        $register = DailyCashRegister::findOrFail($id);
+
+        $validated = $request->validate([
+            'description' => 'required|string|max:500',
+            'amounts'     => 'required|array',
+            'amounts.*'   => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $removed = false;
+            foreach ($validated['amounts'] as $currencyId => $amount) {
+                if ($amount > 0) {
+                    $currency = Currency::findOrFail($currencyId);
+                    $register->addTransaction($currency, 'expense', $amount, $validated['description'], 'manual', null, auth()->id());
+                    $removed = true;
+                }
+            }
+
+            if (!$removed) {
+                return back()->with('error', 'Vendos të paktën një shumë pozitive');
+            }
+
+            DB::commit();
+            return back()->with('success', 'Paratë u hoqën me sukses nga arka');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in bulkRemove: ' . $e->getMessage());
+            return back()->with('error', 'Gabim gjatë heqjes së parave');
+        }
     }
 
     /**

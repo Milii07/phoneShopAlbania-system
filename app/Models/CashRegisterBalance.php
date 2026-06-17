@@ -14,6 +14,7 @@ class CashRegisterBalance extends Model
         'opening_balance',
         'closing_balance',
         'sales_total',
+        'expenses_total',
         'adjustments_total',
     ];
 
@@ -21,6 +22,7 @@ class CashRegisterBalance extends Model
         'opening_balance' => 'decimal:2',
         'closing_balance' => 'decimal:2',
         'sales_total' => 'decimal:2',
+        'expenses_total' => 'decimal:2',
         'adjustments_total' => 'decimal:2',
     ];
 

@@ -17,6 +17,7 @@ class DailyCashRegister extends Model
         'total_opening',
         'total_closing',
         'total_transactions',
+        'total_expenses',
         'total_adjustments',
     ];
 
@@ -25,6 +26,7 @@ class DailyCashRegister extends Model
         'total_opening' => 'decimal:2',
         'total_closing' => 'decimal:2',
         'total_transactions' => 'decimal:2',
+        'total_expenses' => 'decimal:2',
         'total_adjustments' => 'decimal:2',
     ];
 
@@ -61,15 +63,39 @@ class DailyCashRegister extends Model
     }
 
     /**
-     * Create or get today's cash register
+     * Create or get today's cash register, with balances for every currency
      */
     public static function todayOrCreate()
     {
-        return static::firstOrCreate([
+        $register = static::firstOrCreate([
             'register_date' => Carbon::today(),
         ], [
             'status' => 'open',
         ]);
+
+        $register->ensureBalances();
+
+        return $register;
+    }
+
+    /**
+     * Ensure a balance row exists for every active currency
+     */
+    public function ensureBalances(): void
+    {
+        $currencies = Currency::all();
+        foreach ($currencies as $currency) {
+            $this->balances()->firstOrCreate(
+                ['currency_id' => $currency->id],
+                [
+                    'opening_balance'  => 0,
+                    'closing_balance'  => 0,
+                    'sales_total'      => 0,
+                    'expenses_total'   => 0,
+                    'adjustments_total'=> 0,
+                ]
+            );
+        }
     }
 
     /**
@@ -142,6 +168,7 @@ class DailyCashRegister extends Model
         $totalAdjustment = $transactions->where('type', 'adjustment')->sum('amount');
 
         $balance->sales_total = $totalIncome;
+        $balance->expenses_total = $totalExpense;
         $balance->adjustments_total = $totalAdjustment;
         $balance->closing_balance = $balance->opening_balance + $totalIncome - $totalExpense + $totalAdjustment;
         $balance->save();
@@ -158,6 +185,7 @@ class DailyCashRegister extends Model
         $this->total_opening = $this->balances()->sum('opening_balance');
         $this->total_closing = $this->balances()->sum('closing_balance');
         $this->total_transactions = $this->balances()->sum('sales_total');
+        $this->total_expenses = $this->balances()->sum('expenses_total');
         $this->total_adjustments = $this->balances()->sum('adjustments_total');
         $this->save();
     }

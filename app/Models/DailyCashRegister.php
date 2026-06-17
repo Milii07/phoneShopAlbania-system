@@ -12,6 +12,7 @@ class DailyCashRegister extends Model
     protected $fillable = [
         'register_date',
         'employee_id',
+        'seller_id',
         'notes',
         'status',
         'total_opening',
@@ -36,6 +37,14 @@ class DailyCashRegister extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'employee_id');
+    }
+
+    /**
+     * Get the seller assigned to this register
+     */
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Seller::class, 'seller_id');
     }
 
     /**

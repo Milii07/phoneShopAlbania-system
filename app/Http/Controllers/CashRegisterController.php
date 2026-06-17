@@ -6,6 +6,7 @@ use App\Models\DailyCashRegister;
 use App\Models\CashTransaction;
 use App\Models\Currency;
 use App\Models\User;
+use App\Models\Seller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -44,9 +45,9 @@ class CashRegisterController extends Controller
     public function create()
     {
         $currencies = Currency::orderBy('code')->get();
-        $employees = User::where('role', 'user')->orWhere('role', 'cashier')->orderBy('name')->get();
+        $sellers    = Seller::orderBy('name')->get();
 
-        return view('cash-register.create', compact('currencies', 'employees'));
+        return view('cash-register.create', compact('currencies', 'sellers'));
     }
 
     /**
@@ -55,9 +56,9 @@ class CashRegisterController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'register_date' => 'required|date|unique:daily_cash_registers',
-            'employee_id' => 'nullable|exists:users,id',
-            'notes' => 'nullable|string',
+            'register_date'    => 'required|date|unique:daily_cash_registers',
+            'seller_id'        => 'nullable|exists:sellers,id',
+            'notes'            => 'nullable|string',
             'initial_balances' => 'nullable|array',
             'initial_balances.*' => 'nullable|numeric|min:0',
         ]);
@@ -67,9 +68,9 @@ class CashRegisterController extends Controller
 
             $register = DailyCashRegister::create([
                 'register_date' => $validated['register_date'],
-                'employee_id' => $validated['employee_id'] ?? auth()->id(),
-                'notes' => $validated['notes'],
-                'status' => 'open',
+                'seller_id'     => $validated['seller_id'] ?? null,
+                'notes'         => $validated['notes'] ?? null,
+                'status'        => 'open',
             ]);
 
             // Create balances for each currency with opening amounts
@@ -108,6 +109,7 @@ class CashRegisterController extends Controller
 
         $register->load([
             'employee',
+            'seller',
             'balances.currency',
             'transactions' => function ($q) {
                 $q->with(['currency', 'createdBy'])->orderBy('created_at', 'desc');

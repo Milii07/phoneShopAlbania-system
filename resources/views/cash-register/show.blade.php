@@ -17,6 +17,9 @@
             @else
                 <span class="badge bg-primary">E Balancuar</span>
             @endif
+            @if($register->seller)
+                &nbsp;·&nbsp; <i class="ri-user-line"></i> {{ $register->seller->name }}
+            @endif
         </span>
     </div>
     <div class="d-flex gap-2">

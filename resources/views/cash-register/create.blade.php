@@ -38,17 +38,17 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="employee_id" class="form-label">Punonjësi i Arkës</label>
-                        <select class="form-select @error('employee_id') is-invalid @enderror"
-                            id="employee_id" name="employee_id">
-                            <option value="">-- Zgjidh Punonjës --</option>
-                            @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}" {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
-                                    {{ $employee->name }}
+                        <label for="seller_id" class="form-label">Punonjësi i Arkës</label>
+                        <select class="form-select @error('seller_id') is-invalid @enderror"
+                            id="seller_id" name="seller_id">
+                            <option value="">-- Zgjidh Shitësin --</option>
+                            @foreach($sellers as $seller)
+                                <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
+                                    {{ $seller->name }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('employee_id')
+                        @error('seller_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

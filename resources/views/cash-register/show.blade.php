@@ -24,24 +24,34 @@
     </div>
     <div class="d-flex gap-2">
         @if($register->status === 'open')
+            @can('add cash-register')
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#shtoModal">
                 <i class="ri-add-circle-line me-1"></i> Shto
             </button>
+            @endcan
+            @can('remove cash-register')
             <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#hiqModal">
                 <i class="ri-indeterminate-circle-line me-1"></i> Hiq
             </button>
+            @endcan
+            @can('close cash-register')
             <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#closeModal">
                 <i class="ri-lock-line me-1"></i> Mbyll Arkën
             </button>
+            @endcan
         @elseif($register->status === 'closed')
+            @can('balance cash-register')
             <form action="{{ route('cash-register.balance', $register) }}" method="POST">
                 @csrf
                 <button class="btn btn-primary"><i class="ri-check-double-line me-1"></i> Balancuo</button>
             </form>
+            @endcan
         @endif
+        @can('view cash-register')
         <a href="{{ route('cash-register.index') }}" class="btn btn-outline-secondary">
             <i class="ri-list-check me-1"></i> Të gjitha arkat
         </a>
+        @endcan
     </div>
 </div>
 

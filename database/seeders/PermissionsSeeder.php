@@ -71,6 +71,15 @@ class PermissionsSeeder extends Seeder
             'create seller-bonuses',
             'edit seller-bonuses',
             'delete seller-bonuses',
+
+            // Cash Register (Arka)
+            'view cash-register',
+            'create cash-register',
+            'edit cash-register',
+            'close cash-register',
+            'balance cash-register',
+            'add cash-register',
+            'remove cash-register',
         ];
 
         foreach ($permissions as $permission) {

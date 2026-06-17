@@ -170,24 +170,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stock-movements/report',      [StockMovementController::class, 'report'])->name('stock-movements.report');
     });
 
-    // ── Cash Register ─────────────────────────────────────────────────────────
-    Route::middleware('role:admin')->group(function () {
-        Route::get('cash-register',                  [CashRegisterController::class, 'index'])->name('cash-register.index');
-        Route::get('cash-register/create',           [CashRegisterController::class, 'create'])->name('cash-register.create');
-        Route::post('cash-register',                 [CashRegisterController::class, 'store'])->name('cash-register.store');
-        Route::get('cash-register/today',            [CashRegisterController::class, 'today'])->name('cash-register.today');
-        Route::get('cash-register/{id}',             [CashRegisterController::class, 'show'])->name('cash-register.show');
-        Route::get('cash-register/{id}/edit',        [CashRegisterController::class, 'edit'])->name('cash-register.edit');
-        Route::put('cash-register/{id}',             [CashRegisterController::class, 'update'])->name('cash-register.update');
-        Route::post('cash-register/{id}/income',      [CashRegisterController::class, 'addIncome'])->name('cash-register.income');
-        Route::post('cash-register/{id}/expense',     [CashRegisterController::class, 'addExpense'])->name('cash-register.expense');
-        Route::post('cash-register/{id}/bulk-add',    [CashRegisterController::class, 'bulkAdd'])->name('cash-register.bulk-add');
-        Route::post('cash-register/{id}/bulk-remove', [CashRegisterController::class, 'bulkRemove'])->name('cash-register.bulk-remove');
-        Route::post('cash-register/{id}/adjustment', [CashRegisterController::class, 'addAdjustment'])->name('cash-register.adjustment');
-        Route::post('cash-register/{id}/close',      [CashRegisterController::class, 'close'])->name('cash-register.close');
-        Route::post('cash-register/{id}/balance',    [CashRegisterController::class, 'balance'])->name('cash-register.balance');
-        Route::get('cash-register/{id}/export-pdf',  [CashRegisterController::class, 'exportPdf'])->name('cash-register.export-pdf');
-    });
+    // ── Cash Register ──────────────────────────────────────────────────────────
+    // RËNDËSI: rotat specifike (today, create) duhet të jenë PARA {id} wildcard
+
+    Route::get('cash-register',        [CashRegisterController::class, 'index'])->middleware('permission:view cash-register')->name('cash-register.index');
+    Route::get('cash-register/today',  [CashRegisterController::class, 'today'])->middleware('permission:view cash-register')->name('cash-register.today');
+    Route::get('cash-register/create', [CashRegisterController::class, 'create'])->middleware('permission:create cash-register')->name('cash-register.create');
+    Route::post('cash-register',       [CashRegisterController::class, 'store'])->middleware('permission:create cash-register')->name('cash-register.store');
+
+    Route::get('cash-register/{id}',              [CashRegisterController::class, 'show'])->middleware('permission:view cash-register')->name('cash-register.show');
+    Route::get('cash-register/{id}/edit',         [CashRegisterController::class, 'edit'])->middleware('permission:edit cash-register')->name('cash-register.edit');
+    Route::put('cash-register/{id}',              [CashRegisterController::class, 'update'])->middleware('permission:edit cash-register')->name('cash-register.update');
+    Route::get('cash-register/{id}/export-pdf',   [CashRegisterController::class, 'exportPdf'])->middleware('permission:view cash-register')->name('cash-register.export-pdf');
+
+    Route::post('cash-register/{id}/bulk-add',    [CashRegisterController::class, 'bulkAdd'])->middleware('permission:add cash-register')->name('cash-register.bulk-add');
+    Route::post('cash-register/{id}/bulk-remove', [CashRegisterController::class, 'bulkRemove'])->middleware('permission:remove cash-register')->name('cash-register.bulk-remove');
+    Route::post('cash-register/{id}/income',      [CashRegisterController::class, 'addIncome'])->middleware('permission:add cash-register')->name('cash-register.income');
+    Route::post('cash-register/{id}/expense',     [CashRegisterController::class, 'addExpense'])->middleware('permission:remove cash-register')->name('cash-register.expense');
+    Route::post('cash-register/{id}/adjustment',  [CashRegisterController::class, 'addAdjustment'])->middleware('permission:edit cash-register')->name('cash-register.adjustment');
+    Route::post('cash-register/{id}/close',       [CashRegisterController::class, 'close'])->middleware('permission:close cash-register')->name('cash-register.close');
+    Route::post('cash-register/{id}/balance',     [CashRegisterController::class, 'balance'])->middleware('permission:balance cash-register')->name('cash-register.balance');
 
     // ── Debts ─────────────────────────────────────────────────────────────────
     Route::middleware('role:admin')->group(function () {
